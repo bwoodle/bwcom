@@ -19,19 +19,18 @@ jobs:
         working-directory: ./bwcom
       - run: npm run build
         working-directory: ./bwcom
-        
-      - name: Save build artifacts
-        uses: actions/upload-artifact@v2
+          
+      - name: Set AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          name: Angular Build output
-          path: ./bwcom/dist/bwcom
-          retention-days: 5
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      - name: Upload to test S3 bucket
-        uses: shallwefootball/s3-upload-action@master
-        id: S3
-        with:
-          aws_key_id: ${{secrets.AWS_KEY_ID}}
-          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_bucket: test.brentwoodle.com
-          source_dir: ./bwcom/dist/bwcom
+      - name: Copy files to the test website with the AWS CLI
+        run: |
+          aws s3 sync ./bwcom/dist/bwcom s3://test.brentwoodle.com
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id E1W5QMPZPAC3FD --paths '/*'
