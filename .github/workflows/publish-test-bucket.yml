@@ -1,4 +1,4 @@
-name: Build and Test client
+name: Publish to Test Environment
 
 on:
   push:
@@ -24,5 +24,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Angular Build output
-          path: dist/bwcom
+          path: ./bwcom/dist/bwcom
           retention-days: 5
