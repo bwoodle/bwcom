@@ -1,0 +1,23 @@
+name: Publish to Prod Environment
+
+on: []
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Copy files from test to prod with the AWS CLI
+        run: |
+          aws s3 sync s3://test.brentwoodle.com s3://brentwoodle.com
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id E4K5AALLI9166 --paths '/*'
