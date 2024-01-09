@@ -1,5 +1,9 @@
 name: Publish to Prod Environment
 
+on:
+  release:
+    types: [created]
+
 jobs:
   build:
 
