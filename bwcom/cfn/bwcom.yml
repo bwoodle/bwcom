@@ -7,32 +7,27 @@ Resources:
       BucketName: "dev.brentwoodle.com"
   DevBucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket:
-        Ref: DevBucket
+    Properties:
+      Bucket: !Ref DevBucket
       PolicyDocument:
-        Version: "2012-10-17"
         Statement:
-          - Effect: Allow
-            Principal:
-              CanonicalUser:
-                Fn::GetAtt: [ DevCloudFrontOriginAccessIdentity , S3CanonicalUserId ]
-            Action: "s3:GetObject"
-            Resource: !Sub "${DevBucket.Arn}/*"
+        - Action: s3:GetObject
+          Effect: Allow
+          Resource: !Sub ${DevBucket.Arn}/*
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${DevCloudFrontDistribution}
   DevCloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
         Description: "origin access control(OAC) for allowing cloudfront to access S3 bucket"
-        Name: dev.brentwoodle.com.s3.us-east-1.amazonaws.com
+        Name: dev.brentwoodle.com
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
-  DevCloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: "origin identity"
   DevCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     DependsOn:
@@ -40,10 +35,11 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub "${DevBucket}.s3.amazonaws.com"
-            Id: dev.brentwoodle.com
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${DevCloudFrontOriginAccessIdentity}"
+        - Id: dev.brentwoodle.com
+          DomainName: !GetAtt DevBucket.DomainName
+          S3OriginConfig:
+            OriginAccessIdentity: ''
+          OriginAccessControlId: !GetAtt DevCloudFrontOriginAccessControl.Id
         Enabled: "true"
         Aliases:
           - dev.brentwoodle.com
