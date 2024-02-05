@@ -1,0 +1,99 @@
+Description: brentwoodle.com Website
+Resources:
+  DevBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketName: "dev.brentwoodle.com"
+  DevBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket:
+        Ref: DevBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              CanonicalUser:
+                Fn::GetAtt: [ DevCloudFrontOriginAccessIdentity , S3CanonicalUserId ]
+            Action: "s3:GetObject"
+            Resource: !Sub "${DevBucket.Arn}/*"
+  DevCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: "origin access control(OAC) for allowing cloudfront to access S3 bucket"
+        Name: dev.brentwoodle.com.s3.us-east-1.amazonaws.com
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  DevCloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: "origin identity"
+  DevCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+      - DevBucket
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Sub "${DevBucket}.s3.amazonaws.com"
+            Id: dev.brentwoodle.com
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${DevCloudFrontOriginAccessIdentity}"
+        Enabled: "true"
+        Aliases:
+          - dev.brentwoodle.com
+        DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        HttpVersion: http2
+        Aliases:
+          - dev.brentwoodle.com
+        ViewerCertificate:
+          AcmCertificateArn: "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - DELETE
+            - GET
+            - HEAD
+            - OPTIONS
+            - PATCH
+            - POST
+            - PUT
+          Compress: true
+          TargetOriginId: dev.brentwoodle.com
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+  # DevDNS: 
+  #   Type: AWS::Route53::RecordSetGroup
+  #   Properties:
+  #     HostedZoneId: Z09563031TSQJ6OIZDHEE
+  #     RecordSets:
+  #       - Name: dev.brentwoodle.com
+  #         Type: A
+  #         AliasTarget:
+  #           HostedZoneId: Z09563031TSQJ6OIZDHEE
+  #           EvaluateTargetHealth: false
+  #           DNSName: !GetAtt DevCloudFrontDistribution.DomainName
+  # TestWebsite:
+  #   Type: AWS::CloudFront::Distribution
+  #   DeletionPolicy: "Retain"
+  #   Properties:
+  #     DistributionConfig: 
+  #       DistributionConfig
+  #     Tags: 
+  #       - Tag
