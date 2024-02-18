@@ -1,10 +1,18 @@
 Description: brentwoodle.com Website
 Resources:
-  DevWebsite:
+  TestWebsite:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://s3.us-east-1.amazonaws.com/cfn-brentwoodle.com/67c57e9983ccff3f1a4a8d3c18625842.template
       Parameters:
-        BucketName: dev.brentwoodle.com
-        URL: dev.brentwoodle.com
+        BucketName: test.brentwoodle.com
+        URL: test.brentwoodle.com
+        CertificateARN: arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e
+  ProdWebsite:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-1.amazonaws.com/cfn-brentwoodle.com/67c57e9983ccff3f1a4a8d3c18625842.template
+      Parameters:
+        BucketName: brentwoodle.com
+        URL: brentwoodle.com
         CertificateARN: arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e
