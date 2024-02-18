@@ -23,7 +23,7 @@ aws cloudformation deploy --template-file packaged.yml --stack-name bwcom --role
 
 ### Development
 ```
-cd bwcom
+cd bwcom-static
 
 # Execute unit tests (watches for changes)
 npm run test
