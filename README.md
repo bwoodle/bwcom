@@ -22,6 +22,9 @@ aws cloudformation deploy --template-file packaged.yml --stack-name bwcom --role
 ## Angular application
 
 ### Development
+1. Visual Studio Code
+2. Open folder `bwcom-static`
+3. Restore workspace recommended packages
 ```
 cd bwcom-static
 
@@ -39,3 +42,17 @@ npm run serve
 1. Commit to `main` branch
 2. `publish-test-bucket` pipeline will *automatically* trigger and and deploy to `test.brentwoodle.com`
 3. `deploy-prod` pipeline must be *manually* triggered to deploy to `brentwoodle.com`
+
+## API application
+
+### Development
+1. Visual Studio 2022 Community edition
+2. Open sln `bwcom-api.sln`
+3. Run in Docker
+
+### Deployment
+```
+aws ecr get-login-password | docker login --username AWS --password-stdin 685339315795.dkr.ecr.us-east-1.amazonaws.com
+docker tag bwcom-api 685339315795.dkr.ecr.us-east-1.amazonaws.com/bwcom
+docker push 685339315795.dkr.ecr.us-east-1.amazonaws.com/bwcom
+```
