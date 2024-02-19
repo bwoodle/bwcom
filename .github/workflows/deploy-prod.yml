@@ -22,4 +22,4 @@ jobs:
           aws s3 sync s3://test.brentwoodle.com s3://brentwoodle.com
       - name: Invalidate CloudFront Cache
         run: |
-          aws cloudfront create-invalidation --distribution-id E4K5AALLI9166 --paths '/*'
+          aws cloudfront create-invalidation --distribution-id E2P0BW7ZKSCVHC --paths '/*'
