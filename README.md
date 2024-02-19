@@ -2,24 +2,51 @@
 ## Setup from scratch
 ```
 1. `aws configure` and set access keys for `CliUser` IAM User (User must be created, of course)
-2. Follow Website Infrastructure deployment instructions
-3. Follow Angular application deployment instructions
+2. Follow BWCom Network Infrastructure deployment instructions
+3. Follow BWCom Static Website Infrastructure deployment instructions
+4. Follow BWCom API Application Infrastructure deployment instructions
+5. Follow BWCom Static Website Application deployment instructions
+6. Follow BWCom API Application deployment instructions
 ```
 
-## Website Infrastructure
+## BWCom Network Infrastructure
 
 ### Development
-1. Edit Cloudformation stacks in `cfn/website`. `bwcom.yml` is the Root development stack
+1. Edit Cloudformation stacks in `cfn/bwcom-network`. `bwcom-network.yml` is the Root development stack
 
 ### Deployment
-
 ```
-cd cfn\website
-aws cloudformation package --template-file bwcom.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com
+cd cfn\bwcom-network
+aws cloudformation package --template-file bwcom-network.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com
+aws cloudformation deploy --template-file packaged.yml --stack-name bwcom-network --role-arn arn:aws:iam::685339315795:role/CfnDeploymentRole
+```
+
+## BWCom Static Website Infrastructure
+
+### Development
+1. Edit Cloudformation stacks in `cfn/bwcom-static`. `bwcom-static.yml` is the Root development stack
+
+### Deployment
+```
+cd cfn\bwcom-static
+aws cloudformation package --template-file bwcom-static.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com
 aws cloudformation deploy --template-file packaged.yml --stack-name bwcom --role-arn arn:aws:iam::685339315795:role/CfnDeploymentRole
 ```
 
-## Angular application
+## BWCom API Application Infrastructure
+*Depends on Network Infrastructure*
+
+### Development
+1. Edit Cloudformation stacks in `cfn/bwcom-api`. `bwcom-api.yml` is the Root development stack
+
+### Deployment
+```
+cd cfn\bwcom-api
+aws cloudformation package --template-file bwcom-api.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com-api
+aws cloudformation deploy --template-file packaged.yml --stack-name bwcom-api --role-arn arn:aws:iam::685339315795:role/CfnDeploymentRole
+```
+
+## BWCom Static Website Application
 
 ### Development
 1. Visual Studio Code
@@ -43,7 +70,7 @@ npm run serve
 2. `publish-test-bucket` pipeline will *automatically* trigger and and deploy to `test.brentwoodle.com`
 3. `deploy-prod` pipeline must be *manually* triggered to deploy to `brentwoodle.com`
 
-## API application
+## BWCom API Application
 
 ### Development
 1. Visual Studio 2022 Community edition
