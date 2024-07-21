@@ -2,26 +2,44 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.APIGateway;
 using Constructs;
+using Amazon.CDK.AWS.Route53;
+using Amazon.CDK.AWS.CertificateManager;
+using Amazon.CDK.AWS.Route53.Targets;
 
 namespace CdkBwcomBackend
 {
     public class CdkBwcomBackendStack : Stack
     {
-        internal CdkBwcomBackendStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
+        internal CdkBwcomBackendStack(Construct scope, string id, StackProps props = null) : base(scope, id, props)
         {
+            var rootDomain = "brentwoodle.com";
+            var zone = HostedZone.FromLookup(this, "bwcom", new HostedZoneProviderProps(){ DomainName = rootDomain});
+
             // Define the Lambda function resource
-            var helloWorldFunction = new Function(this, "HelloWorldFunction", new FunctionProps
+            var helloWorldFunction = new Function(this, "BwcomData", new FunctionProps
             {
                 Runtime = Runtime.NODEJS_20_X, // Choose any supported Node.js runtime
                 Code = Code.FromAsset("lambda"), // Points to the lambda directory
                 Handler = "hello.handler" // Points to the 'hello' file in the lambda directory
             });
-            
+
             // Define the API Gateway resource
-            var api = new LambdaRestApi(this, "HelloWorldApi", new LambdaRestApiProps
+            var api = new LambdaRestApi(this, "bwcom-api", new LambdaRestApiProps
             {
+                DomainName = new DomainNameOptions()
+                {
+                    DomainName = "bwcom-api.brentwoodle.com",
+                    Certificate = Certificate.FromCertificateArn(this, "bwcom-cert", "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e")
+                },
                 Handler = helloWorldFunction,
                 Proxy = false
+            });
+
+            new ARecord(this, "bwcom-api-dns", new ARecordProps
+            {
+                Zone = zone,
+                RecordName = "bwcom-api",
+                Target = RecordTarget.FromAlias(new ApiGateway(api))
             });
 
             // Add a '/hello' resource with a GET method
