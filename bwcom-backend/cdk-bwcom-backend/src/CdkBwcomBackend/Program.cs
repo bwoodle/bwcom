@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cdk
+namespace CdkBwcomBackend
 {
     sealed class Program
     {
         public static void Main(string[] args)
         {
             var app = new App();
-            new CdkStack(app, "CdkStack", new StackProps
+            new CdkBwcomBackendStack(app, "CdkBwcomBackendStack", new StackProps
             {
                 // If you don't specify 'env', this stack will be environment-agnostic.
                 // Account/Region-dependent features and context lookups will not work,
