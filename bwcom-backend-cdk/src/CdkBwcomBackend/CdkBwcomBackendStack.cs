@@ -26,6 +26,7 @@ namespace CdkBwcomBackend
             // Define the API Gateway resource
             var api = new LambdaRestApi(this, "bwcom-api", new LambdaRestApiProps
             {
+                Deploy = false,
                 DomainName = new DomainNameOptions()
                 {
                     DomainName = "bwcom-api.brentwoodle.com",
@@ -33,6 +34,23 @@ namespace CdkBwcomBackend
                 },
                 Handler = helloWorldFunction,
                 Proxy = false
+            });
+
+            var deployment = new Deployment(this, "bwcom-deployment", new DeploymentProps{
+                Api = api
+            });
+
+            new Amazon.CDK.AWS.APIGateway.Stage(this, "bwcom-test-stage", new Amazon.CDK.AWS.APIGateway.StageProps
+            {
+                Deployment = deployment,
+                StageName = "test",
+
+            });
+
+            new Amazon.CDK.AWS.APIGateway.Stage(this, "bwcom-prod-stage", new Amazon.CDK.AWS.APIGateway.StageProps
+            {
+                Deployment = deployment,
+                StageName = "prod"
             });
 
             new ARecord(this, "bwcom-api-dns", new ARecordProps
