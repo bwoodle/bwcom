@@ -1,4 +1,5 @@
-1. Set CORS only for 2 appropriate domains
-2. Switch API to C#
-3. Create pipeline to auto-deploy C# lambda package to test stage
-4. Update release pipeline to promote api from test to prod
+1. Frame Angular app for blog + 2024 training data
+2. Statically import old blog
+3. Switch API to C#
+4. Create pipeline to auto-deploy C# lambda package to test stage
+5. Update release pipeline to promote api from test to prod
