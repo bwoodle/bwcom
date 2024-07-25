@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { from, map, Observable, of } from 'rxjs';
-import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http'
+import { map, Observable } from 'rxjs';
 import { WINDOW } from 'src/utils/window.service';
+import { HelloWorldApiResponse } from './models/hello-world-api-response';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +18,8 @@ export class ApiService {
   }
 
   getHello(): Observable<string> {
-    return this._http.get(this.baseHref + "/hello").pipe(
-      map(x => x.toString())
+    return this._http.get<HelloWorldApiResponse>(this.baseHref + "/hello").pipe(
+      map(x => x.message)
     );
   }
 }
