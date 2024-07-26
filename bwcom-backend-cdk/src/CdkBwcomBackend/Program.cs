@@ -28,7 +28,9 @@ namespace CdkBwcomBackend
           Account = "685339315795",
           Region = "us-east-1"
         },
-        DataApiFunction = functions.HelloWorldFunction
+        DataApi = functions.HelloWorld,
+        DataApiTestAlias = functions.HelloWorldTest,
+        DataApiProdAlias = functions.HelloWorldProd
       });
       app.Synth();
     }

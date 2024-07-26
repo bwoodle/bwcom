@@ -15,7 +15,7 @@ namespace CdkBwcomBackend
       var api = new LambdaRestApi(this, "bwcom-api", new LambdaRestApiProps
       {
         Deploy = false,
-        Handler = props.DataApiFunction,
+        Handler = props.DataApi,
         Proxy = false,
         DefaultCorsPreflightOptions = new CorsOptions
         {
@@ -43,13 +43,13 @@ namespace CdkBwcomBackend
 
     private void CreateStage(IRestApi api, Deployment deployment, IHostedZone zone, ICertificate certificate, string stageName, string dns)
     {
-      var prodStage = new Amazon.CDK.AWS.APIGateway.Stage(this, $"bwcom-{stageName}-stage", new Amazon.CDK.AWS.APIGateway.StageProps
+      var stage = new Amazon.CDK.AWS.APIGateway.Stage(this, $"bwcom-{stageName}-stage", new Amazon.CDK.AWS.APIGateway.StageProps
       {
         Deployment = deployment,
         StageName = stageName
       });
 
-      var prodDomain = new DomainName_(this, $"bwcom-{stageName}-domain", new DomainNameProps
+      var domainName = new DomainName_(this, $"bwcom-{stageName}-domain", new DomainNameProps
       {
         DomainName = $"{dns}.brentwoodle.com",
         Certificate = certificate
@@ -57,12 +57,12 @@ namespace CdkBwcomBackend
 
       new BasePathMapping(this, $"bwcom-api-{stageName}-mapping", new BasePathMappingProps
       {
-        DomainName = prodDomain,
-        Stage = prodStage,
+        DomainName = domainName,
+        Stage = stage,
         RestApi = api
       });
 
-      var domain = new ApiGatewayDomain(prodDomain);
+      var domain = new ApiGatewayDomain(domainName);
 
       new ARecord(this, $"bwcom-{stageName}-dns", new ARecordProps
       {

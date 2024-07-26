@@ -3,5 +3,7 @@ using Amazon.CDK.AWS.Lambda;
 
 public class DataApiProps : StackProps
 {
-  public Function DataApiFunction { get; set; }
+  public Function DataApi { get; set; }
+  public Alias DataApiTestAlias { get; set; }
+  public Alias DataApiProdAlias { get; set; }
 }
