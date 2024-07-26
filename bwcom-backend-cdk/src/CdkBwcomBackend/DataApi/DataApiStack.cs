@@ -8,21 +8,14 @@ using Amazon.CDK.AWS.Route53.Targets;
 
 namespace CdkBwcomBackend
 {
-  public class CdkBwcomBackendStack : Stack
+  public class DataApiStack : Stack
   {
-    internal CdkBwcomBackendStack(Construct scope, string id, StackProps props = null) : base(scope, id, props)
+    internal DataApiStack(Construct scope, string id, DataApiProps props) : base(scope, id, props)
     {
-      var helloWorldFunction = new Function(this, "BwcomData", new FunctionProps
-      {
-        Runtime = Runtime.NODEJS_20_X, // Choose any supported Node.js runtime
-        Code = Code.FromAsset("lambda"), // Points to the lambda directory
-        Handler = "hello.handler" // Points to the 'hello' file in the lambda directory
-      });
-
       var api = new LambdaRestApi(this, "bwcom-api", new LambdaRestApiProps
       {
         Deploy = false,
-        Handler = helloWorldFunction,
+        Handler = props.DataApiFunction,
         Proxy = false,
         DefaultCorsPreflightOptions = new CorsOptions
         {
