@@ -1,8 +1,5 @@
 ﻿using Amazon.CDK;
 using CdkBwcomBackend.FunctionsStack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CdkBwcomBackend
 {
@@ -14,24 +11,37 @@ namespace CdkBwcomBackend
 
       var functions = new DataFunctionsStack(app, "BwcomDataFunctions", new StackProps
       {
-        Env = new Amazon.CDK.Environment()
+        Env = new Environment()
         {
           Account = "685339315795",
           Region = "us-east-1"
         }
       });
 
-      new DataApiStack(app, "CdkBwcomBackendStack", new DataApiProps
+      new DataApiStack(app, "BwcomTestApi", new DataApiProps
       {
-        Env = new Amazon.CDK.Environment()
+        Env = new Environment()
         {
           Account = "685339315795",
           Region = "us-east-1"
         },
-        DataApi = functions.HelloWorld,
-        DataApiTestAlias = functions.HelloWorldTest,
-        DataApiProdAlias = functions.HelloWorldProd
+        FunctionAlias = functions.HelloWorldTest,
+        Origin = "https://test.brentwoodle.com",
+        ApiSubdomain = "bwcom-test-api"
       });
+
+      new DataApiStack(app, "BwcomProdApi", new DataApiProps
+      {
+        Env = new Environment()
+        {
+          Account = "685339315795",
+          Region = "us-east-1"
+        },
+        FunctionAlias = functions.HelloWorldProd,
+        Origin = "https://brentwoodle.com",
+        ApiSubdomain = "bwcom-api"
+      });
+
       app.Synth();
     }
   }
