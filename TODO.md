@@ -1,5 +1,5 @@
-1. Frame Angular app for blog + 2024 training data
-2. Statically import old blog
+1. Create pipeline to auto-deploy lambda Function updates
+2. Update release pipeline to prod lambda alias to current version
 3. Switch API to C#
-4. Create pipeline to auto-deploy C# lambda package to test stage
-5. Update release pipeline to promote api from test to prod
+4. Frame Angular app for blog + 2024 training data
+5. Statically import old blog
