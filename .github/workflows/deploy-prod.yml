@@ -1,6 +1,7 @@
 name: Publish to Prod Environment
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
