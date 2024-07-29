@@ -27,10 +27,7 @@ jobs:
         run: dotnet build src
 
       - name: Deploy BwcomDataFunctions
-        uses: P47Phoenix/dotnet-cdk-action
-        with:
-          working_dir: ./bwcom-backend-cdk
-          cdk_subcommand: 'deploy'
-          cdk_stack: 'BwcomDataFunctions'
-          cdk_args: '--require-approval never'
-          actions_comment: false
+        run: |
+          npm install -g aws-cdk
+          cdk deploy BwcomDataFunctions
+      
