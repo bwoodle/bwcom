@@ -7,7 +7,7 @@ on:
     paths: 'bwcom-backend-cdk/lambda/**'
 
 jobs:
-  deploy_lambda_Stack:
+  deploy_lambda_stack:
 
     runs-on: ubuntu-latest
 
