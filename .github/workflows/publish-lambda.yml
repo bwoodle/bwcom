@@ -10,8 +10,6 @@ jobs:
   deploy_lambda_Stack:
 
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./bwcom-backend-cdk
 
     steps:
       - name: Checkout
@@ -22,13 +20,16 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Install dependencies
+        working-directory: ./bwcom-backend-cdk
         run: dotnet restore src
       - name: Build CDK
+        working-directory: ./bwcom-backend-cdk
         run: dotnet build src
 
       - name: Deploy BwcomDataFunctions
         uses: youyo/aws-cdk-github-actions@v2
         with:
+          working_dir: ./bwcom-backend-cdk
           cdk_subcommand: 'deploy'
           cdk_stack: 'BwcomDataFunctions'
           cdk_args: '--require-approval never'
