@@ -1,4 +1,4 @@
-name: Publish Lambda updates
+name: Publish Lambda updates to Test
 
 on:
   workflow_dispatch:
