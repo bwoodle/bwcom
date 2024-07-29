@@ -1,5 +1,5 @@
+
 using Amazon.CDK;
-using Amazon.CDK.AWS.CodeDeploy;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
@@ -12,6 +12,8 @@ namespace CdkBwcomBackend.FunctionsStack
 
     internal DataFunctionsStack(Construct scope, string id, StackProps props = null) : base(scope, id, props)
     {
+
+
       var fn = new Function(this, "BwcomData", new FunctionProps
       {
         Runtime = Runtime.NODEJS_20_X, // Choose any supported Node.js runtime
@@ -26,11 +28,16 @@ namespace CdkBwcomBackend.FunctionsStack
         Version = fn.LatestVersion
       });
 
+      var prodVersion = new Version_(this, "BwcomDataProdVersion", new VersionProps
+      {
+        Lambda = fn
+      });
+
       HelloWorldProd = new Alias(this, "BwcomProdData", new AliasProps
       {
         AliasName = "prod",
         Description = "Prod data integration",
-        Version = fn.CurrentVersion
+        Version = prodVersion
       });
     }
   }
