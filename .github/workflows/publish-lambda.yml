@@ -1,4 +1,4 @@
-name: Publish to Test Environment
+name: Publish Lambda updates
 
 on:
   workflow_dispatch:
@@ -27,10 +27,5 @@ jobs:
         run: dotnet build src
 
       - name: Deploy BwcomDataFunctions
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          working_dir: ./bwcom-backend-cdk
-          cdk_subcommand: 'deploy'
-          cdk_stack: 'BwcomDataFunctions'
-          cdk_args: '--require-approval never'
-          actions_comment: false
+        run: |
+          cdk deploy
