@@ -27,6 +27,7 @@ jobs:
         run: dotnet build src
 
       - name: Deploy BwcomDataFunctions
+        working-directory: ./bwcom-backend-cdk
         run: |
           npm install -g aws-cdk
           cdk deploy BwcomDataFunctions
