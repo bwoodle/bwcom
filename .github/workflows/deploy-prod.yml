@@ -24,3 +24,20 @@ jobs:
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation --distribution-id E2P0BW7ZKSCVHC --paths '/*'
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install dependencies
+        working-directory: ./bwcom-backend-cdk
+        run: dotnet restore src
+      - name: Build CDK
+        working-directory: ./bwcom-backend-cdk
+        run: dotnet build src
+
+      - name: Deploy BwcomProdFunctions
+        working-directory: ./bwcom-backend-cdk
+        run: |
+          npm install -g aws-cdk
+          cdk deploy BwcomProdFunctions

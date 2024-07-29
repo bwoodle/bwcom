@@ -33,9 +33,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy BwcomDataFunctions
+      - name: Deploy BwcomTestFunctions
         working-directory: ./bwcom-backend-cdk
         run: |
           npm install -g aws-cdk
-          cdk deploy BwcomDataFunctions
+          cdk deploy BwcomTestFunctions
       

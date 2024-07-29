@@ -9,7 +9,8 @@ namespace CdkBwcomBackend
     {
       var app = new App();
 
-      var functions = new DataFunctionsStack(app, "BwcomDataFunctions", new StackProps
+      // Test Environment
+      var testFns = new DataFunctionsStack(app, "BwcomTestFunctions", new StackProps
       {
         Env = new Environment()
         {
@@ -25,9 +26,19 @@ namespace CdkBwcomBackend
           Account = "685339315795",
           Region = "us-east-1"
         },
-        FunctionAlias = functions.HelloWorldTest,
+        FunctionAlias = testFns.CurrentVersion,
         Origin = "https://test.brentwoodle.com",
         ApiSubdomain = "bwcom-test-api"
+      });
+
+      // Prod Environment
+      var prodFns = new DataFunctionsStack(app, "BwcomProdFunctions", new StackProps
+      {
+        Env = new Environment()
+        {
+          Account = "685339315795",
+          Region = "us-east-1"
+        }
       });
 
       new DataApiStack(app, "BwcomProdApi", new DataApiProps
@@ -37,7 +48,7 @@ namespace CdkBwcomBackend
           Account = "685339315795",
           Region = "us-east-1"
         },
-        FunctionAlias = functions.HelloWorldProd,
+        FunctionAlias = prodFns.CurrentVersion,
         Origin = "https://brentwoodle.com",
         ApiSubdomain = "bwcom-api"
       });
