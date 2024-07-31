@@ -1,14 +1,10 @@
-exports.handler = async (event) => {
-  let allowedOrigin = "https://brentwoodle.com";
-  if (event.headers.origin == "https://test.brentwoodle.com") {
-    allowedOrigin = event.headers.origin;
-  }
+exports.handler = async (_event, _context) => {
   return {
     statusCode: 200,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": allowedOrigin
+      "Access-Control-Allow-Origin": process.env.origin
     },
-    body: JSON.stringify({ message: "Hello, World15" }),
+    body: JSON.stringify({ message: "Hello, World18" }),
   };
 };

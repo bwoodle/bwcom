@@ -8,48 +8,41 @@ namespace CdkBwcomBackend
     public static void Main(string[] args)
     {
       var app = new App();
-
-      // Test Environment
-      var testFns = new DataFunctionsStack(app, "BwcomTestFunctions", new StackProps
-      {
-        Env = new Environment()
+      var bwcomEnv = new Environment()
         {
           Account = "685339315795",
           Region = "us-east-1"
-        }
+        };
+      var testOrigin = "https://test.brentwoodle.com";
+      var prodOrigin = "https://brentwoodle.com";
+
+      // Test Environment
+      var testFns = new DataFunctionsStack(app, "BwcomTestFunctions", new DataFunctionProps
+      {
+        Env = bwcomEnv,
+        AllowedOrigin = testOrigin
       });
 
       new DataApiStack(app, "BwcomTestApi", new DataApiProps
       {
-        Env = new Environment()
-        {
-          Account = "685339315795",
-          Region = "us-east-1"
-        },
+        Env = bwcomEnv,
         FunctionAlias = testFns.CurrentVersion,
-        Origin = "https://test.brentwoodle.com",
+        Origin = testOrigin,
         ApiSubdomain = "bwcom-test-api"
       });
 
       // Prod Environment
-      var prodFns = new DataFunctionsStack(app, "BwcomProdFunctions", new StackProps
+      var prodFns = new DataFunctionsStack(app, "BwcomProdFunctions", new DataFunctionProps
       {
-        Env = new Environment()
-        {
-          Account = "685339315795",
-          Region = "us-east-1"
-        }
+        Env = bwcomEnv,
+        AllowedOrigin = prodOrigin
       });
 
       new DataApiStack(app, "BwcomProdApi", new DataApiProps
       {
-        Env = new Environment()
-        {
-          Account = "685339315795",
-          Region = "us-east-1"
-        },
+        Env = bwcomEnv,
         FunctionAlias = prodFns.CurrentVersion,
-        Origin = "https://brentwoodle.com",
+        Origin = prodOrigin,
         ApiSubdomain = "bwcom-api"
       });
 
