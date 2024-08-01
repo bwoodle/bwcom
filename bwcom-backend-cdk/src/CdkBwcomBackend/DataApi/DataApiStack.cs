@@ -31,7 +31,7 @@ namespace CdkBwcomBackend
 
       CreateApiResources(api);
 
-      new ARecord(this, $"BwcomApiDns", new ARecordProps
+      new ARecord(this, "BwcomApiDns", new ARecordProps
       {
         Zone = zone,
         RecordName = props.ApiSubdomain,

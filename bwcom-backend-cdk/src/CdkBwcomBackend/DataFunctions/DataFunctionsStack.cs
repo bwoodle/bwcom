@@ -17,7 +17,8 @@ namespace CdkBwcomBackend.FunctionsStack
         Runtime = Runtime.NODEJS_20_X, // Choose any supported Node.js runtime
         Code = Code.FromAsset("lambda"), // Points to the lambda directory
         Handler = "hello.handler", // Points to the 'hello' file in the lambda directory
-        Environment = new Dictionary<string, string>{
+        Environment = new Dictionary<string, string>
+        {
           ["origin"] = props.AllowedOrigin
         }
       });

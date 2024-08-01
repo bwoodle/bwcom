@@ -9,14 +9,13 @@ namespace CdkBwcomBackend
     {
       var app = new App();
       var bwcomEnv = new Environment()
-        {
-          Account = "685339315795",
-          Region = "us-east-1"
-        };
-      var testOrigin = "https://test.brentwoodle.com";
-      var prodOrigin = "https://brentwoodle.com";
+      {
+        Account = "685339315795",
+        Region = "us-east-1"
+      };
 
-      // Test Environment
+      // Test Environment - will soon encapsulate in a L3 construct
+      var testOrigin = "https://test.brentwoodle.com";
       var testFns = new DataFunctionsStack(app, "BwcomTestFunctions", new DataFunctionProps
       {
         Env = bwcomEnv,
@@ -31,7 +30,16 @@ namespace CdkBwcomBackend
         ApiSubdomain = "bwcom-test-api"
       });
 
-      // Prod Environment
+      new StaticWebsiteStack(app, "BwcomTestWebsite", new StaticWebsiteStackProps
+      {
+        Env = bwcomEnv,
+        BucketName = "test2.brentwoodle.com",
+        WebsiteUrl = "test2.brentwoodle.com",
+        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
+      });
+
+      // Prod Environment - will soon encapsulate in a L3 construct
+      var prodOrigin = "https://brentwoodle.com";
       var prodFns = new DataFunctionsStack(app, "BwcomProdFunctions", new DataFunctionProps
       {
         Env = bwcomEnv,
