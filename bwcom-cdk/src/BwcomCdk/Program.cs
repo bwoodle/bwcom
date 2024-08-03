@@ -19,6 +19,7 @@ namespace BwcomCdk
         WebsiteUrl = "test.brentwoodle.com",
         WebsiteOrigin = "https://test.brentwoodle.com",
         ApiSubdomain = "bwcom-test-api",
+        DistroParamName = "/bwcom/test-distribution-id",
         CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
       });
 
@@ -28,6 +29,7 @@ namespace BwcomCdk
         WebsiteUrl = "brentwoodle.com",
         WebsiteOrigin = "https://brentwoodle.com",
         ApiSubdomain = "bwcom-api",
+        DistroParamName = "/bwcom/prod-distribution-id",
         CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
       });
 

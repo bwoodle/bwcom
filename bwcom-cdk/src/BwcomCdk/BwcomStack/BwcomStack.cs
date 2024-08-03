@@ -10,6 +10,7 @@ internal class BwcomStack : Stack
     {
       Env = props.Env,
       WebsiteUrl = props.WebsiteUrl,
+      DistroParamName = props.DistroParamName,
       CertificateArn = props.CertificateArn
     });
 

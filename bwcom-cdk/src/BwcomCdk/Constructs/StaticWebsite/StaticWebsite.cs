@@ -6,6 +6,7 @@ using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Route53;
 using Amazon.CDK.AWS.Route53.Targets;
 using Amazon.CDK.AWS.S3;
+using Amazon.CDK.AWS.SSM;
 using Constructs;
 
 namespace BwcomCdk.Constructs
@@ -146,6 +147,13 @@ namespace BwcomCdk.Constructs
             }
           }
         },
+      });
+
+      new StringParameter(this, "DistroId", new StringParameterProps
+      {
+        Description = "CloudFront distribution ID",
+        ParameterName = props.DistroParamName,
+        StringValue = webDistro.AttrId
       });
     }
   }
