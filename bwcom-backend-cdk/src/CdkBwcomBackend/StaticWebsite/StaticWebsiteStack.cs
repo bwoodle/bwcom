@@ -20,14 +20,85 @@ namespace CdkBwcomBackend.FunctionsStack
         BucketName = props.BucketName
       });
 
-      var webDistro = new CloudFrontWebDistribution(this, "CloudFrontDistro", new CloudFrontWebDistributionProps
+      var oac = new CfnOriginAccessControl(this, "BwcomWebsiteOac", new CfnOriginAccessControlProps
       {
-        OriginConfigs = new[] { new SourceConfiguration {
-        S3OriginSource = new S3OriginConfig {
-            S3BucketSource = bucket
-        },
-        Behaviors = new [] { new Behavior { IsDefaultBehavior = true } }
-    } }
+        OriginAccessControlConfig = new CfnOriginAccessControl.OriginAccessControlConfigProperty
+        {
+          Name = props.WebsiteUrl,
+          OriginAccessControlOriginType = "s3",
+          SigningBehavior = "always",
+          SigningProtocol = "sigv4",
+          Description = "origin access control(OAC) for allowing cloudfront to access S3 bucket"
+        }
+      });
+
+      var webDistro = new CfnDistribution(this, "BwcomDistro", new CfnDistributionProps
+      {
+        DistributionConfig = new CfnDistribution.DistributionConfigProperty
+        {
+          Origins = new[]
+          {
+            new CfnDistribution.OriginProperty
+            {
+              DomainName = bucket.BucketDomainName,
+              Id = props.WebsiteUrl,
+              S3OriginConfig = new CfnDistribution.S3OriginConfigProperty
+              {
+                OriginAccessIdentity = ""
+              },
+              OriginAccessControlId = oac.AttrId
+            }
+          },
+          Enabled = true,
+          Aliases = new[] { props.WebsiteUrl },
+          DefaultRootObject = "index.html",
+          CustomErrorResponses = new[]
+          {
+            new CfnDistribution.CustomErrorResponseProperty
+            {
+                ErrorCode = 404,
+                ResponseCode = 200,
+                ResponsePagePath = "/index.html"
+            },
+            new CfnDistribution.CustomErrorResponseProperty
+            {
+                ErrorCode = 403,
+                ResponseCode = 200,
+                ResponsePagePath = "/index.html"
+            }
+          },
+          HttpVersion = "http2",
+          ViewerCertificate = new CfnDistribution.ViewerCertificateProperty
+          {
+            AcmCertificateArn = props.CertificateArn,
+            MinimumProtocolVersion = "TLSv1.2_2021",
+            SslSupportMethod = "sni-only"
+          },
+          DefaultCacheBehavior = new CfnDistribution.DefaultCacheBehaviorProperty
+          {
+            TargetOriginId = props.WebsiteUrl,
+            ViewerProtocolPolicy = "redirect-to-https",
+            Compress = true,
+            AllowedMethods = new[]
+            {
+              "DELETE",
+              "GET",
+              "HEAD",
+              "OPTIONS",
+              "PATCH",
+              "PUT",
+              "POST",
+            },
+            ForwardedValues = new CfnDistribution.ForwardedValuesProperty
+            {
+              QueryString = false,
+              Cookies = new CfnDistribution.CookiesProperty
+              {
+                Forward = "none"
+              }
+            }
+          },
+        }
       });
 
       var policyStatement = new PolicyStatement(new PolicyStatementProps
@@ -44,7 +115,8 @@ namespace CdkBwcomBackend.FunctionsStack
             new Dictionary<string, object>
             {
               {
-                "AWS:SourceArn", $"arn:aws:cloudfront::{props.Env.Account}:distribution/{webDistro.DistributionId}"
+                "AWS:SourceArn", 
+                $"arn:aws:cloudfront::{props.Env.Account}:distribution/{webDistro.AttrId}"
               }
             }
           }
@@ -53,160 +125,27 @@ namespace CdkBwcomBackend.FunctionsStack
 
       bucket.AddToResourcePolicy(policyStatement);
 
-      // new CfnOriginAccessControl(this, "OAC", new CfnOriginAccessControlProps
-      // {
-      //   OriginAccessControlConfig = new Dictionary<string, string>
-      //   {
-      //     ["Name"] = props.WebsiteUrl,
-      //     ["Description"] = "origin access control(OAC) for allowing cloudfront to access S3 bucket",
-      //     ["OriginAccessControlOriginType"] = "s3",
-      //     ["SigningBehavior"] = "always",
-      //     ["SigningProtocol"] = "sigv4"
-      //   }
-      // });
-
-
-
-      // var zone = HostedZone.FromLookup(this, "BwcomZone", new HostedZoneProviderProps() { DomainName = "brentwoodle.com" });
-      // new ARecord(this, $"BwcomApiDns", new ARecordProps
-      // {
-      //   Zone = zone,
-      //   RecordName = props.WebsiteUrl,
-      //   Target = RecordTarget.FromAlias(new CloudFrontTarget(webDistro))
-      // });
+      var zone = HostedZone.FromLookup(this, "BwcomZone", new HostedZoneProviderProps
+      { 
+        DomainName = "brentwoodle.com" 
+      });
+      new CfnRecordSetGroup(this, "BwcomStaticRecord", new CfnRecordSetGroupProps
+      {
+        HostedZoneId = zone.HostedZoneId,
+        RecordSets = new[]
+        {
+          new CfnRecordSetGroup.RecordSetProperty
+          {
+            Name = props.WebsiteUrl,
+            Type = "A",
+            AliasTarget = new CfnRecordSetGroup.AliasTargetProperty
+            {
+              DnsName = webDistro.AttrDomainName,
+              HostedZoneId = "Z2FDTNDATAQYW2"
+            }
+          }
+        },
+      });
     }
   }
-
 }
-
-
-/*
-  CloudFrontDistribution:
-    Type: AWS::CloudFront::Distribution
-    DependsOn:
-      - Bucket
-    Properties:
-      DistributionConfig:
-        Origins:
-        - Id: !Ref URL
-          DomainName: !GetAtt Bucket.DomainName
-          S3OriginConfig:
-            OriginAccessIdentity: ''
-          OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
-        Enabled: "true"
-        Aliases:
-          - !Ref URL
-        DefaultRootObject: index.html
-        CustomErrorResponses:
-          - ErrorCode: 404
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-          - ErrorCode: 403
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-        HttpVersion: http2
-        ViewerCertificate:
-          AcmCertificateArn: !Ref CertificateARN
-          MinimumProtocolVersion: TLSv1.2_2021
-          SslSupportMethod: sni-only
-        DefaultCacheBehavior:
-          AllowedMethods:
-            - DELETE
-            - GET
-            - HEAD
-            - OPTIONS
-            - PATCH
-            - POST
-            - PUT
-          Compress: true
-          TargetOriginId: !Ref URL
-          ForwardedValues:
-            QueryString: 'false'
-            Cookies:
-              Forward: none
-          ViewerProtocolPolicy: redirect-to-https
-
-
-  Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
-      BucketName: !Ref BucketName
-  BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref Bucket
-      PolicyDocument:
-        Statement:
-        - Action: s3:GetObject
-          Effect: Allow
-          Resource: !Sub ${Bucket.Arn}/*
-          Principal:
-            Service: cloudfront.amazonaws.com
-          Condition:
-            StringEquals:
-              AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
-  CloudFrontOriginAccessControl:
-    Type: AWS::CloudFront::OriginAccessControl
-    Properties:
-      OriginAccessControlConfig:
-        Description: "origin access control(OAC) for allowing cloudfront to access S3 bucket"
-        Name: !Ref URL
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-  CloudFrontDistribution:
-    Type: AWS::CloudFront::Distribution
-    DependsOn:
-      - Bucket
-    Properties:
-      DistributionConfig:
-        Origins:
-        - Id: !Ref URL
-          DomainName: !GetAtt Bucket.DomainName
-          S3OriginConfig:
-            OriginAccessIdentity: ''
-          OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
-        Enabled: "true"
-        Aliases:
-          - !Ref URL
-        DefaultRootObject: index.html
-        CustomErrorResponses:
-          - ErrorCode: 404
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-          - ErrorCode: 403
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-        HttpVersion: http2
-        ViewerCertificate:
-          AcmCertificateArn: !Ref CertificateARN
-          MinimumProtocolVersion: TLSv1.2_2021
-          SslSupportMethod: sni-only
-        DefaultCacheBehavior:
-          AllowedMethods:
-            - DELETE
-            - GET
-            - HEAD
-            - OPTIONS
-            - PATCH
-            - POST
-            - PUT
-          Compress: true
-          TargetOriginId: !Ref URL
-          ForwardedValues:
-            QueryString: 'false'
-            Cookies:
-              Forward: none
-          ViewerProtocolPolicy: redirect-to-https
-  DNS: 
-    Type: AWS::Route53::RecordSetGroup
-    Properties:
-      HostedZoneId: Z09563031TSQJ6OIZDHEE
-      RecordSets:
-        - Name: !Ref URL
-          Type: A
-          AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2
-            DNSName: !GetAtt CloudFrontDistribution.DomainName
-*/
