@@ -1,7 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 
-public class DataApiProps : StackProps
+public class DataApiProps
 {
   public Alias FunctionAlias { get; set; }
 

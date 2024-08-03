@@ -1,8 +1,8 @@
 using Amazon.CDK;
 
-internal class StaticWebsiteStackProps : StackProps
+internal class StaticWebsiteProps
 {
-  public string BucketName { get; set; }
+  public IEnvironment Env { get; set; }
 
   public string WebsiteUrl { get; set; }
 

@@ -8,19 +8,20 @@ using Amazon.CDK.AWS.Route53.Targets;
 using Amazon.CDK.AWS.S3;
 using Constructs;
 
-namespace BwcomCdk.FunctionsStack
+namespace BwcomCdk.Constructs
 {
-  public class StaticWebsiteStack : Stack
+  public class StaticWebsite : Construct
   {
-    internal StaticWebsiteStack(Construct scope, string id, StaticWebsiteStackProps props) : base(scope, id, props)
+    internal StaticWebsite(Construct scope, string id, StaticWebsiteProps props) : base(scope, id)
     {
-      var bucket = new Bucket(this, "StaticWebsite", new BucketProps
+      var bucket = new Bucket(this, "ContentBucket", new BucketProps
       {
         AccessControl = BucketAccessControl.PRIVATE,
-        BucketName = props.BucketName
+        BucketName = props.WebsiteUrl,
+        RemovalPolicy = RemovalPolicy.DESTROY
       });
 
-      var oac = new CfnOriginAccessControl(this, "BwcomWebsiteOac", new CfnOriginAccessControlProps
+      var oac = new CfnOriginAccessControl(this, "OAC", new CfnOriginAccessControlProps
       {
         OriginAccessControlConfig = new CfnOriginAccessControl.OriginAccessControlConfigProperty
         {
@@ -32,7 +33,7 @@ namespace BwcomCdk.FunctionsStack
         }
       });
 
-      var webDistro = new CfnDistribution(this, "BwcomDistro", new CfnDistributionProps
+      var webDistro = new CfnDistribution(this, "Distro", new CfnDistributionProps
       {
         DistributionConfig = new CfnDistribution.DistributionConfigProperty
         {
@@ -125,11 +126,11 @@ namespace BwcomCdk.FunctionsStack
 
       bucket.AddToResourcePolicy(policyStatement);
 
-      var zone = HostedZone.FromLookup(this, "BwcomZone", new HostedZoneProviderProps
+      var zone = HostedZone.FromLookup(this, "Zone", new HostedZoneProviderProps
       {
         DomainName = "brentwoodle.com"
       });
-      new CfnRecordSetGroup(this, "BwcomStaticRecord", new CfnRecordSetGroupProps
+      new CfnRecordSetGroup(this, "Record", new CfnRecordSetGroupProps
       {
         HostedZoneId = zone.HostedZoneId,
         RecordSets = new[]

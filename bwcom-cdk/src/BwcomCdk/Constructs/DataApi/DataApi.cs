@@ -5,16 +5,16 @@ using Amazon.CDK.AWS.Route53;
 using Amazon.CDK.AWS.CertificateManager;
 using Amazon.CDK.AWS.Route53.Targets;
 
-namespace BwcomCdk
+namespace BwcomCdk.Constructs
 {
-  public class DataApiStack : Stack
+  public class DataApi : Construct
   {
-    internal DataApiStack(Construct scope, string id, DataApiProps props) : base(scope, id, props)
+    internal DataApi(Construct scope, string id, DataApiProps props) : base(scope, id)
     {
-      var zone = HostedZone.FromLookup(this, "BwcomZone", new HostedZoneProviderProps() { DomainName = "brentwoodle.com" });
+      var zone = HostedZone.FromLookup(this, "Zone", new HostedZoneProviderProps() { DomainName = "brentwoodle.com" });
       var cert = Certificate.FromCertificateArn(this, $"BwcomCert", "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e");
 
-      var api = new LambdaRestApi(this, "BwcomApi", new LambdaRestApiProps
+      var api = new LambdaRestApi(this, "DataApi", new LambdaRestApiProps
       {
         Handler = props.FunctionAlias,
         DomainName = new DomainNameProps
@@ -31,7 +31,7 @@ namespace BwcomCdk
 
       CreateApiResources(api);
 
-      new ARecord(this, "BwcomApiDns", new ARecordProps
+      new ARecord(this, "ApiDns", new ARecordProps
       {
         Zone = zone,
         RecordName = props.ApiSubdomain,

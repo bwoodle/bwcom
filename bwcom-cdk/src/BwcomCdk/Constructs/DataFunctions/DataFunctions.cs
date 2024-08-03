@@ -4,15 +4,15 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
-namespace BwcomCdk.FunctionsStack
+namespace BwcomCdk.Constructs
 {
-  public class DataFunctionsStack : Stack
+  public class DataFunctions : Construct
   {
     public readonly Alias CurrentVersion;
 
-    internal DataFunctionsStack(Construct scope, string id, DataFunctionProps props) : base(scope, id, props)
+    internal DataFunctions(Construct scope, string id, DataFunctionProps props) : base(scope, id)
     {
-      var fn = new Function(this, "BwcomDataFn", new FunctionProps
+      var fn = new Function(this, "HelloWorld", new FunctionProps
       {
         Runtime = Runtime.NODEJS_20_X, // Choose any supported Node.js runtime
         Code = Code.FromAsset("lambda"), // Points to the lambda directory
@@ -23,7 +23,7 @@ namespace BwcomCdk.FunctionsStack
         }
       });
 
-      CurrentVersion = new Alias(this, "BwcomDataLatest", new AliasProps
+      CurrentVersion = new Alias(this, "LatestVersion", new AliasProps
       {
         AliasName = "latest",
         Description = "Latest data integration",
