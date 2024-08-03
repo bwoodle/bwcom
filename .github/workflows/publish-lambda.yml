@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths: 'bwcom-backend-cdk/lambda/**'
+    paths: 'bwcom-cdk/lambda/**'
 
 jobs:
   deploy_lambda_stack:
@@ -20,10 +20,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Install dependencies
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: dotnet restore src
       - name: Build CDK
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: dotnet build src
 
       - name: Set AWS credentials
@@ -34,7 +34,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy BwcomTestFunctions
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: |
           npm install -g aws-cdk
           cdk deploy BwcomTestFunctions

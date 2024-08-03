@@ -33,14 +33,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Install dependencies
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: dotnet restore src
       - name: Build CDK
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: dotnet build src
 
       - name: Deploy BwcomProdFunctions
-        working-directory: ./bwcom-backend-cdk
+        working-directory: ./bwcom-cdk
         run: |
           npm install -g aws-cdk
           cdk deploy BwcomProdFunctions
