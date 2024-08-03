@@ -1,4 +1,4 @@
-name: Publish to Test Environment
+name: Publish Static website to Test Environment
 
 on:
   workflow_dispatch:
@@ -37,4 +37,5 @@ jobs:
 
       - name: Invalidate CloudFront Cache
         run: |
-          aws cloudfront create-invalidation --distribution-id E2779F11YS365A --paths '/*'
+          distro = aws ssm get-parameter --name "/bwcom/test-distribution-id" --query "Parameter.Value" --output text
+          aws cloudfront create-invalidation --distribution-id $distro --paths '/*'
