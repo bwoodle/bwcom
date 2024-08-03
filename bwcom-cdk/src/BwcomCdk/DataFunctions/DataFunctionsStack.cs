@@ -4,7 +4,7 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
-namespace CdkBwcomBackend.FunctionsStack
+namespace BwcomCdk.FunctionsStack
 {
   public class DataFunctionsStack : Stack
   {

@@ -1,7 +1,7 @@
 ﻿using Amazon.CDK;
-using CdkBwcomBackend.FunctionsStack;
+using BwcomCdk.FunctionsStack;
 
-namespace CdkBwcomBackend
+namespace BwcomCdk
 {
   sealed class Program
   {

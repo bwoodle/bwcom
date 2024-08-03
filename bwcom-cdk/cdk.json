@@ -1,5 +1,5 @@
 {
-  "app": "dotnet run --project src/CdkBwcomBackend/CdkBwcomBackend.csproj",
+  "app": "dotnet run --project src/BwcomCdk/BwcomCdk.csproj",
   "watch": {
     "include": [
       "**"

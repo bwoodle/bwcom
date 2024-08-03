@@ -5,7 +5,7 @@ using Amazon.CDK.AWS.Route53;
 using Amazon.CDK.AWS.CertificateManager;
 using Amazon.CDK.AWS.Route53.Targets;
 
-namespace CdkBwcomBackend
+namespace BwcomCdk
 {
   public class DataApiStack : Stack
   {

@@ -8,7 +8,7 @@ using Amazon.CDK.AWS.Route53.Targets;
 using Amazon.CDK.AWS.S3;
 using Constructs;
 
-namespace CdkBwcomBackend.FunctionsStack
+namespace BwcomCdk.FunctionsStack
 {
   public class StaticWebsiteStack : Stack
   {
@@ -115,7 +115,7 @@ namespace CdkBwcomBackend.FunctionsStack
             new Dictionary<string, object>
             {
               {
-                "AWS:SourceArn", 
+                "AWS:SourceArn",
                 $"arn:aws:cloudfront::{props.Env.Account}:distribution/{webDistro.AttrId}"
               }
             }
@@ -126,8 +126,8 @@ namespace CdkBwcomBackend.FunctionsStack
       bucket.AddToResourcePolicy(policyStatement);
 
       var zone = HostedZone.FromLookup(this, "BwcomZone", new HostedZoneProviderProps
-      { 
-        DomainName = "brentwoodle.com" 
+      {
+        DomainName = "brentwoodle.com"
       });
       new CfnRecordSetGroup(this, "BwcomStaticRecord", new CfnRecordSetGroupProps
       {
