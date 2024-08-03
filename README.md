@@ -2,37 +2,12 @@
 ## Setup from scratch
 ```
 1. `aws configure` and set access keys for `CliUser` IAM User (User must be created, of course)
-2. Follow BWCom Network Infrastructure deployment instructions
-3. Follow BWCom Static Website Infrastructure deployment instructions
-4. Follow BWCom Static Website Application deployment instructions
-5. Follow BWCom Backend deployment instructions
+2. Follow BWCom full deployment from CDK
+3. If necessary, trigger publish-test-bucket and publish-lambda pipelines from Github actions to populate Test site
+4. If necessary, trigger deploy-prod pipeline from github actions to populate Prod site
 ```
 
-## BWCom Network Infrastructure
-
-### Development
-1. Edit Cloudformation stacks in `cfn/bwcom-network`. `bwcom-network.yml` is the Root development stack
-
-### Deployment
-```
-cd cfn\bwcom-network
-aws cloudformation package --template-file bwcom-network.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com
-aws cloudformation deploy --template-file packaged.yml --stack-name bwcom-network --role-arn arn:aws:iam::685339315795:role/CfnDeploymentRole
-```
-
-## BWCom Static Website Infrastructure
-
-### Development
-1. Edit Cloudformation stacks in `cfn/bwcom-static`. `bwcom-static.yml` is the Root development stack
-
-### Deployment
-```
-cd cfn\bwcom-static
-aws cloudformation package --template-file bwcom-static.yml --output-template packaged.yml --s3-bucket cfn-brentwoodle.com
-aws cloudformation deploy --template-file packaged.yml --stack-name bwcom --role-arn arn:aws:iam::685339315795:role/CfnDeploymentRole
-```
-
-## BWCom Static Website Application
+## BWCom Static Angular Website
 
 ### Development
 1. Visual Studio Code
@@ -51,23 +26,14 @@ npm run build
 npm run serve
 ```
 
-### Deployment
-1. Commit to `main` branch
-2. `publish-test-bucket` pipeline will *automatically* trigger and and deploy to `test.brentwoodle.com`
-3. `deploy-prod` pipeline must be *manually* triggered to deploy to `brentwoodle.com`
-
-## BWCom Backend Application
-
-### Development
-1. Visual Studio 2022 Community edition
-2. Open sln `bwcom-backend\cdk-bwcom-backend\src\CdkBwcomBackend.sln`
+## BWCom full deployment
 
 ### Deployment
-1. cd `bwcom-backend\cdk-bwcom-backend`
+1. cd `bwcom-cdk`
 2. `dotnet build sln`
 3. `cdk synth`
-4. `cdk deploy`
+4. `cdk deploy --all`
 
 ### Teardown
-1. cd `bwcom-backend\cdk-bwcom-backend`
-2. `cdk destroy`
+1. cd `bwcom-cdk`
+2. `cdk destroy --all`
