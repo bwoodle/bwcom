@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths: 'bwcom-cdk/lambda/**'
+    paths: 'bwcom-cdk/**'
 
 jobs:
   deploy_lambda_stack:
