@@ -23,7 +23,7 @@ jobs:
           aws s3 sync s3://test.brentwoodle.com s3://brentwoodle.com
       - name: Invalidate CloudFront Cache
         run: |
-          distro = aws ssm get-parameter --name "/bwcom/prod-distribution-id" --query "Parameter.Value" --output text
+          distro = $(aws ssm get-parameter --name "/bwcom/prod-distribution-id" --query "Parameter.Value" --output text)
           aws cloudfront create-invalidation --distribution-id $distro --paths '/*'
       
       - name: Checkout

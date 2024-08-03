@@ -37,5 +37,5 @@ jobs:
 
       - name: Invalidate CloudFront Cache
         run: |
-          distro = aws ssm get-parameter --name "/bwcom/test-distribution-id" --query "Parameter.Value" --output text
+          distro = $(aws ssm get-parameter --name "/bwcom/test-distribution-id" --query "Parameter.Value" --output text)
           aws cloudfront create-invalidation --distribution-id $distro --paths '/*'
