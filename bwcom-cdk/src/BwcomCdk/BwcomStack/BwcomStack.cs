@@ -6,24 +6,29 @@ internal class BwcomStack : Stack
 {
   public BwcomStack(Construct scope, string id, BwcomProps props) : base(scope, id, props)
   {
-    new StaticWebsite(this, "Website", new StaticWebsiteProps
+    if (props.DeployWebsite)
     {
-      Env = props.Env,
-      WebsiteUrl = props.WebsiteUrl,
-      DistroParamName = props.DistroParamName,
-      CertificateArn = props.CertificateArn
-    });
+      new StaticWebsite(this, "Website", new StaticWebsiteProps
+      {
+        Env = props.Env,
+        Id = props.Id,
+        WebsiteDomain = props.WebsiteDomain,
+        DistroParamName = props.DistroParamName,
+        CertificateArn = props.CertificateArn
+      });
+    }
 
     var testFns = new DataFunctions(this, "DataFunctions", new DataFunctionProps
     {
-      AllowedOrigin = props.WebsiteOrigin
+      AllowedOrigin = props.AllowedOrigin
     });
 
     new DataApi(this, "DataApi", new DataApiProps
     {
       FunctionAlias = testFns.CurrentVersion,
-      Origin = props.WebsiteOrigin,
-      ApiSubdomain = props.ApiSubdomain
+      AllowedOrigin = props.AllowedOrigin,
+      ApiSubdomain = props.ApiSubdomain,
+      CertificateArn = props.CertificateArn
     });
   }
 }

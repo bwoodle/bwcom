@@ -18,7 +18,7 @@ namespace BwcomCdk.Constructs
       var bucket = new Bucket(this, "ContentBucket", new BucketProps
       {
         AccessControl = BucketAccessControl.PRIVATE,
-        BucketName = props.WebsiteUrl,
+        BucketName = props.Id,
         RemovalPolicy = RemovalPolicy.DESTROY
       });
 
@@ -26,7 +26,7 @@ namespace BwcomCdk.Constructs
       {
         OriginAccessControlConfig = new CfnOriginAccessControl.OriginAccessControlConfigProperty
         {
-          Name = props.WebsiteUrl,
+          Name = props.Id,
           OriginAccessControlOriginType = "s3",
           SigningBehavior = "always",
           SigningProtocol = "sigv4",
@@ -43,7 +43,7 @@ namespace BwcomCdk.Constructs
             new CfnDistribution.OriginProperty
             {
               DomainName = bucket.BucketDomainName,
-              Id = props.WebsiteUrl,
+              Id = props.Id,
               S3OriginConfig = new CfnDistribution.S3OriginConfigProperty
               {
                 OriginAccessIdentity = ""
@@ -52,7 +52,7 @@ namespace BwcomCdk.Constructs
             }
           },
           Enabled = true,
-          Aliases = new[] { props.WebsiteUrl },
+          Aliases = new[] { props.WebsiteDomain },
           DefaultRootObject = "index.html",
           CustomErrorResponses = new[]
           {
@@ -78,7 +78,7 @@ namespace BwcomCdk.Constructs
           },
           DefaultCacheBehavior = new CfnDistribution.DefaultCacheBehaviorProperty
           {
-            TargetOriginId = props.WebsiteUrl,
+            TargetOriginId = props.Id,
             ViewerProtocolPolicy = "redirect-to-https",
             Compress = true,
             AllowedMethods = new[]
@@ -138,7 +138,7 @@ namespace BwcomCdk.Constructs
         {
           new CfnRecordSetGroup.RecordSetProperty
           {
-            Name = props.WebsiteUrl,
+            Name = props.Id,
             Type = "A",
             AliasTarget = new CfnRecordSetGroup.AliasTargetProperty
             {

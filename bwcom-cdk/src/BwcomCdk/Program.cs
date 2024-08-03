@@ -13,24 +13,45 @@ namespace BwcomCdk
         Region = "us-east-1"
       };
 
+      // Some of these resources won't be used, but I can use them to develop locally
+      // new BwcomStack(app, "LocalDevBackend", new BwcomProps
+      // {
+      //   Env = bwcomEnv,
+      //   Id = "dev.brentwoodle.com",
+      //   CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
+      //   // Website Properties
+      //   DeployWebsite = false,
+      //   WebsiteDomain = "",
+      //   DistroParamName = "",
+      //   // Api Properties
+      //   ApiSubdomain = "bwcom-dev-api",
+      //   AllowedOrigin = "https://localhost:4200",
+      // });
+
       new BwcomStack(app, "TestDeployment", new BwcomProps
       {
         Env = bwcomEnv,
-        WebsiteUrl = "test.brentwoodle.com",
-        WebsiteOrigin = "https://test.brentwoodle.com",
-        ApiSubdomain = "bwcom-test-api",
+        Id = "test.brentwoodle.com",
+        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
+        // Website Properties
+        WebsiteDomain = "test.brentwoodle.com",
         DistroParamName = "/bwcom/test-distribution-id",
-        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
+        // Api Properties
+        ApiSubdomain = "bwcom-test-api",
+        AllowedOrigin = "https://test.brentwoodle.com"
       });
 
       new BwcomStack(app, "ProdDeployment", new BwcomProps
       {
         Env = bwcomEnv,
-        WebsiteUrl = "brentwoodle.com",
-        WebsiteOrigin = "https://brentwoodle.com",
-        ApiSubdomain = "bwcom-api",
+        Id = "brentwoodle.com",
+        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
+        // Website Properties
+        WebsiteDomain = "brentwoodle.com",
         DistroParamName = "/bwcom/prod-distribution-id",
-        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e"
+        // Api Properties
+        ApiSubdomain = "bwcom-api",
+        AllowedOrigin = "https://brentwoodle.com"
       });
 
       app.Synth();

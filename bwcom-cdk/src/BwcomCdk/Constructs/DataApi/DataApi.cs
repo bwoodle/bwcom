@@ -12,7 +12,7 @@ namespace BwcomCdk.Constructs
     internal DataApi(Construct scope, string id, DataApiProps props) : base(scope, id)
     {
       var zone = HostedZone.FromLookup(this, "Zone", new HostedZoneProviderProps() { DomainName = "brentwoodle.com" });
-      var cert = Certificate.FromCertificateArn(this, $"BwcomCert", "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e");
+      var cert = Certificate.FromCertificateArn(this, "BwcomCert", props.CertificateArn);
 
       var api = new LambdaRestApi(this, "DataApi", new LambdaRestApiProps
       {
@@ -25,7 +25,7 @@ namespace BwcomCdk.Constructs
         Proxy = false,
         DefaultCorsPreflightOptions = new CorsOptions
         {
-          AllowOrigins = new string[] { props.Origin }
+          AllowOrigins = new string[] { props.AllowedOrigin }
         }
       });
 
