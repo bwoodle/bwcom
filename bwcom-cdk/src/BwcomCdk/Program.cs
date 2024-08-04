@@ -14,19 +14,19 @@ namespace BwcomCdk
       };
 
       // Some of these resources won't be used, but I can use them to develop locally
-      // new BwcomStack(app, "LocalDevBackend", new BwcomProps
-      // {
-      //   Env = bwcomEnv,
-      //   Id = "dev.brentwoodle.com",
-      //   CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
-      //   // Website Properties
-      //   DeployWebsite = false,
-      //   WebsiteDomain = "",
-      //   DistroParamName = "",
-      //   // Api Properties
-      //   ApiSubdomain = "bwcom-dev-api",
-      //   AllowedOrigin = "https://localhost:4200",
-      // });
+      new BwcomStack(app, "LocalDevBackend", new BwcomProps
+      {
+        Env = bwcomEnv,
+        Id = "dev.brentwoodle.com",
+        CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
+        // Website Properties
+        DeployWebsite = false,
+        WebsiteDomain = "",
+        DistroParamName = "",
+        // Api Properties
+        ApiSubdomain = "bwcom-dev-api",
+        AllowedOrigin = "http://localhost:4200",
+      });
 
       new BwcomStack(app, "TestDeployment", new BwcomProps
       {

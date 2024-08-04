@@ -14,6 +14,9 @@ export class ApiService {
     if (window.location.hostname == "brentwoodle.com") {
       // Use the production API instead
       this.baseHref = "https://bwcom-api.brentwoodle.com";
+    } else if (window.location.hostname == "localhost") {
+      // Use the development API
+      this.baseHref = "https://bwcom-dev-api.brentwoodle.com";
     }
   }
 
