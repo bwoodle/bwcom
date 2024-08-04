@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ApiService } from './api/api.service';
+import { HelloWorldService } from '../services/hello-world.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -11,9 +11,7 @@ import { Observable } from 'rxjs';
 export class AppComponent {
   public hello: Observable<string>;
 
-  constructor(apiService: ApiService) {
-    this.hello = apiService.getHello();
+  constructor(helloWorldService: HelloWorldService) {
+    this.hello = helloWorldService.getHello();
   }
-
-
 }

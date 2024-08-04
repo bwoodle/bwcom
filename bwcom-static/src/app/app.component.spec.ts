@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-import { ApiService } from './api/api.service';
-import { WINDOW_PROVIDERS } from 'src/utils/window.service';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { WINDOW_PROVIDERS } from 'src/services/window.service';
 
 describe('AppComponent', () => {
   beforeEach(async () => {

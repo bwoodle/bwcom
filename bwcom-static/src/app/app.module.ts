@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { WINDOW_PROVIDERS } from 'src/utils/window.service';
+import { WINDOW_PROVIDERS } from 'src/services/window.service';
 
 @NgModule({
   declarations: [
