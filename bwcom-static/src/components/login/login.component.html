@@ -1,0 +1,9 @@
+<div *ngIf="idToken">
+  <p>logged in as {{ email }}</p>
+  <p>
+    <button (click)="logout()">Logout</button>
+  </p>
+</div>
+<div *ngIf="!idToken">
+  <button (click)="login()">Login</button>
+</div>
