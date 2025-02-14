@@ -1,5 +1,6 @@
 using Amazon.CDK;
 using BwcomCdk.Constructs;
+using BwcomCdk.Constructs.RedirectWebsite;
 using Constructs;
 
 internal class BwcomStack : Stack
@@ -15,6 +16,17 @@ internal class BwcomStack : Stack
         WebsiteDomain = props.WebsiteDomain,
         DistroParamName = props.DistroParamName,
         CertificateArn = props.CertificateArn
+      });
+    }
+
+    if (props.CreateRedirectWebsite)
+    {
+      new RedirectWebsite(this, "RedirectWebsite", new RedirectWebsiteProps
+      {
+        Env = props.Env,
+        CertificateArn = props.CertificateArn,
+        RedirectSourceDomain = props.RedirectSourceDomain,
+        RedirectTargetDomain = props.WebsiteDomain
       });
     }
 

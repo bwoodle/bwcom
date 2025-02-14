@@ -30,7 +30,7 @@ npm run serve
 
 ### Deployment
 1. cd `bwcom-cdk`
-2. `dotnet build sln`
+2. `dotnet build src`
 3. `cdk synth`
 4. `cdk deploy --all`
 
