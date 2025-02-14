@@ -49,6 +49,9 @@ namespace BwcomCdk
         // Website Properties
         WebsiteDomain = "brentwoodle.com",
         DistroParamName = "/bwcom/prod-distribution-id",
+        // Redirect Website Properties
+        CreateRedirectWebsite = true,
+        RedirectSourceDomain = "www.brentwoodle.com",
         // Api Properties
         ApiSubdomain = "bwcom-api",
         AllowedOrigin = "https://brentwoodle.com"
