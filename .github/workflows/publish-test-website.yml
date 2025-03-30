@@ -33,7 +33,7 @@ jobs:
 
       - name: Copy files to the test website with the AWS CLI
         run: |
-          aws s3 sync ./bwcom-static/dist/bwcom s3://test.brentwoodle.com
+          aws s3 sync ./bwcom-static/dist/bwcom/browser s3://test.brentwoodle.com
 
       - name: Invalidate CloudFront Cache
         run: |
