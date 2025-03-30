@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
-import { filter } from 'rxjs';
+import { filter, tap } from 'rxjs';
 
 const MODULES: any[] = [CommonModule, MatFormFieldModule, FormsModule, ReactiveFormsModule];
 
@@ -17,49 +17,25 @@ const MODULES: any[] = [CommonModule, MatFormFieldModule, FormsModule, ReactiveF
 })
 export class LoginComponent {
   private oAuthService = inject(OAuthService);
-  public profile = "";
+  public idToken: string = "";
+  public accessToken: string = "";
+  public email: string = "";
 
-  constructor(private oauthService: OAuthService) {
-    const authConfig: AuthConfig = {
-      issuer: 'https://accounts.google.com',
-      redirectUri: window.location.origin,
-      clientId: '321345183214-bdlfi5tb382p40j8jh7uefsmblam6b1h.apps.googleusercontent.com',
-      responseType: 'code',
-      scope: 'openid profile email',
-      showDebugInformation: true,
-      strictDiscoveryDocumentValidation: false
-    };
-    this.oAuthService.configure(authConfig);
-
-    // Automatically load user profile
-    this.oauthService.events
-      .pipe(filter((e) => e.type === 'token_received'))
-      .subscribe((_) => this.oauthService.loadUserProfile());
+  constructor() {
+    this.oAuthService.events.subscribe(e => {
+      this.checkAuth();
+    })
   }
 
-  get email(): string {
-    const claims = this.oauthService.getIdentityClaims();
-    if (!claims) return '';
-    return claims['email'];
-  }
-
-  get idToken(): string {
-    return this.oauthService.getIdToken();
-  }
-
-  get accessToken(): string {
-    return this.oauthService.getAccessToken();
+  private checkAuth(): void {
+    this.email = this.oAuthService.hasValidIdToken() ? this.oAuthService.getIdentityClaims()["email"] : "";
   }
 
   login() {
-    this.oauthService.loadDiscoveryDocumentAndLogin();
+    this.oAuthService.initLoginFlow();
   }
 
   logout() {
-    this.oauthService.logOut();
-  }
-
-  refresh() {
-    this.oauthService.refreshToken();
+    this.oAuthService.logOut();
   }
 }

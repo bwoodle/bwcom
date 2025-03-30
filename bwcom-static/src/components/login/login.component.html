@@ -1,9 +1,9 @@
-<div *ngIf="idToken">
+<div *ngIf="email">
   <p>logged in as {{ email }}</p>
   <p>
     <button (click)="logout()">Logout</button>
   </p>
 </div>
-<div *ngIf="!idToken">
+<div *ngIf="!email">
   <button (click)="login()">Login</button>
 </div>
