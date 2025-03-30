@@ -5,6 +5,6 @@ exports.handler = async (_event, _context) => {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": process.env.origin
     },
-    body: JSON.stringify({ message: "Hello, World18" }),
+    body: JSON.stringify({ message: "Hello, World19" }),
   };
 };
