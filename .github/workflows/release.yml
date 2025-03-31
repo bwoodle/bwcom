@@ -3,7 +3,7 @@ name: Publish updates to Prod Environment
 on:
   workflow_dispatch:
   push:
-    tags: ['v.*']
+    tags: ['v**']
 
 jobs:
   deploy_to_prod:
