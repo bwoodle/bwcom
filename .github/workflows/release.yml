@@ -49,4 +49,4 @@ jobs:
       - name: Update Version
         run: |
           version=$(git rev-parse --short ${{ github.ref_name }})
-          aws ssm put-parameter --name "/bwcom/prod/version" --value $version
+          aws ssm put-parameter --name "/bwcom/prod/version" --value $version --type String
