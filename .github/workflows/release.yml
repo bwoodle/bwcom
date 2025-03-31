@@ -17,14 +17,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
-      - name: Copy files from test to prod with the AWS CLI
-        run: |
-          aws s3 sync s3://test.brentwoodle.com s3://brentwoodle.com
-      - name: Invalidate CloudFront Cache
-        run: |
-          distro=$(aws ssm get-parameter --name "/bwcom/prod-distribution-id" --query "Parameter.Value" --output text)
-          aws cloudfront create-invalidation --distribution-id $distro --paths '/*'
       
       - name: Checkout
         uses: actions/checkout@v3
@@ -45,3 +37,16 @@ jobs:
         run: |
           npm install -g aws-cdk
           cdk deploy ProdDeployment
+
+      - name: Copy files from test to prod with the AWS CLI
+        run: |
+          aws s3 sync s3://test.brentwoodle.com s3://brentwoodle.com
+      - name: Invalidate CloudFront Cache
+        run: |
+          distro=$(aws ssm get-parameter --name "/bwcom/prod/distribution-id" --query "Parameter.Value" --output text)
+          aws cloudfront create-invalidation --distribution-id $distro --paths '/*'
+    
+      - name: Update Version
+        run: |
+          version=$(git rev-parse --short ${{ github.ref_name }})
+          aws ssm put-parameter --name "/bwcom/prod/version" --value $version

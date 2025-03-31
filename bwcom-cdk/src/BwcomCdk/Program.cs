@@ -35,7 +35,7 @@ namespace BwcomCdk
         CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
         // Website Properties
         WebsiteDomain = "test.brentwoodle.com",
-        DistroParamName = "/bwcom/test-distribution-id",
+        DistroParamName = "/bwcom/test/distribution-id",
         // Api Properties
         ApiSubdomain = "bwcom-test-api",
         AllowedOrigin = "https://test.brentwoodle.com"
@@ -48,7 +48,7 @@ namespace BwcomCdk
         CertificateArn = "arn:aws:acm:us-east-1:685339315795:certificate/3ab367af-a156-481c-934b-47e65da78c4e",
         // Website Properties
         WebsiteDomain = "brentwoodle.com",
-        DistroParamName = "/bwcom/prod-distribution-id",
+        DistroParamName = "/bwcom/prod/distribution-id",
         // Redirect Website Properties
         CreateRedirectWebsite = true,
         RedirectSourceDomain = "www.brentwoodle.com",
