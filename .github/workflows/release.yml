@@ -2,8 +2,8 @@ name: Publish updates to Prod Environment
 
 on:
   workflow_dispatch:
-  release:
-    types: [created]
+  push:
+    tags: ['v.*']
 
 jobs:
   deploy_to_prod:
