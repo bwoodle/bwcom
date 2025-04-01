@@ -4,25 +4,14 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
-import { WINDOW_PROVIDERS } from './services/window.service';
+import { WINDOW_PROVIDERS } from './app/services/window.service';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter, Route } from '@angular/router';
-import { RaceHistoryComponent } from './components/race-history/race-history.component';
+import { provideRouter } from '@angular/router';
+import { ROUTES } from './routes';
 
 if (environment.production) {
   enableProdMode();
 }
-
-export const routes: Route[] = [
-  {
-    path: '',
-    component: RaceHistoryComponent,
-  },
-  {
-    path: '**',
-    redirectTo: '',
-  },
-];
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -30,6 +19,6 @@ bootstrapApplication(AppComponent, {
     provideOAuthClient(),
     WINDOW_PROVIDERS,
     provideAnimationsAsync(),
-    provideRouter(routes)
+    provideRouter(ROUTES)
   ]
 })

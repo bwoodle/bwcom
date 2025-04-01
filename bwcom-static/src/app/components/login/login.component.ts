@@ -3,8 +3,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
-import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
-import { filter, tap } from 'rxjs';
+import { OAuthService } from 'angular-oauth2-oidc';
 
 const MODULES: any[] = [CommonModule, MatFormFieldModule, FormsModule, ReactiveFormsModule];
 
