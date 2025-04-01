@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RaceHistoryComponent } from './race-history.component';
 import { provideHttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { WINDOW, WINDOW_PROVIDERS } from 'src/services/window.service';
-import { VersionService } from 'src/services/version.service';
+import { WINDOW, WINDOW_PROVIDERS } from '../../services/window.service';
+import { VersionService } from '../../services/version.service';
 
 describe('RaceHistoryComponent', () => {
   let component: RaceHistoryComponent;

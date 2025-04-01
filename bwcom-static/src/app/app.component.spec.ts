@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
-import { WINDOW, WINDOW_PROVIDERS } from 'src/services/window.service';
+import { WINDOW, WINDOW_PROVIDERS } from './services/window.service';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { CommonModule } from '@angular/common';
-import { BaseHrefService } from 'src/services/base-href.service';
+import { BaseHrefService } from './services/base-href.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
