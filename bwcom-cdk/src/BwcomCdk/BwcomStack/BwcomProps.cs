@@ -2,16 +2,16 @@ using Amazon.CDK;
 
 public class BwcomProps : StackProps
 {
-  public string Id { get; set; }
-  public string CertificateArn { get; set; }
+  public required string EnvName { get; init; }
+  public required string Id { get; init; }
+  public required string CertificateArn { get; init; }
   // Website Properties
-  public bool DeployWebsite { get; set; } = true;
-  public string WebsiteDomain { get; set; }
-  public string DistroParamName { get; set; }
+  public required bool DeployWebsite { get; init; } = true;
+  public required string WebsiteDomain { get; init; }
   // Second Website for www. redirect
-  public bool CreateRedirectWebsite { get; set; } = false;
-  public string RedirectSourceDomain { get; set; }
+  public required bool CreateRedirectWebsite { get; init; } = false;
+  public required string RedirectSourceDomain { get; init; }
   // Api Properties
-  public string ApiSubdomain { get; set; }
-  public string AllowedOrigin { get; set; }
+  public required string ApiSubdomain { get; init; }
+  public required string AllowedOrigin { get; init; }
 }

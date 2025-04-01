@@ -152,7 +152,7 @@ namespace BwcomCdk.Constructs
       new StringParameter(this, "DistroId", new StringParameterProps
       {
         Description = "CloudFront distribution ID",
-        ParameterName = props.DistroParamName,
+        ParameterName = $"/bwcom/{props.EnvName}/distribution-id",
         StringValue = webDistro.AttrId
       });
     }

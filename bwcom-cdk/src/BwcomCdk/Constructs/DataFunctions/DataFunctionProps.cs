@@ -2,5 +2,7 @@ using Amazon.CDK;
 
 internal class DataFunctionProps
 {
-  public string AllowedOrigin { get; set; }
+  public required IEnvironment Env { get; init; }
+  public required string AllowedOrigin { get; init; }
+  public required string EnvName { get; init; }
 }

@@ -12,9 +12,9 @@ internal class BwcomStack : Stack
       new StaticWebsite(this, "Website", new StaticWebsiteProps
       {
         Env = props.Env,
+        EnvName = props.EnvName,
         Id = props.Id,
         WebsiteDomain = props.WebsiteDomain,
-        DistroParamName = props.DistroParamName,
         CertificateArn = props.CertificateArn
       });
     }
@@ -32,7 +32,9 @@ internal class BwcomStack : Stack
 
     var testFns = new DataFunctions(this, "DataFunctions", new DataFunctionProps
     {
-      AllowedOrigin = props.AllowedOrigin
+      Env = props.Env,
+      AllowedOrigin = props.AllowedOrigin,
+      EnvName = props.EnvName,
     });
 
     new DataApi(this, "DataApi", new DataApiProps

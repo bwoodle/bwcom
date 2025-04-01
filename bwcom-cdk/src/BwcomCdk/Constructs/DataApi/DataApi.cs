@@ -41,8 +41,8 @@ namespace BwcomCdk.Constructs
 
     private void CreateApiResources(IRestApi api)
     {
-      var helloResource = api.Root.AddResource("hello");
-      helloResource.AddMethod("GET");
+      var versionResource = api.Root.AddResource("version");
+      versionResource.AddMethod("GET");
     }
   }
 }
