@@ -36,7 +36,7 @@ jobs:
         working-directory: ./bwcom-cdk
         run: |
           npm install -g aws-cdk
-          cdk deploy ProdDeployment
+          cdk deploy ProdDeployment --require-approval never
 
       - name: Copy files from test to prod with the AWS CLI
         run: |
