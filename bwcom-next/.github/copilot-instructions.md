@@ -1,0 +1,3 @@
+- Keep communication concise and focused.
+- Follow development best practices.
+- Recommend changes in design patterns when appropriate.
