@@ -1,16 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
 import { map, Observable } from 'rxjs';
 import { VersionService } from './services/version.service';
+import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
+import { LoginComponent } from './components/login/login.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  imports: [RouterOutlet, CommonModule]
+  imports: [RouterOutlet, LoginComponent, CommonModule]
 })
 export class AppComponent {
   private oAuthService = inject(OAuthService);
@@ -19,11 +20,11 @@ export class AppComponent {
   public environment: Observable<string>;
 
   constructor() {
-    this.oAuthService.configure(authConfig);
-    this.oAuthService.loadDiscoveryDocumentAndTryLogin();
     const v = this.versionService.getVersion();
     this.version = v.pipe(map(v => v.version));
     this.environment = v.pipe(map(v => v.environment));
+    this.oAuthService.configure(authConfig);
+    this.oAuthService.loadDiscoveryDocumentAndTryLogin();
   }
 }
 

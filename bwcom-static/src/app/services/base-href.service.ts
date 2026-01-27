@@ -7,7 +7,6 @@ import { WINDOW } from './window.service';
 export class BaseHrefService {
   public baseHref = "https://bwcom-test-api.brentwoodle.com";
   constructor(@Inject(WINDOW) private window: Window) {
-    console.log(`base: ${this.window.location.hostname}`);
     if (this.window.location.hostname == "brentwoodle.com") {
       // Use the production API instead
       this.baseHref = "https://bwcom-api.brentwoodle.com";

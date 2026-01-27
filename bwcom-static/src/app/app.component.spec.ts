@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
-import { WINDOW, WINDOW_PROVIDERS } from './services/window.service';
-import { provideOAuthClient } from 'angular-oauth2-oidc';
+import { WINDOW_PROVIDERS } from './services/window.service';
 import { CommonModule } from '@angular/common';
 import { BaseHrefService } from './services/base-href.service';
 
@@ -16,8 +15,7 @@ describe('AppComponent', () => {
       providers: [
         HttpClient, WINDOW_PROVIDERS,
         BaseHrefService,
-        provideHttpClient(),
-        provideOAuthClient()
+        provideHttpClient()
       ]
     }).compileComponents();
 

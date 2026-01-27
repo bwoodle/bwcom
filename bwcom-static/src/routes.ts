@@ -2,7 +2,7 @@ import { Route } from '@angular/router';
 import { RaceHistoryComponent } from './app/components/race-history/race-history.component';
 
 export const ROUTES: Route[] = [
-  { path: '', redirectTo: '/race-history', pathMatch: 'full' },
-  { path: 'race-history', component: RaceHistoryComponent },
-  { path: '**', redirectTo: '/race-history' } // Wildcard route for unmatched paths
+  { path: '', component: RaceHistoryComponent },
+  { path: 'race-history', redirectTo: '', pathMatch: 'full' },
+  { path: '**', redirectTo: '' } // Wildcard route for unmatched paths
 ];
