@@ -20,7 +20,7 @@ namespace BwcomCdk.Constructs
         Handler = "version.handler",
         Environment = new Dictionary<string, string>
         {
-          ["origin"] = props.AllowedOrigin,
+          ["origins"] = props.AllowedOrigins.Length > 0 ? string.Join(",", props.AllowedOrigins) : "",
           ["env"] = props.EnvName
         }
       });

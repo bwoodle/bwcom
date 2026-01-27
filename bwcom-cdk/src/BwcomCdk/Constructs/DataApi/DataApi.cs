@@ -25,7 +25,7 @@ namespace BwcomCdk.Constructs
         Proxy = false,
         DefaultCorsPreflightOptions = new CorsOptions
         {
-          AllowOrigins = new string[] { props.AllowedOrigin }
+          AllowOrigins = props.AllowedOrigins
         }
       });
 

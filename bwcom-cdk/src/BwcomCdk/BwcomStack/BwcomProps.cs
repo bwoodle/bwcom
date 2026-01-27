@@ -13,5 +13,5 @@ public class BwcomProps : StackProps
   public required string RedirectSourceDomain { get; init; }
   // Api Properties
   public required string ApiSubdomain { get; init; }
-  public required string AllowedOrigin { get; init; }
+  public required string[] AllowedOrigins { get; init; }
 }

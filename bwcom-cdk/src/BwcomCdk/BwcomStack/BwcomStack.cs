@@ -33,14 +33,14 @@ internal class BwcomStack : Stack
     var testFns = new DataFunctions(this, "DataFunctions", new DataFunctionProps
     {
       Env = props.Env,
-      AllowedOrigin = props.AllowedOrigin,
+      AllowedOrigins = props.AllowedOrigins,
       EnvName = props.EnvName,
     });
 
     new DataApi(this, "DataApi", new DataApiProps
     {
       FunctionAlias = testFns.CurrentVersion,
-      AllowedOrigin = props.AllowedOrigin,
+      AllowedOrigins = props.AllowedOrigins,
       ApiSubdomain = props.ApiSubdomain,
       CertificateArn = props.CertificateArn
     });

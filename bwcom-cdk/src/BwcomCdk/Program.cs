@@ -27,7 +27,7 @@ namespace BwcomCdk
         RedirectSourceDomain = "",
         // Api Properties
         ApiSubdomain = "bwcom-dev-api",
-        AllowedOrigin = "http://localhost:4200",
+        AllowedOrigins = ["http://localhost:4200", "http://127.0.0.1:4200"],
       });
 
       new BwcomStack(app, "TestDeployment", new BwcomProps
@@ -43,7 +43,7 @@ namespace BwcomCdk
         RedirectSourceDomain = "",
         // Api Properties
         ApiSubdomain = "bwcom-test-api",
-        AllowedOrigin = "https://test.brentwoodle.com"
+        AllowedOrigins = ["https://test.brentwoodle.com"]
       });
 
       new BwcomStack(app, "ProdDeployment", new BwcomProps
@@ -60,7 +60,7 @@ namespace BwcomCdk
         RedirectSourceDomain = "www.brentwoodle.com",
         // Api Properties
         ApiSubdomain = "bwcom-api",
-        AllowedOrigin = "https://brentwoodle.com"
+        AllowedOrigins = ["https://brentwoodle.com"]
       });
 
       app.Synth();
