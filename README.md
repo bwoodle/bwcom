@@ -23,7 +23,7 @@ npm run test
 npm run build
 
 # Local development
-npm run serve
+npm run start
 ```
 
 ## BWCom full deployment
