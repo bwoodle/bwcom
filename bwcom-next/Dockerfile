@@ -1,23 +1,33 @@
-# Use the official Node.js image
-FROM node:18-alpine
-
-# Set working directory
+# Build stage
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
+RUN npm ci --only=production
 
-# Install dependencies
-RUN npm ci
-
-# Copy the rest of the application
+# Copy source and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Expose the port
-EXPOSE 3000
+# Production stage
+FROM node:18-alpine AS runner
+WORKDIR /app
 
-# Start the application
-CMD ["npm", "start"]
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built app and deps
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+
+CMD ["node", "server.js"]

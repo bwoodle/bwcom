@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { TopNavigation } from '@cloudscape-design/components';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -41,8 +40,13 @@ const NavBar: React.FC = () => {
           type: 'menu-dropdown',
           text: session.user?.name || 'User',
           items: [
-            { id: 'signout', text: 'Sign Out', onClick: () => signOut() },
+            { id: 'signout', text: 'Sign Out' },
           ],
+          onItemClick: ({ detail }) => {
+            if (detail.id === 'signout') {
+              signOut();
+            }
+          },
         } : {
           type: 'button',
           text: 'Login',
