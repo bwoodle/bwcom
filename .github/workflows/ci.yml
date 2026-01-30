@@ -41,7 +41,6 @@ jobs:
           docker push 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        working-directory: bwcom-terraform/env/prod
       - name: Terraform Init
         run: terraform init
         working-directory: bwcom-terraform/env/prod
