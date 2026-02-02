@@ -10,12 +10,12 @@
     "photos:thumbs": "mkdir -p public/photos/thumbs && npx sharp -i public/photos/*.jpg -o public/photos/thumbs resize 800"
   },
   "dependencies": {
-    "@cloudscape-design/components": "^3.0.1184",
+    "@cloudscape-design/components": "^3.0.1189",
     "@cloudscape-design/global-styles": "^1.0.50",
     "next": "^15.5.10",
     "next-auth": "^4.24.13",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -23,7 +23,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.5",
+    "eslint-config-next": "16.1.6",
     "sharp-cli": "^4.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
