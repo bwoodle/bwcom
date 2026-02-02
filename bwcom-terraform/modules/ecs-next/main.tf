@@ -214,6 +214,10 @@ resource "aws_ecs_task_definition" "next" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
+  runtime_platform {
+    cpu_architecture        = "ARM64"
+    operating_system_family = "LINUX"
+  }
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   container_definitions = jsonencode([{
     name  = "next-app"

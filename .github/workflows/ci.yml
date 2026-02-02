@@ -27,18 +27,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Login to ECR
         run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 685339315795.dkr.ecr.us-west-2.amazonaws.com
       - name: Build and Push Docker
         run: |
-          docker build -t bwcom-next ./bwcom-next
-          # tag with git sha and push
           SHA=${GITHUB_SHA}
-          docker tag bwcom-next:latest 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA}
-          docker push 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA}
-          # optionally update 'latest' tag in registry
-          docker tag bwcom-next:latest 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest
-          docker push 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest
+          docker buildx build --platform linux/arm64 \
+            -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA} \
+            -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest \
+            ./bwcom-next --push
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Terraform Init

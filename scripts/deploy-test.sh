@@ -29,28 +29,20 @@ for var in NEXTAUTH_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
   fi
 done
 
-echo "Ensuring ECR repository exists: ${ECR_REPO}"
-aws ecr describe-repositories --repository-names "${ECR_REPO}" --region ${REGION} >/dev/null 2>&1 || \
-  aws ecr create-repository --repository-name "${ECR_REPO}" --region ${REGION} >/dev/null
-
-echo "Building Docker image"
-cd bwcom-next
-npm ci
-NEXTAUTH_SECRET="$NEXTAUTH_SECRET" \
-NEXTAUTH_URL="https://test-next.brentwoodle.com" \
-GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
-GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
-npm run build
-
-echo "Building and tagging image: ${FULL_REPO}:latest"
-docker build -t bwcom-next .
-docker tag bwcom-next:latest ${FULL_REPO}:latest
-
 echo "Logging into ECR"
 aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-echo "Pushing image"
-docker push ${FULL_REPO}:latest
+echo "Building and tagging image: ${FULL_REPO}:latest"
+cd bwcom-next
+docker buildx create --use >/dev/null 2>&1 || true
+
+CACHE_DIR="${HOME}/.cache/buildx/bwcom-next"
+mkdir -p "${CACHE_DIR}"
+docker buildx build --platform linux/arm64 \
+  -t ${FULL_REPO}:latest \
+  --cache-from type=local,src=${CACHE_DIR} \
+  --cache-to type=local,dest=${CACHE_DIR},mode=max \
+  . --push
 
 # Terraform apply in test environment
 cd ../bwcom-terraform/env/test
