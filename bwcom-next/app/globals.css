@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Reset default browser spacing so header and content touch cleanly */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Provide consistent page padding inside the main content area */
+main {
+  padding: 1rem 1.25rem;
+}

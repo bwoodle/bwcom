@@ -13,29 +13,24 @@ const NavBar: React.FC = () => {
     <TopNavigation
       identity={{
         href: '/',
-        title: 'BWCom',
+        title: 'Brent Woodle',
       }}
       utilities={[
         {
           type: 'button',
-          text: 'Training Log',
-          onClick: () => router.push('/training-log'),
+          text: 'About Me',
+          onClick: () => router.push('/'),
         },
-        {
-          type: 'button',
-          text: 'Race History',
-          onClick: () => router.push('/race-history'),
-        },
-        {
-          type: 'button',
-          text: 'Reading List',
-          onClick: () => router.push('/reading-list'),
-        },
-        {
-          type: 'button',
-          text: 'Resume',
-          onClick: () => router.push('/resume'),
-        },
+        // {
+        //   type: 'button',
+        //   text: 'Race History',
+        //   onClick: () => router.push('/race-history'),
+        // },
+        // {
+        //   type: 'button',
+        //   text: 'Media',
+        //   onClick: () => router.push('/media'),
+        // },
         session ? {
           type: 'menu-dropdown',
           text: session.user?.name || 'User',
