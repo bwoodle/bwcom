@@ -19,7 +19,7 @@ module "vpc" {
   azs     = ["${var.region}a", "${var.region}b"]
   public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
   private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
-  enable_nat_gateway = true
+  enable_nat_gateway = false
 }
 
 resource "aws_security_group" "alb" {
@@ -262,8 +262,9 @@ resource "aws_ecs_service" "next" {
   desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
-    subnets         = module.vpc.private_subnets
+    subnets         = module.vpc.public_subnets
     security_groups = [aws_security_group.ecs.id]
+    assign_public_ip = true
   }
   load_balancer {
     target_group_arn = aws_lb_target_group.next.arn
