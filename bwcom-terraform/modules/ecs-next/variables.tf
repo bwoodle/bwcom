@@ -58,3 +58,15 @@ variable "create_www_redirect" {
   type        = bool
   default     = false
 }
+
+variable "create_woodle_org_redirect" {
+  description = "If true, create woodle.org and www.woodle.org Route53 records and ALB listener rules to redirect to brentwoodle.com (prod only)"
+  type        = bool
+  default     = false
+}
+
+variable "woodle_org_certificate_arn" {
+  description = "ACM certificate ARN covering woodle.org and www.woodle.org (required when create_woodle_org_redirect is true)"
+  type        = string
+  default     = ""
+}

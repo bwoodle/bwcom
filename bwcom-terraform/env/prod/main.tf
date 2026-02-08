@@ -19,6 +19,8 @@ module "ecs_next" {
   ecr_repository_url = "685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next"
   image_tag = var.image_tag
   create_www_redirect = true
+  create_woodle_org_redirect = true
+  woodle_org_certificate_arn = "arn:aws:acm:us-west-2:685339315795:certificate/9c0eafa3-671f-4bd9-8f73-e053073e881b"
 }
 
 variable "nextauth_secret" {
