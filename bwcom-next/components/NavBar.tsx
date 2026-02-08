@@ -21,6 +21,11 @@ const NavBar: React.FC = () => {
           text: 'About Me',
           onClick: () => router.push('/'),
         },
+        {
+          type: 'button',
+          text: 'Training Log',
+          onClick: () => router.push('/training-log'),
+        },
         // {
         //   type: 'button',
         //   text: 'Race History',
