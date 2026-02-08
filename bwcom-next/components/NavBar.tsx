@@ -36,6 +36,15 @@ const NavBar: React.FC = () => {
         //   text: 'Media',
         //   onClick: () => router.push('/media'),
         // },
+        ...(session?.user?.role === 'admin'
+          ? [
+              {
+                type: 'button' as const,
+                text: 'Admin',
+                onClick: () => router.push('/admin'),
+              },
+            ]
+          : []),
         session ? {
           type: 'menu-dropdown',
           text: session.user?.name || 'User',
