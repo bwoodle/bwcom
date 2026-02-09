@@ -208,6 +208,45 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_iam_role" "ecs_task" {
+  name = "bwcom-next-${var.env}-ecs-task-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "ecs_task_bedrock" {
+  name = "bwcom-next-${var.env}-bedrock-invoke"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
+        ]
+        Resource = [
+          "arn:aws:bedrock:us-*::foundation-model/amazon.nova*",
+          "arn:aws:bedrock:us-*:*:inference-profile/us.amazon.nova*"
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_ecs_task_definition" "next" {
   family                   = "bwcom-next-${var.env}"
   network_mode             = "awsvpc"
@@ -219,6 +258,7 @@ resource "aws_ecs_task_definition" "next" {
     operating_system_family = "LINUX"
   }
   execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
     name  = "next-app"
     image = "${var.ecr_repository_url}:${var.image_tag}"

@@ -10,12 +10,22 @@
     "photos:thumbs": "mkdir -p public/photos/thumbs && npx sharp -i public/photos/*.jpg -o public/photos/thumbs resize 800"
   },
   "dependencies": {
+    "@cloudscape-design/chat-components": "^1.0.94",
     "@cloudscape-design/components": "^3.0.1189",
     "@cloudscape-design/global-styles": "^1.0.50",
+    "@langchain/aws": "^1.2.2",
+    "@langchain/core": "^1.1.19",
+    "@langchain/langgraph": "^1.1.4",
+    "langchain": "^1.2.18",
     "next": "^15.5.10",
     "next-auth": "^4.24.13",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "overrides": {
+    "@langchain/core": "$@langchain/core"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
