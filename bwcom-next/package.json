@@ -10,6 +10,8 @@
     "photos:thumbs": "mkdir -p public/photos/thumbs && npx sharp -i public/photos/*.jpg -o public/photos/thumbs resize 800"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.985.0",
+    "@aws-sdk/lib-dynamodb": "^3.985.0",
     "@cloudscape-design/chat-components": "^1.0.94",
     "@cloudscape-design/components": "^3.0.1189",
     "@cloudscape-design/global-styles": "^1.0.50",

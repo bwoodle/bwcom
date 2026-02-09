@@ -21,6 +21,7 @@ module "ecs_next" {
   create_www_redirect = true
   create_woodle_org_redirect = true
   woodle_org_certificate_arn = "arn:aws:acm:us-west-2:685339315795:certificate/9c0eafa3-671f-4bd9-8f73-e053073e881b"
+  allowance_table_name = var.allowance_table_name
 }
 
 variable "nextauth_secret" {
@@ -50,4 +51,10 @@ variable "google_client_secret" {
 variable "image_tag" {
   description = "Image tag to deploy for prod (should be provided by CI as TF_VAR_image_tag)"
   type        = string
+}
+
+variable "allowance_table_name" {
+  description = "Name of the DynamoDB allowance table for prod"
+  type        = string
+  default     = "allowance-prod-v1"
 }

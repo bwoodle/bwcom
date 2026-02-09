@@ -15,6 +15,7 @@ import ChatBubble from '@cloudscape-design/chat-components/chat-bubble';
 import Avatar from '@cloudscape-design/chat-components/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Allowance from '../../components/Allowance';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -155,7 +156,9 @@ const AdminPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: 860, margin: '0 auto', width: '100%' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+        <SpaceBetween size="l">
+        <Allowance />
         <Container header={<Header variant="h1">Admin</Header>}>
           <Box textAlign="center" padding={{ vertical: 'xxl' }}>
             <Spinner size="large" />
@@ -164,12 +167,15 @@ const AdminPage: React.FC = () => {
             </Box>
           </Box>
         </Container>
+        </SpaceBetween>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', width: '100%' }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+    <SpaceBetween size="l">
+    <Allowance />
     <Container
       header={
         <Header
@@ -269,6 +275,7 @@ const AdminPage: React.FC = () => {
         />
       </SpaceBetween>
     </Container>
+    </SpaceBetween>
     </div>
   );
 };

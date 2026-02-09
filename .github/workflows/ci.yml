@@ -42,6 +42,12 @@ jobs:
             ./bwcom-next --push
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+      - name: Terraform Init (prod-data)
+        run: terraform init
+        working-directory: bwcom-terraform/env/prod-data
+      - name: Terraform Apply (prod-data)
+        run: terraform apply -auto-approve
+        working-directory: bwcom-terraform/env/prod-data
       - name: Terraform Init
         run: terraform init
         working-directory: bwcom-terraform/env/prod

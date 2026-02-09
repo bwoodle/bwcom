@@ -70,3 +70,8 @@ variable "woodle_org_certificate_arn" {
   type        = string
   default     = ""
 }
+
+variable "allowance_table_name" {
+  description = "Name of the DynamoDB allowance table (passed as ALLOWANCE_TABLE_NAME env var to the container)"
+  type        = string
+}

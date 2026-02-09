@@ -25,12 +25,13 @@ for var in NEXTAUTH_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET; do
   fi
 done
 
-# Terraform destroy in test environment
+# Terraform destroy in test environment (ECS/ALB only — data tier is NOT destroyed)
 cd bwcom-terraform/env/test
 
 export TF_VAR_nextauth_secret="$NEXTAUTH_SECRET"
 export TF_VAR_google_client_id="$GOOGLE_CLIENT_ID"
 export TF_VAR_google_client_secret="$GOOGLE_CLIENT_SECRET"
+export TF_VAR_allowance_table_name="unused"
 
 echo "Initializing Terraform (env/test)"
 terraform init

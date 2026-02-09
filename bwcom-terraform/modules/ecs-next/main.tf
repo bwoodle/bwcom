@@ -247,6 +247,26 @@ resource "aws_iam_role_policy" "ecs_task_bedrock" {
   })
 }
 
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_role_policy" "ecs_task_dynamodb" {
+  name = "bwcom-next-${var.env}-dynamodb-allowance"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "dynamodb:*"
+        Resource = [
+          "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.allowance_table_name}"
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_ecs_task_definition" "next" {
   family                   = "bwcom-next-${var.env}"
   network_mode             = "awsvpc"
@@ -282,6 +302,10 @@ resource "aws_ecs_task_definition" "next" {
       {
         name  = "GOOGLE_CLIENT_SECRET"
         value = var.google_client_secret
+      },
+      {
+        name  = "ALLOWANCE_TABLE_NAME"
+        value = var.allowance_table_name
       }
     ]
     logConfiguration = {

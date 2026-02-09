@@ -44,12 +44,26 @@ docker buildx build --platform linux/arm64 \
   --cache-to type=local,dest=${CACHE_DIR},mode=max \
   . --push
 
+# Terraform apply data tier (DynamoDB tables — separate lifecycle, never destroyed)
+cd ../bwcom-terraform/env/test-data
+
+echo "Initializing Terraform (env/test-data)"
+terraform init
+
+echo "Applying Terraform (env/test-data)"
+terraform apply -auto-approve
+
+# Capture the table name from the data tier output
+ALLOWANCE_TABLE_NAME=$(terraform output -raw allowance_table_name)
+echo "Allowance table: ${ALLOWANCE_TABLE_NAME}"
+
 # Terraform apply in test environment
-cd ../bwcom-terraform/env/test
+cd ../test
 
 export TF_VAR_nextauth_secret="$NEXTAUTH_SECRET"
 export TF_VAR_google_client_id="$GOOGLE_CLIENT_ID"
 export TF_VAR_google_client_secret="$GOOGLE_CLIENT_SECRET"
+export TF_VAR_allowance_table_name="$ALLOWANCE_TABLE_NAME"
 
 echo "Initializing Terraform (env/test)"
 terraform init
