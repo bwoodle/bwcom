@@ -5,7 +5,7 @@ const Footer: React.FC = () => {
   const environment = process.env.NODE_ENV || 'development';
 
   return (
-    <footer style={{ padding: '1rem', backgroundColor: '#333', color: '#fff', textAlign: 'center', marginTop: '2rem' }}>
+    <footer style={{ padding: '1rem', backgroundColor: '#333', color: '#fff', textAlign: 'center' }}>
       <p>Version: {version} | Environment: {environment}</p>
     </footer>
   );

@@ -42,7 +42,7 @@ const AboutMe: React.FC = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              gap: '1rem',
+              gap: 'clamp(0.25rem, 1vw, 1rem)',
             }}
           >
             {photos.map((photo) => (
