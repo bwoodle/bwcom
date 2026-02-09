@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { agent, checkpointer } from '@/lib/agent';
+import { createChatStream } from '@/lib/chat-stream';
 import { HumanMessage, AIMessage, BaseMessage } from '@langchain/core/messages';
 
 function serializeMessage(msg: BaseMessage): { role: string; content: string } {
@@ -62,54 +63,9 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Missing message' }, { status: 400 });
   }
 
-  const config = { configurable: { thread_id: email } };
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      try {
-        const eventStream = agent.streamEvents(
-          { messages: [new HumanMessage(userMessage)] },
-          { ...config, version: 'v2' }
-        );
-
-        for await (const event of eventStream) {
-          if (event.event === 'on_chat_model_stream') {
-            const chunk = event.data?.chunk;
-            if (chunk?.content) {
-              const text =
-                typeof chunk.content === 'string'
-                  ? chunk.content
-                  : Array.isArray(chunk.content)
-                    ? chunk.content
-                        .filter(
-                          (c: { type: string; text?: string }) =>
-                            c.type === 'text'
-                        )
-                        .map((c: { text: string }) => c.text)
-                        .join('')
-                    : '';
-              if (text) {
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ token: text })}\n\n`)
-                );
-              }
-            }
-          }
-        }
-
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-      } catch (err) {
-        console.error('[/api/chat] stream error:', err);
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ error: 'Internal server error' })}\n\n`
-          )
-        );
-      } finally {
-        controller.close();
-      }
-    },
+  const stream = createChatStream({
+    userMessage,
+    config: { configurable: { thread_id: email } },
   });
 
   return new Response(stream, {

@@ -1,12 +1,8 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { docClient, ALLOWANCE_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
 
-const client = new DynamoDBClient({ region: 'us-west-2' });
-const docClient = DynamoDBDocumentClient.from(client);
-
-const TABLE_NAME = process.env.ALLOWANCE_TABLE_NAME!;
 const CHILDREN = ['Preston', 'Leighton'];
 
 interface AllowanceItem {
