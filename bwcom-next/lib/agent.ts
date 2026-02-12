@@ -2,6 +2,7 @@ import { ChatBedrockConverse } from '@langchain/aws';
 import { createAgent } from 'langchain';
 import { TTLMemorySaver } from './TTLMemorySaver';
 import { allowanceTools } from './allowance-tools';
+import { mediaTools } from './media-tools';
 import { buildSystemPrompt } from './chat-request';
 
 // Module-level singletons — persist across requests in the same server process
@@ -18,7 +19,7 @@ const llm = new ChatBedrockConverse({
 
 const agent = createAgent({
   model: llm,
-  tools: allowanceTools,
+  tools: [...allowanceTools, ...mediaTools],
   systemPrompt: buildSystemPrompt(),
   checkpointer,
 });

@@ -75,3 +75,8 @@ variable "allowance_table_name" {
   description = "Name of the DynamoDB allowance table (passed as ALLOWANCE_TABLE_NAME env var to the container)"
   type        = string
 }
+
+variable "media_table_name" {
+  description = "Name of the DynamoDB media table (passed as MEDIA_TABLE_NAME env var to the container)"
+  type        = string
+}

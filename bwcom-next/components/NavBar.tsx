@@ -31,11 +31,11 @@ const NavBar: React.FC = () => {
         //   text: 'Race History',
         //   onClick: () => router.push('/race-history'),
         // },
-        // {
-        //   type: 'button',
-        //   text: 'Media',
-        //   onClick: () => router.push('/media'),
-        // },
+        {
+          type: 'button',
+          text: 'Media',
+          onClick: () => router.push('/media'),
+        },
         ...(session?.user?.role === 'admin'
           ? [
               {

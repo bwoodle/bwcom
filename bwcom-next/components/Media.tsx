@@ -1,39 +1,123 @@
-import React from 'react';
-import { Container, Header, SpaceBetween } from '@cloudscape-design/components';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Header,
+  SpaceBetween,
+  Box,
+  Spinner,
+  StatusIndicator,
+  Table,
+} from '@cloudscape-design/components';
+
+interface MediaItem {
+  monthKey: string;
+  sk: string;
+  title: string;
+  format: string;
+  comments?: string;
+  createdAt: string;
+}
+
+interface MonthGroup {
+  monthKey: string;
+  label: string;
+  items: MediaItem[];
+}
 
 const Media: React.FC = () => {
+  const [months, setMonths] = useState<MonthGroup[]>([]);
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchMedia() {
+      try {
+        const res = await fetch('/api/media');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        setMonths(data.months);
+        setStatus('loaded');
+      } catch (err) {
+        console.error('Failed to load media data:', err);
+        setErrorMsg('Failed to load media data.');
+        setStatus('error');
+      }
+    }
+    fetchMedia();
+  }, []);
+
+  if (status === 'loading') {
+    return (
+      <Container header={<Header variant="h1">Media</Header>}>
+        <Box textAlign="center" padding={{ vertical: 'l' }}>
+          <Spinner size="large" />
+          <Box variant="p" margin={{ top: 's' }}>
+            Loading media data...
+          </Box>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <Container header={<Header variant="h1">Media</Header>}>
+        <StatusIndicator type="error">{errorMsg}</StatusIndicator>
+      </Container>
+    );
+  }
+
   return (
     <Container header={<Header variant="h1">Media</Header>}>
-      <SpaceBetween direction="vertical" size="m">
-        <p>This page lists media I liked in reverse chronological order — newest first.</p>
-
-        <section>
-          <Header variant="h2">Books</Header>
-          <ul>
-            <li>The Getaway — my most recent read. A fast-paced thriller I finished recently.</li>
-            <li>Example Book Title (2024)</li>
-            <li>Another Favorite (2023) — short note about why I liked it.</li>
-          </ul>
-        </section>
-
-        <section>
-          <Header variant="h2">Movies</Header>
-          <ul>
-            <li>Example Movie Title (2025)</li>
-            <li>Another Movie — brief comment about a standout scene.</li>
-          </ul>
-        </section>
-
-        <section>
-          <Header variant="h2">TV</Header>
-          <ul>
-            <li>Example Series — season 3 (2024)</li>
-            <li>Another Series</li>
-          </ul>
-        </section>
-
-        <p>I will add comments for some items and sometimes only list the title.</p>
-      </SpaceBetween>
+      {months.length === 0 ? (
+        <Box textAlign="center" color="text-body-secondary" padding="l">
+          No media entries yet.
+        </Box>
+      ) : (
+        <SpaceBetween size="s">
+          {months.map((month) => (
+            <Table
+              key={month.monthKey}
+              variant="embedded"
+              header={<Header variant="h3">{month.label}</Header>}
+              columnDefinitions={[
+                {
+                  id: 'title',
+                  header: 'Title',
+                  cell: (item: MediaItem) => item.title,
+                  width: 280,
+                },
+                {
+                  id: 'format',
+                  header: 'Format',
+                  cell: (item: MediaItem) => item.format,
+                  width: 140,
+                },
+                {
+                  id: 'comments',
+                  header: 'Comments',
+                  cell: (item: MediaItem) =>
+                    item.comments ? (
+                      <span style={{ whiteSpace: 'pre-line' }}>{item.comments}</span>
+                    ) : (
+                      <Box color="text-body-secondary">—</Box>
+                    ),
+                },
+              ]}
+              items={month.items}
+              empty={
+                <Box textAlign="center" color="text-body-secondary" padding="s">
+                  No entries.
+                </Box>
+              }
+            />
+          ))}
+        </SpaceBetween>
+      )}
     </Container>
   );
 };
