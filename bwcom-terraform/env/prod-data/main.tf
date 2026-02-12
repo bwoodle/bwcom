@@ -20,6 +20,13 @@ module "media_table" {
   table_version = "v1"
 }
 
+module "races_table" {
+  source = "../../modules/dynamodb-races"
+
+  env           = "prod"
+  table_version = "v1"
+}
+
 output "allowance_table_name" {
   value = module.allowance_table.table_name
 }
@@ -34,4 +41,12 @@ output "media_table_name" {
 
 output "media_table_arn" {
   value = module.media_table.table_arn
+}
+
+output "races_table_name" {
+  value = module.races_table.table_name
+}
+
+output "races_table_arn" {
+  value = module.races_table.table_arn
 }

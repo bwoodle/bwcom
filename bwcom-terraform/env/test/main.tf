@@ -19,6 +19,7 @@ module "ecs_next" {
   ecr_repository_url = "685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next"
   allowance_table_name = var.allowance_table_name
   media_table_name     = var.media_table_name
+  races_table_name     = var.races_table_name
 }
 
 variable "nextauth_secret" {
@@ -57,4 +58,10 @@ variable "media_table_name" {
   description = "Name of the DynamoDB media table for test"
   type        = string
   default     = "media-test-v1"
+}
+
+variable "races_table_name" {
+  description = "Name of the DynamoDB races table for test"
+  type        = string
+  default     = "races-test-v1"
 }

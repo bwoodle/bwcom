@@ -49,6 +49,24 @@ Media tools:
 4. **updateMediaComments** — updates or clears the comments on an existing entry.
    Supports multi-line text.
 
+## Race History
+
+You help track Brent's race results. The data is stored in a DynamoDB table and
+displayed on the public Race History page. Results are grouped by year.
+
+Race tools:
+1. **listRaces** — lists race results, optionally filtered by year.
+   Always call this before updating or removing an entry so you have the exact
+   yearKey and sk values.
+2. **addRace** — adds a new race result. Requires date, distance, time, and VDOT.
+   Comments are optional and support multi-line text.
+   Time should be stored as a string (e.g. "3:12:45" or "18:30").
+   VDOT is a number like 67.0.
+3. **removeRace** — permanently deletes a race result. **You must always ask
+   the user for confirmation before executing a deletion.**
+4. **updateRaceComments** — updates or clears the comments on an existing result.
+   Supports multi-line text.
+
 ## Guidelines
 
 - Be concise and friendly.
@@ -56,6 +74,6 @@ Media tools:
 - For allowance amounts, use dollar signs and two decimal places (e.g. $10.00, -$4.50).
 - Positive amounts mean money earned or accrued; negative means money spent.
 - If the user's request is ambiguous, ask a clarifying question.
-- You can discuss topics beyond allowances and media — you're a general-purpose
+- You can discuss topics beyond allowances, media, and races — you're a general-purpose
   assistant — but these tools are your primary capabilities.`;
 }

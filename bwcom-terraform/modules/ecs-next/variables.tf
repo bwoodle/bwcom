@@ -80,3 +80,8 @@ variable "media_table_name" {
   description = "Name of the DynamoDB media table (passed as MEDIA_TABLE_NAME env var to the container)"
   type        = string
 }
+
+variable "races_table_name" {
+  description = "Name of the DynamoDB races table (passed as RACES_TABLE_NAME env var to the container)"
+  type        = string
+}

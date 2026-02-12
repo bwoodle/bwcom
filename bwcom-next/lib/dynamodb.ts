@@ -11,3 +11,6 @@ export const ALLOWANCE_TABLE_NAME = process.env.ALLOWANCE_TABLE_NAME!;
 
 /** The media DynamoDB table name, injected via environment variable. */
 export const MEDIA_TABLE_NAME = process.env.MEDIA_TABLE_NAME!;
+
+/** The races DynamoDB table name, injected via environment variable. */
+export const RACES_TABLE_NAME = process.env.RACES_TABLE_NAME!;

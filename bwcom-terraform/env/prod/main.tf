@@ -23,6 +23,7 @@ module "ecs_next" {
   woodle_org_certificate_arn = "arn:aws:acm:us-west-2:685339315795:certificate/9c0eafa3-671f-4bd9-8f73-e053073e881b"
   allowance_table_name = var.allowance_table_name
   media_table_name     = var.media_table_name
+  races_table_name     = var.races_table_name
 }
 
 variable "nextauth_secret" {
@@ -64,4 +65,10 @@ variable "media_table_name" {
   description = "Name of the DynamoDB media table for prod"
   type        = string
   default     = "media-prod-v1"
+}
+
+variable "races_table_name" {
+  description = "Name of the DynamoDB races table for prod"
+  type        = string
+  default     = "races-prod-v1"
 }
