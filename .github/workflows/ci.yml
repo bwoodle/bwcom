@@ -2,6 +2,9 @@ name: Deploy brentwoodle.com to AWS
 on:
   push:
     branches: [main]
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
