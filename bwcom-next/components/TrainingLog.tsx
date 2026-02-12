@@ -172,9 +172,7 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
 /* ------------------------------------------------------------------ */
 
 const styles = {
-  root: {
-    maxWidth: 860,
-  } as React.CSSProperties,
+  root: {} as React.CSSProperties,
 
   weekCard: {
     border: '1px solid var(--color-border-divider-default, #e9ebed)',
