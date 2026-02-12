@@ -85,3 +85,8 @@ variable "races_table_name" {
   description = "Name of the DynamoDB races table (passed as RACES_TABLE_NAME env var to the container)"
   type        = string
 }
+
+variable "training_log_table_name" {
+  description = "Name of the DynamoDB training log table (passed as TRAINING_LOG_TABLE_NAME env var to the container)"
+  type        = string
+}

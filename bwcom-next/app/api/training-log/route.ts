@@ -1,225 +1,107 @@
-import { NextResponse } from 'next/server';
+import { QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { docClient, TRAINING_LOG_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
 
-type DailyEntry = {
-  id: string;
+interface DailyEntry {
   logId: string;
+  sk: string;
   date: string;
   entryType: 'daily';
-  timeOfDay: 'morning' | 'afternoon' | 'evening';
+  slot: 'workout1' | 'workout2';
   description: string;
   miles: number;
   highlight?: boolean;
-};
+}
 
-type WeeklyEntry = {
-  id: string;
+interface WeeklyEntry {
   logId: string;
+  sk: string;
   date: string;
   entryType: 'week';
   description: string;
-  miles: number;
-};
+}
 
 type TrainingLogEntry = DailyEntry | WeeklyEntry;
 
-type TrainingLogSection = {
+interface TrainingLogSection {
   id: string;
   name: string;
   entries: TrainingLogEntry[];
+}
+
+/** Map logId → display name. Add new cycles here. */
+const LOG_NAMES: Record<string, string> = {
+  'paris-2026': 'Paris 2026',
 };
 
-const mockSections: TrainingLogSection[] = [
-  {
-    id: 'paris-2026',
-    name: 'Paris 2026',
-    entries: [
-      {
-        id: 'd-2026-01-19-am',
-        logId: 'paris-2026',
-        date: '2026-01-19',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Easy aerobic run',
-        miles: 5.0,
-      },
-      {
-        id: 'd-2026-01-19-pm',
-        logId: 'paris-2026',
-        date: '2026-01-19',
-        entryType: 'daily',
-        timeOfDay: 'evening',
-        description: 'Mobility + strides',
-        miles: 2.0,
-      },
-      {
-        id: 'd-2026-01-20-am',
-        logId: 'paris-2026',
-        date: '2026-01-20',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Progression run',
-        miles: 7.0,
-      },
-      {
-        id: 'd-2026-01-21-am',
-        logId: 'paris-2026',
-        date: '2026-01-21',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Hill repeats',
-        miles: 6.0,
-      },
-      {
-        id: 'd-2026-01-21-pm',
-        logId: 'paris-2026',
-        date: '2026-01-21',
-        entryType: 'daily',
-        timeOfDay: 'evening',
-        description: 'Recovery jog',
-        miles: 2.5,
-      },
-      {
-        id: 'd-2026-01-22-pm',
-        logId: 'paris-2026',
-        date: '2026-01-22',
-        entryType: 'daily',
-        timeOfDay: 'afternoon',
-        description: 'Tempo intervals',
-        miles: 6.5,
-      },
-      {
-        id: 'd-2026-01-23-am',
-        logId: 'paris-2026',
-        date: '2026-01-23',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Easy run + drills',
-        miles: 5.5,
-      },
-      {
-        id: 'd-2026-01-24-am',
-        logId: 'paris-2026',
-        date: '2026-01-24',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Long run',
-        miles: 12.0,
-        highlight: true,
-      },
-      {
-        id: 'd-2026-01-25-am',
-        logId: 'paris-2026',
-        date: '2026-01-25',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Shakeout + strides',
-        miles: 3.0,
-      },
-      {
-        id: 'w-2026-01-25',
-        logId: 'paris-2026',
-        date: '2026-01-25',
-        entryType: 'week',
-        description: 'Solid base week; legs felt fresh.',
-        miles: 49.5,
-      },
-      {
-        id: 'd-2026-01-26-am',
-        logId: 'paris-2026',
-        date: '2026-01-26',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Easy aerobic run',
-        miles: 6.0,
-      },
-      {
-        id: 'd-2026-01-27-am',
-        logId: 'paris-2026',
-        date: '2026-01-27',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Threshold workout',
-        miles: 7.5,
-        highlight: true,
-      },
-      {
-        id: 'd-2026-01-27-pm',
-        logId: 'paris-2026',
-        date: '2026-01-27',
-        entryType: 'daily',
-        timeOfDay: 'evening',
-        description: 'Recovery jog',
-        miles: 2.0,
-      },
-      {
-        id: 'd-2026-01-28-am',
-        logId: 'paris-2026',
-        date: '2026-01-28',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Hill sprints',
-        miles: 5.0,
-      },
-      {
-        id: 'd-2026-01-29-pm',
-        logId: 'paris-2026',
-        date: '2026-01-29',
-        entryType: 'daily',
-        timeOfDay: 'afternoon',
-        description: 'Steady run',
-        miles: 6.0,
-      },
-      {
-        id: 'd-2026-01-30-am',
-        logId: 'paris-2026',
-        date: '2026-01-30',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Easy run + strides',
-        miles: 5.5,
-      },
-      {
-        id: 'd-2026-01-31-am',
-        logId: 'paris-2026',
-        date: '2026-01-31',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Long run',
-        miles: 13.0,
-        highlight: true,
-      },
-      {
-        id: 'd-2026-02-01-am',
-        logId: 'paris-2026',
-        date: '2026-02-01',
-        entryType: 'daily',
-        timeOfDay: 'morning',
-        description: 'Shakeout',
-        miles: 3.5,
-      },
-      {
-        id: 'w-2026-02-01',
-        logId: 'paris-2026',
-        date: '2026-02-01',
-        entryType: 'week',
-        description: 'Strong week with quality sessions.',
-        miles: 48.5,
-      },
-    ],
-  },
-];
+function toEntry(item: Record<string, unknown>): TrainingLogEntry {
+  const base = {
+    logId: item.logId as string,
+    sk: item.sk as string,
+    date: item.date as string,
+    entryType: item.entryType as string,
+    description: item.description as string,
+  };
 
+  if (base.entryType === 'daily') {
+    return {
+      ...base,
+      entryType: 'daily',
+      slot: item.slot as 'workout1' | 'workout2',
+      miles: item.miles as number,
+      ...(item.highlight ? { highlight: true } : {}),
+    };
+  }
+
+  return { ...base, entryType: 'week' };
+}
+
+/**
+ * GET /api/training-log?sectionId=paris-2026
+ * Returns a single training log section with all entries, or 404.
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
 
-  if (sectionId) {
-    const section = mockSections.find((item) => item.id === sectionId);
-    if (!section) {
-      return NextResponse.json({ error: 'Section not found' }, { status: 404 });
-    }
-    return NextResponse.json(section);
+  if (!sectionId) {
+    return Response.json({ error: 'sectionId query parameter is required' }, { status: 400 });
   }
 
-  return NextResponse.json({ sections: mockSections });
+  try {
+    const allItems: Record<string, unknown>[] = [];
+    let lastEvaluatedKey: Record<string, unknown> | undefined;
+
+    do {
+      const result = await docClient.send(
+        new QueryCommand({
+          TableName: TABLE_NAME,
+          KeyConditionExpression: 'logId = :lid',
+          ExpressionAttributeValues: { ':lid': sectionId },
+          ExclusiveStartKey: lastEvaluatedKey,
+        })
+      );
+      allItems.push(...(result.Items ?? []));
+      lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+    } while (lastEvaluatedKey);
+
+    if (allItems.length === 0) {
+      // Return an empty section rather than 404 — the cycle exists but has no data yet
+    }
+
+    const entries = allItems.map(toEntry);
+
+    const section: TrainingLogSection = {
+      id: sectionId,
+      name: LOG_NAMES[sectionId] ?? sectionId,
+      entries,
+    };
+
+    return Response.json(section);
+  } catch (err) {
+    console.error('Failed to fetch training log data:', err);
+    return Response.json(
+      { error: 'Failed to fetch training log data' },
+      { status: 500 }
+    );
+  }
 }

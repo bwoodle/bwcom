@@ -4,6 +4,7 @@ import { TTLMemorySaver } from './TTLMemorySaver';
 import { allowanceTools } from './allowance-tools';
 import { mediaTools } from './media-tools';
 import { raceTools } from './race-tools';
+import { trainingLogTools } from './training-log-tools';
 import { buildSystemPrompt } from './chat-request';
 
 // Module-level singletons — persist across requests in the same server process
@@ -20,7 +21,7 @@ const llm = new ChatBedrockConverse({
 
 const agent = createAgent({
   model: llm,
-  tools: [...allowanceTools, ...mediaTools, ...raceTools],
+  tools: [...allowanceTools, ...mediaTools, ...raceTools, ...trainingLogTools],
   systemPrompt: buildSystemPrompt(),
   checkpointer,
 });

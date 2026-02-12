@@ -3,7 +3,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
+  Container,
+  Header,
   SegmentedControl,
+  SpaceBetween,
   Spinner,
   StatusIndicator,
 } from '@cloudscape-design/components';
@@ -13,23 +16,22 @@ import {
 /* ------------------------------------------------------------------ */
 
 type DailyEntry = {
-  id: string;
   logId: string;
+  sk: string;
   date: string;
   entryType: 'daily';
-  timeOfDay: 'morning' | 'afternoon' | 'evening';
+  slot: 'workout1' | 'workout2';
   description: string;
   miles: number;
   highlight?: boolean;
 };
 
 type WeeklyEntry = {
-  id: string;
   logId: string;
+  sk: string;
   date: string;
   entryType: 'week';
   description: string;
-  miles: number;
 };
 
 type TrainingLogEntry = DailyEntry | WeeklyEntry;
@@ -49,12 +51,10 @@ type SectionState =
 type DayRow = {
   date: string;
   dayLabel: string;
-  morning?: string;
-  morningHighlight?: boolean;
-  afternoon?: string;
-  afternoonHighlight?: boolean;
-  evening?: string;
-  eveningHighlight?: boolean;
+  workout1?: string;
+  workout1Highlight?: boolean;
+  workout2?: string;
+  workout2Highlight?: boolean;
   totalMiles: number;
 };
 
@@ -100,15 +100,42 @@ const formatMiles = (value: number) =>
 
 const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
   const weeklyEntries = entries
-    .filter((entry): entry is WeeklyEntry => entry.entryType === 'week')
-    .sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+    .filter((entry): entry is WeeklyEntry => entry.entryType === 'week');
 
   const dailyEntries = entries.filter(
     (entry): entry is DailyEntry => entry.entryType === 'daily',
   );
 
-  return weeklyEntries.map((weeklyEntry) => {
-    const weekEnd = parseDate(weeklyEntry.date);
+  // Build a map of weekly summaries keyed by date (the Saturday ending the week)
+  const summaryByDate = new Map<string, WeeklyEntry>();
+  for (const w of weeklyEntries) {
+    summaryByDate.set(w.date, w);
+  }
+
+  // Discover all week-ending Saturdays from daily entries + weekly summaries
+  const weekEndingSet = new Set<string>();
+
+  // Add weeks from weekly summaries
+  for (const w of weeklyEntries) {
+    weekEndingSet.add(w.date);
+  }
+
+  // Add weeks from daily entries — find the Saturday ending each entry's week
+  for (const d of dailyEntries) {
+    const date = parseDate(d.date);
+    const dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
+    const daysUntilSat = (6 - dayOfWeek + 7) % 7 || 7; // Sun(0)->6 days, Mon(1)->5, ... Sat(6)->7 (next Sat)
+    // If the entry is on a Saturday, it belongs to the week ending that Saturday
+    const satDate = dayOfWeek === 6 ? date : addDays(date, daysUntilSat);
+    weekEndingSet.add(satDate.toISOString().slice(0, 10));
+  }
+
+  const weekEndings = Array.from(weekEndingSet).sort((a, b) =>
+    parseDate(b).getTime() - parseDate(a).getTime(),
+  );
+
+  return weekEndings.map((weekEnding) => {
+    const weekEnd = parseDate(weekEnding);
     const weekStart = addDays(weekEnd, -6);
 
     const weekDays: Date[] = Array.from({ length: 7 }).map((_, index) =>
@@ -121,21 +148,21 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
         (entry) => entry.date === date,
       );
 
-      const byTime = entriesForDay.reduce<
-        Record<'morning' | 'afternoon' | 'evening', DailyEntry[]>
+      const bySlot = entriesForDay.reduce<
+        Record<'workout1' | 'workout2', DailyEntry[]>
       >(
         (acc, entry) => {
-          acc[entry.timeOfDay].push(entry);
+          acc[entry.slot].push(entry);
           return acc;
         },
-        { morning: [], afternoon: [], evening: [] },
+        { workout1: [], workout2: [] },
       );
 
-      const formatTimeEntries = (list: DailyEntry[]) => {
+      const formatSlotEntries = (list: DailyEntry[]) => {
         if (!list.length) return undefined;
         return list
           .map((e) => `${e.description} (${formatMiles(e.miles)})`)
-          .join('; ');
+          .join('\n');
       };
 
       const hasHighlight = (list: DailyEntry[]) =>
@@ -149,20 +176,18 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
       return {
         date,
         dayLabel: formatDayLabel(date),
-        morning: formatTimeEntries(byTime.morning),
-        morningHighlight: hasHighlight(byTime.morning),
-        afternoon: formatTimeEntries(byTime.afternoon),
-        afternoonHighlight: hasHighlight(byTime.afternoon),
-        evening: formatTimeEntries(byTime.evening),
-        eveningHighlight: hasHighlight(byTime.evening),
+        workout1: formatSlotEntries(bySlot.workout1),
+        workout1Highlight: hasHighlight(bySlot.workout1),
+        workout2: formatSlotEntries(bySlot.workout2),
+        workout2Highlight: hasHighlight(bySlot.workout2),
         totalMiles,
       };
     });
 
     return {
-      weekEnding: weeklyEntry.date,
+      weekEnding,
       dailyRows,
-      weeklySummary: weeklyEntry,
+      weeklySummary: summaryByDate.get(weekEnding),
     };
   });
 };
@@ -172,30 +197,21 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
 /* ------------------------------------------------------------------ */
 
 const styles = {
-  root: {} as React.CSSProperties,
-
-  weekCard: {
-    border: '1px solid var(--color-border-divider-default, #e9ebed)',
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 12,
-  } as React.CSSProperties,
-
   weekHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '6px 12px',
-    background: 'var(--color-background-container-header, #fafafa)',
-    borderBottom: '1px solid var(--color-border-divider-default, #e9ebed)',
+    padding: '6px 8px',
     fontWeight: 600,
     fontSize: 13,
     color: '#16191f',
+    borderBottom: '2px solid #e9ebed',
   } as React.CSSProperties,
 
   table: {
     width: '100%',
     borderCollapse: 'collapse' as const,
+    tableLayout: 'fixed' as const,
     fontSize: 13,
     lineHeight: 1.35,
   } as React.CSSProperties,
@@ -207,13 +223,14 @@ const styles = {
     fontSize: 11,
     textTransform: 'uppercase' as const,
     color: '#687078',
-    borderBottom: '1px solid var(--color-border-divider-default, #e9ebed)',
+    borderBottom: '1px solid #e9ebed',
   } as React.CSSProperties,
 
   td: {
     padding: '3px 8px',
     verticalAlign: 'top' as const,
-    borderBottom: '1px solid var(--color-border-divider-secondary, #f2f3f3)',
+    borderBottom: '1px solid #f2f3f3',
+    color: '#16191f',
   } as React.CSSProperties,
 
   dayCell: {
@@ -238,8 +255,12 @@ const styles = {
     color: '#0972d3',
   } as React.CSSProperties,
 
+  workoutCell: {
+    whiteSpace: 'pre-line' as const,
+  } as React.CSSProperties,
+
   summary: {
-    padding: '4px 12px 8px',
+    padding: '4px 8px 8px',
     fontSize: 12,
     color: '#545b64',
     lineHeight: 1.4,
@@ -254,7 +275,7 @@ const WeekCard: React.FC<{ week: WeekGroup }> = ({ week }) => {
   const totalMiles = week.dailyRows.reduce((s, r) => s + r.totalMiles, 0);
 
   return (
-    <div style={styles.weekCard}>
+    <div>
       <div style={styles.weekHeader}>
         <span>Week ending {formatWeekEnding(week.weekEnding)}</span>
         <span>{formatMiles(totalMiles)} mi</span>
@@ -263,17 +284,15 @@ const WeekCard: React.FC<{ week: WeekGroup }> = ({ week }) => {
       <table style={styles.table}>
         <thead>
           <tr>
-            <th style={styles.th}>Day</th>
-            <th style={styles.th}>AM</th>
-            <th style={styles.th}>PM</th>
-            <th style={styles.th}>Eve</th>
-            <th style={{ ...styles.th, textAlign: 'right' }}>Mi</th>
+            <th style={{ ...styles.th, width: 40 }}>Day</th>
+            <th style={{ ...styles.th, width: '42%' }}>Workout 1</th>
+            <th style={{ ...styles.th, width: '42%' }}>Workout 2</th>
+            <th style={{ ...styles.th, textAlign: 'right', width: 40 }}>Mi</th>
           </tr>
         </thead>
         <tbody>
           {week.dailyRows.map((row) => {
-            const hasActivity =
-              row.morning || row.afternoon || row.evening;
+            const hasActivity = row.workout1 || row.workout2;
             return (
               <tr
                 key={row.date}
@@ -282,28 +301,19 @@ const WeekCard: React.FC<{ week: WeekGroup }> = ({ week }) => {
                 <td style={{ ...styles.td, ...styles.dayCell }}>
                   {row.dayLabel}
                 </td>
-                <td style={styles.td}>
-                  {row.morning ? (
-                    <span style={row.morningHighlight ? styles.highlightCell : undefined}>
-                      {row.morning}
+                <td style={{ ...styles.td, ...styles.workoutCell }}>
+                  {row.workout1 ? (
+                    <span style={row.workout1Highlight ? styles.highlightCell : undefined}>
+                      {row.workout1}
                     </span>
                   ) : (
                     <span style={styles.emptyCell}>—</span>
                   )}
                 </td>
-                <td style={styles.td}>
-                  {row.afternoon ? (
-                    <span style={row.afternoonHighlight ? styles.highlightCell : undefined}>
-                      {row.afternoon}
-                    </span>
-                  ) : (
-                    <span style={styles.emptyCell}>—</span>
-                  )}
-                </td>
-                <td style={styles.td}>
-                  {row.evening ? (
-                    <span style={row.eveningHighlight ? styles.highlightCell : undefined}>
-                      {row.evening}
+                <td style={{ ...styles.td, ...styles.workoutCell }}>
+                  {row.workout2 ? (
+                    <span style={row.workout2Highlight ? styles.highlightCell : undefined}>
+                      {row.workout2}
                     </span>
                   ) : (
                     <span style={styles.emptyCell}>—</span>
@@ -396,16 +406,19 @@ const TrainingLog: React.FC = () => {
     const weekGroups = buildWeekGroups(state.data.entries);
 
     return (
-      <div>
+      <SpaceBetween size="l">
         {weekGroups.map((week) => (
           <WeekCard key={week.weekEnding} week={week} />
         ))}
-      </div>
+      </SpaceBetween>
     );
   };
 
+  const sectionName =
+    sectionConfigs.find((s) => s.id === activeLogId)?.name ?? 'Training Log';
+
   return (
-    <div style={styles.root}>
+    <div>
       {sectionConfigs.length > 1 && (
         <div style={{ marginBottom: 16 }}>
           <SegmentedControl
@@ -419,18 +432,9 @@ const TrainingLog: React.FC = () => {
         </div>
       )}
 
-      <h1
-        style={{
-          fontSize: 20,
-          fontWeight: 700,
-          margin: '0 0 12px',
-        }}
-      >
-        {sectionConfigs.find((s) => s.id === activeLogId)?.name ??
-          'Training Log'}
-      </h1>
-
-      {renderContent()}
+      <Container header={<Header variant="h1">{sectionName}</Header>}>
+        {renderContent()}
+      </Container>
     </div>
   );
 };

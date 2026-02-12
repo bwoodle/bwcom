@@ -27,6 +27,13 @@ module "races_table" {
   table_version = "v1"
 }
 
+module "training_log_table" {
+  source = "../../modules/dynamodb-training-log"
+
+  env           = "prod"
+  table_version = "v1"
+}
+
 output "allowance_table_name" {
   value = module.allowance_table.table_name
 }
@@ -49,4 +56,12 @@ output "races_table_name" {
 
 output "races_table_arn" {
   value = module.races_table.table_arn
+}
+
+output "training_log_table_name" {
+  value = module.training_log_table.table_name
+}
+
+output "training_log_table_arn" {
+  value = module.training_log_table.table_arn
 }

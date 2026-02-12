@@ -14,3 +14,6 @@ export const MEDIA_TABLE_NAME = process.env.MEDIA_TABLE_NAME!;
 
 /** The races DynamoDB table name, injected via environment variable. */
 export const RACES_TABLE_NAME = process.env.RACES_TABLE_NAME!;
+
+/** The training log DynamoDB table name, injected via environment variable. */
+export const TRAINING_LOG_TABLE_NAME = process.env.TRAINING_LOG_TABLE_NAME!;

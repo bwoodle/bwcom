@@ -21,9 +21,10 @@ module "ecs_next" {
   create_www_redirect = true
   create_woodle_org_redirect = true
   woodle_org_certificate_arn = "arn:aws:acm:us-west-2:685339315795:certificate/9c0eafa3-671f-4bd9-8f73-e053073e881b"
-  allowance_table_name = var.allowance_table_name
-  media_table_name     = var.media_table_name
-  races_table_name     = var.races_table_name
+  allowance_table_name    = var.allowance_table_name
+  media_table_name         = var.media_table_name
+  races_table_name         = var.races_table_name
+  training_log_table_name  = var.training_log_table_name
 }
 
 variable "nextauth_secret" {
@@ -71,4 +72,10 @@ variable "races_table_name" {
   description = "Name of the DynamoDB races table for prod"
   type        = string
   default     = "races-prod-v1"
+}
+
+variable "training_log_table_name" {
+  description = "Name of the DynamoDB training log table for prod"
+  type        = string
+  default     = "training-log-prod-v1"
 }
