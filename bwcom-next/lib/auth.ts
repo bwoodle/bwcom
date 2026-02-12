@@ -24,10 +24,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // After sign-in, redirect admin users to /admin
-      if (url === baseUrl || url === `${baseUrl}/`) {
-        return `${baseUrl}/admin`;
-      }
       // Allow relative callback URLs
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       // Allow callback URLs on the same origin
