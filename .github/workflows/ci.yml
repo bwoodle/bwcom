@@ -56,7 +56,7 @@ jobs:
         working-directory: bwcom-terraform/env/prod
         env:
           TF_VAR_nextauth_secret: ${{ secrets.NEXTAUTH_SECRET }}
-          TF_VAR_nextauth_url: ${{ secrets.NEXTAUTH_URL }}
+          TF_VAR_nextauth_url: https://brentwoodle.com
           TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
           TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           TF_VAR_image_tag: ${{ github.sha }}
@@ -65,7 +65,7 @@ jobs:
         working-directory: bwcom-terraform/env/prod
         env:
           TF_VAR_nextauth_secret: ${{ secrets.NEXTAUTH_SECRET }}
-          TF_VAR_nextauth_url: ${{ secrets.NEXTAUTH_URL }}
+          TF_VAR_nextauth_url: https://brentwoodle.com
           TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
           TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           TF_VAR_image_tag: ${{ github.sha }}
