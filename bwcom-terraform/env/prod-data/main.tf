@@ -58,10 +58,24 @@ output "races_table_arn" {
   value = module.races_table.table_arn
 }
 
+module "images_bucket" {
+  source = "../../modules/s3-images"
+
+  bucket_name = "brentwoodle.com"
+}
+
 output "training_log_table_name" {
   value = module.training_log_table.table_name
 }
 
 output "training_log_table_arn" {
   value = module.training_log_table.table_arn
+}
+
+output "images_bucket_name" {
+  value = module.images_bucket.bucket_name
+}
+
+output "images_bucket_arn" {
+  value = module.images_bucket.bucket_arn
 }

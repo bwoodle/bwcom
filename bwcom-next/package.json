@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "photos:thumbs": "mkdir -p public/photos/thumbs && npx sharp -i public/photos/*.jpg -o public/photos/thumbs resize 800"
+    "sync-images:test": "cd .. && ./scripts/sync-images.sh test.brentwoodle.com",
+    "sync-images:prod": "cd .. && ./scripts/sync-images.sh brentwoodle.com"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.985.0",

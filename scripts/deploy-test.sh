@@ -39,6 +39,7 @@ docker buildx create --use >/dev/null 2>&1 || true
 CACHE_DIR="${HOME}/.cache/buildx/bwcom-next"
 mkdir -p "${CACHE_DIR}"
 docker buildx build --platform linux/arm64 \
+  --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/test.brentwoodle.com \
   -t ${FULL_REPO}:latest \
   --cache-from type=local,src=${CACHE_DIR} \
   --cache-to type=local,dest=${CACHE_DIR},mode=max \
@@ -52,6 +53,12 @@ terraform init
 
 echo "Applying Terraform (env/test-data)"
 terraform apply -auto-approve
+
+# Sync images to test S3 bucket
+cd ../..
+echo "Syncing images to test S3 bucket"
+./scripts/sync-images.sh test.brentwoodle.com
+cd bwcom-terraform/env/test-data
 
 # Capture the table name from the data tier output
 ALLOWANCE_TABLE_NAME=$(terraform output -raw allowance_table_name)

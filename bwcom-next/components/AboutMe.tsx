@@ -4,30 +4,32 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Container, Header, Modal, SpaceBetween } from '@cloudscape-design/components';
 
+const IMAGES_BASE_URL = process.env.NEXT_PUBLIC_IMAGES_BASE_URL ?? '';
+
 const photos = [
   {
     id: '1',
     alt: 'Preston',
-    thumbSrc: '/photos/thumbs/1.jpg',
-    fullSrc: '/photos/1.jpg',
+    thumbSrc: `${IMAGES_BASE_URL}/web-content/thumbs/1.jpg`,
+    fullSrc: `${IMAGES_BASE_URL}/web-content/1.jpg`,
   },
   {
     id: '2',
     alt: 'Natalie',
-    thumbSrc: '/photos/thumbs/2.jpg',
-    fullSrc: '/photos/2.jpg',
+    thumbSrc: `${IMAGES_BASE_URL}/web-content/thumbs/2.jpg`,
+    fullSrc: `${IMAGES_BASE_URL}/web-content/2.jpg`,
   },
   {
     id: '3',
     alt: 'Family',
-    thumbSrc: '/photos/thumbs/3.jpg',
-    fullSrc: '/photos/3.jpg',
+    thumbSrc: `${IMAGES_BASE_URL}/web-content/thumbs/3.jpg`,
+    fullSrc: `${IMAGES_BASE_URL}/web-content/3.jpg`,
   },
   {
     id: '4',
     alt: 'Leighton',
-    thumbSrc: '/photos/thumbs/4.jpg',
-    fullSrc: '/photos/4.jpg',
+    thumbSrc: `${IMAGES_BASE_URL}/web-content/thumbs/4.jpg`,
+    fullSrc: `${IMAGES_BASE_URL}/web-content/4.jpg`,
   },
 ];
 

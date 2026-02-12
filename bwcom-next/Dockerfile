@@ -6,6 +6,8 @@ RUN npm ci
 
 # Copy source and build
 COPY . .
+ARG NEXT_PUBLIC_IMAGES_BASE_URL
+ENV NEXT_PUBLIC_IMAGES_BASE_URL=$NEXT_PUBLIC_IMAGES_BASE_URL
 RUN npm run build
 
 # Production stage

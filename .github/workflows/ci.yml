@@ -23,6 +23,7 @@ jobs:
           NEXTAUTH_URL=https://brentwoodle.com \
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+          NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/brentwoodle.com \
           npm run build
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
@@ -40,6 +41,7 @@ jobs:
         run: |
           SHA=${GITHUB_SHA}
           docker buildx build --platform linux/arm64 \
+            --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/brentwoodle.com \
             -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA} \
             -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest \
             ./bwcom-next --push
@@ -51,6 +53,8 @@ jobs:
       - name: Terraform Apply (prod-data)
         run: terraform apply -auto-approve
         working-directory: bwcom-terraform/env/prod-data
+      - name: Sync images to S3
+        run: ./scripts/sync-images.sh brentwoodle.com
       - name: Terraform Init
         run: terraform init
         working-directory: bwcom-terraform/env/prod
