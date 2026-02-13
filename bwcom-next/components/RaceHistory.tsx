@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Box } from '@cloudscape-design/components';
-import GroupedTablePage from './GroupedTablePage';
+import SortableTablePage from './SortableTablePage';
 
 interface RaceItem {
   yearKey: string;
@@ -15,26 +15,42 @@ interface RaceItem {
   createdAt: string;
 }
 
+/** Map distance labels to a numeric rank for sorting */
+const DISTANCE_ORDER: Record<string, number> = {
+  '5K': 1,
+  '10K': 2,
+  '8 Mile': 3,
+  '15K': 4,
+  '10 Mile': 5,
+  'Half Marathon': 6,
+  'Marathon': 7,
+  '50K': 8,
+};
+
+function distanceRank(distance: string): number {
+  return DISTANCE_ORDER[distance] ?? 99;
+}
+
 const RaceHistory: React.FC = () => (
-  <GroupedTablePage<RaceItem>
+  <SortableTablePage<RaceItem>
     title="Race History"
     apiUrl="/api/races"
-    extractGroups={(data) =>
-      ((data.years as { yearKey: string; label: string; items: RaceItem[] }[]) ?? []).map(
-        (y) => ({ key: y.yearKey, label: y.label, items: y.items })
-      )
-    }
+    extractItems={(data) => (data.races as RaceItem[]) ?? []}
+    defaultSortingColumnId="date"
+    defaultSortingDescending
     columnDefinitions={[
       {
         id: 'date',
         header: 'Date',
         cell: (item) => item.date,
+        sortingComparator: (a, b) => a.sk.localeCompare(b.sk),
         width: 140,
       },
       {
         id: 'distance',
         header: 'Distance',
         cell: (item) => item.distance,
+        sortingComparator: (a, b) => distanceRank(a.distance) - distanceRank(b.distance),
         width: 120,
       },
       {
@@ -47,6 +63,7 @@ const RaceHistory: React.FC = () => (
         id: 'vdot',
         header: 'VDOT',
         cell: (item) => item.vdot.toFixed(1),
+        sortingComparator: (a, b) => a.vdot - b.vdot,
         width: 80,
       },
       {

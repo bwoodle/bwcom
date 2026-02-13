@@ -29,40 +29,45 @@ function buildWeeklySk(date: string): string {
 
 export const listTrainingLog = tool(
   async ({ logId }) => {
-    if (logId) {
-      const result = await docClient.send(
-        new QueryCommand({
-          TableName: TRAINING_LOG_TABLE_NAME,
-          KeyConditionExpression: 'logId = :lid',
-          ExpressionAttributeValues: { ':lid': logId },
-        })
-      );
-      const items = (result.Items ?? []).map(formatItem);
-      items.sort((a, b) => (b.sk as string).localeCompare(a.sk as string));
+    try {
+      if (logId) {
+        const result = await docClient.send(
+          new QueryCommand({
+            TableName: TRAINING_LOG_TABLE_NAME,
+            KeyConditionExpression: 'logId = :lid',
+            ExpressionAttributeValues: { ':lid': logId },
+          })
+        );
+        const items = (result.Items ?? []).map(formatItem);
+        items.sort((a, b) => (b.sk as string).localeCompare(a.sk as string));
+        return JSON.stringify(items, null, 2);
+      }
+
+      // Full scan — return everything
+      const allItems: Record<string, unknown>[] = [];
+      let lastEvaluatedKey: Record<string, unknown> | undefined;
+      do {
+        const result = await docClient.send(
+          new ScanCommand({
+            TableName: TRAINING_LOG_TABLE_NAME,
+            ExclusiveStartKey: lastEvaluatedKey,
+          })
+        );
+        allItems.push(...(result.Items ?? []));
+        lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+      } while (lastEvaluatedKey);
+
+      const items = allItems.map(formatItem);
+      items.sort((a, b) => {
+        const lid = (a.logId as string).localeCompare(b.logId as string);
+        if (lid !== 0) return lid;
+        return (b.sk as string).localeCompare(a.sk as string);
+      });
       return JSON.stringify(items, null, 2);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return JSON.stringify({ success: false, error: `Failed to list training log: ${message}` });
     }
-
-    // Full scan — return everything
-    const allItems: Record<string, unknown>[] = [];
-    let lastEvaluatedKey: Record<string, unknown> | undefined;
-    do {
-      const result = await docClient.send(
-        new ScanCommand({
-          TableName: TRAINING_LOG_TABLE_NAME,
-          ExclusiveStartKey: lastEvaluatedKey,
-        })
-      );
-      allItems.push(...(result.Items ?? []));
-      lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
-    } while (lastEvaluatedKey);
-
-    const items = allItems.map(formatItem);
-    items.sort((a, b) => {
-      const lid = (a.logId as string).localeCompare(b.logId as string);
-      if (lid !== 0) return lid;
-      return (b.sk as string).localeCompare(a.sk as string);
-    });
-    return JSON.stringify(items, null, 2);
   },
   {
     name: 'listTrainingLog',
@@ -94,31 +99,36 @@ the exact logId and sk values.`,
 
 export const addDailyWorkout = tool(
   async ({ logId, date, slot, description, miles, highlight }) => {
-    const sk = buildDailySk(date, slot);
-    const createdAt = new Date().toISOString();
+    try {
+      const sk = buildDailySk(date, slot);
+      const createdAt = new Date().toISOString();
 
-    const item: Record<string, unknown> = {
-      logId,
-      sk,
-      date,
-      slot,
-      entryType: 'daily',
-      description,
-      miles,
-      createdAt,
-    };
-    if (highlight) {
-      item.highlight = true;
+      const item: Record<string, unknown> = {
+        logId,
+        sk,
+        date,
+        slot,
+        entryType: 'daily',
+        description,
+        miles,
+        createdAt,
+      };
+      if (highlight) {
+        item.highlight = true;
+      }
+
+      await docClient.send(
+        new PutCommand({
+          TableName: TRAINING_LOG_TABLE_NAME,
+          Item: item,
+        })
+      );
+
+      return JSON.stringify({ success: true, logId, sk, date, slot, description, miles, highlight: highlight ?? false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return JSON.stringify({ success: false, error: `Failed to add daily workout: ${message}` });
     }
-
-    await docClient.send(
-      new PutCommand({
-        TableName: TRAINING_LOG_TABLE_NAME,
-        Item: item,
-      })
-    );
-
-    return JSON.stringify({ success: true, logId, sk, date, slot, description, miles, highlight: highlight ?? false });
   },
   {
     name: 'addDailyWorkout',
@@ -132,21 +142,32 @@ workout unless the user mentions it.
 - logId: which training cycle (e.g. "paris-2026")
 - date: the date of the workout (e.g. "2026-02-08")
 - slot: "workout1" for morning or "workout2" for afternoon/evening
-- description: what the workout was (e.g. "Easy run", "Tempo intervals\\n3x2mi @ LT pace").
-  Supports multi-line with \\n.
+- description: what the workout was (see formatting rules below)
 - miles: distance in miles (number)
 
 Optional:
 - highlight: set to true for key workouts (long runs, races, breakthrough sessions)
 
-If the user says something vague like "I ran 5 miles this morning", ask what the workout
-description should be, and confirm the date and training cycle if ambiguous.
+**Description formatting rules:**
 
-Examples:
-  { logId: "paris-2026", date: "2026-02-08", slot: "workout1",
-    description: "Easy aerobic run", miles: 5.0 }
-  { logId: "paris-2026", date: "2026-02-08", slot: "workout2",
-    description: "Recovery jog", miles: 2.5 }`,
+- Single-activity workouts: Do NOT include the mileage total in the description
+  — it is recorded separately in the miles field. Just describe the activity.
+  Example: "Easy run" — NOT "5 mile easy run"
+
+- Multi-activity workouts (more than one activity in a single slot): Put each
+  activity on a separate line (use \\n). If a mileage total is provided for an
+  individual activity, begin that line with it.
+  Examples:
+    "2.3 mile walk\\n4.5 mile run"
+    "20 minutes of plyos\\n4.5 mile easy run"
+
+- Capitalization: Use sentence-case. Words like "mile", "run", "treadmill",
+  "easy", etc. should be lowercase unless they are the first word of a line.
+  Examples: "Easy run", "4.5 mile tempo run",
+    "20 minutes of plyos\\n4.5 mile easy run"
+
+If the user says something vague like "I ran 5 miles this morning", ask what the workout
+description should be, and confirm the date and training cycle if ambiguous.`,
     schema: z.object({
       logId: z.string().describe('Training log/cycle ID, e.g. "paris-2026".'),
       date: z.string().describe('Date in YYYY-MM-DD format, e.g. "2026-02-08".'),
@@ -160,24 +181,29 @@ Examples:
 
 export const addWeeklySummary = tool(
   async ({ logId, date, description }) => {
-    const sk = buildWeeklySk(date);
-    const createdAt = new Date().toISOString();
+    try {
+      const sk = buildWeeklySk(date);
+      const createdAt = new Date().toISOString();
 
-    await docClient.send(
-      new PutCommand({
-        TableName: TRAINING_LOG_TABLE_NAME,
-        Item: {
-          logId,
-          sk,
-          date,
-          entryType: 'week',
-          description,
-          createdAt,
-        },
-      })
-    );
+      await docClient.send(
+        new PutCommand({
+          TableName: TRAINING_LOG_TABLE_NAME,
+          Item: {
+            logId,
+            sk,
+            date,
+            entryType: 'week',
+            description,
+            createdAt,
+          },
+        })
+      );
 
-    return JSON.stringify({ success: true, logId, sk, date, description });
+      return JSON.stringify({ success: true, logId, sk, date, description });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return JSON.stringify({ success: false, error: `Failed to add weekly summary: ${message}` });
+    }
   },
   {
     name: 'addWeeklySummary',
@@ -205,13 +231,18 @@ Parameters:
 
 export const removeTrainingLogEntry = tool(
   async ({ logId, sk }) => {
-    await docClient.send(
-      new DeleteCommand({
-        TableName: TRAINING_LOG_TABLE_NAME,
-        Key: { logId, sk },
-      })
-    );
-    return JSON.stringify({ success: true, deleted: { logId, sk } });
+    try {
+      await docClient.send(
+        new DeleteCommand({
+          TableName: TRAINING_LOG_TABLE_NAME,
+          Key: { logId, sk },
+        })
+      );
+      return JSON.stringify({ success: true, deleted: { logId, sk } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return JSON.stringify({ success: false, error: `Failed to remove training log entry: ${message}` });
+    }
   },
   {
     name: 'removeTrainingLogEntry',
@@ -236,43 +267,48 @@ The entry is permanently deleted. This cannot be undone.`,
 
 export const updateTrainingLogEntry = tool(
   async ({ logId, sk, description, miles, highlight }) => {
-    const updates: string[] = [];
-    const values: Record<string, unknown> = {};
-    const removes: string[] = [];
+    try {
+      const updates: string[] = [];
+      const values: Record<string, unknown> = {};
+      const removes: string[] = [];
 
-    if (description !== undefined) {
-      updates.push('description = :d');
-      values[':d'] = description;
+      if (description !== undefined) {
+        updates.push('description = :d');
+        values[':d'] = description;
+      }
+      if (miles !== undefined) {
+        updates.push('miles = :m');
+        values[':m'] = miles;
+      }
+      if (highlight === true) {
+        updates.push('highlight = :h');
+        values[':h'] = true;
+      } else if (highlight === false) {
+        removes.push('highlight');
+      }
+
+      let updateExpr = '';
+      if (updates.length) updateExpr += `SET ${updates.join(', ')}`;
+      if (removes.length) updateExpr += ` REMOVE ${removes.join(', ')}`;
+
+      if (!updateExpr) {
+        return JSON.stringify({ success: false, error: 'No fields to update.' });
+      }
+
+      await docClient.send(
+        new UpdateCommand({
+          TableName: TRAINING_LOG_TABLE_NAME,
+          Key: { logId, sk },
+          UpdateExpression: updateExpr,
+          ...(Object.keys(values).length ? { ExpressionAttributeValues: values } : {}),
+        })
+      );
+
+      return JSON.stringify({ success: true, logId, sk, updated: { description, miles, highlight } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return JSON.stringify({ success: false, error: `Failed to update training log entry: ${message}` });
     }
-    if (miles !== undefined) {
-      updates.push('miles = :m');
-      values[':m'] = miles;
-    }
-    if (highlight === true) {
-      updates.push('highlight = :h');
-      values[':h'] = true;
-    } else if (highlight === false) {
-      removes.push('highlight');
-    }
-
-    let updateExpr = '';
-    if (updates.length) updateExpr += `SET ${updates.join(', ')}`;
-    if (removes.length) updateExpr += ` REMOVE ${removes.join(', ')}`;
-
-    if (!updateExpr) {
-      return JSON.stringify({ success: false, message: 'No fields to update.' });
-    }
-
-    await docClient.send(
-      new UpdateCommand({
-        TableName: TRAINING_LOG_TABLE_NAME,
-        Key: { logId, sk },
-        UpdateExpression: updateExpr,
-        ...(Object.keys(values).length ? { ExpressionAttributeValues: values } : {}),
-      })
-    );
-
-    return JSON.stringify({ success: true, logId, sk, updated: { description, miles, highlight } });
   },
   {
     name: 'updateTrainingLogEntry',

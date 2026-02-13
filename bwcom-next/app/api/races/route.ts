@@ -3,7 +3,7 @@ import { docClient, RACES_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
 
 export interface RaceItem {
   yearKey: string;    // e.g. "2026"
-  sk: string;         // e.g. "2026-02-08T12:00:00.000Z#Boston Marathon"
+  sk: string;         // e.g. "2026-02-08#5K"
   date: string;       // display date, e.g. "Feb 8, 2026"
   distance: string;
   time: string;       // e.g. "3:12:45" or "18:30"
@@ -12,14 +12,8 @@ export interface RaceItem {
   createdAt: string;
 }
 
-export interface YearGroup {
-  yearKey: string;
-  label: string;      // e.g. "2026"
-  items: RaceItem[];
-}
-
 /**
- * GET /api/races — Return all race results grouped by year, newest first.
+ * GET /api/races — Return all race results as a flat list, newest first.
  * Public endpoint (no auth required).
  */
 export async function GET() {
@@ -51,24 +45,10 @@ export async function GET() {
       lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
     } while (lastEvaluatedKey);
 
-    // Group by yearKey
-    const groupMap = new Map<string, RaceItem[]>();
-    for (const item of allItems) {
-      const group = groupMap.get(item.yearKey) ?? [];
-      group.push(item);
-      groupMap.set(item.yearKey, group);
-    }
+    // Sort newest first by sort key (which starts with YYYY-MM-DD)
+    allItems.sort((a, b) => b.sk.localeCompare(a.sk));
 
-    // Sort years descending, items within each year by date descending (sk contains timestamp)
-    const years: YearGroup[] = Array.from(groupMap.entries())
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([yearKey, items]) => ({
-        yearKey,
-        label: yearKey,
-        items: items.sort((a, b) => b.sk.localeCompare(a.sk)),
-      }));
-
-    return Response.json({ years });
+    return Response.json({ races: allItems });
   } catch (err) {
     console.error('Failed to fetch race data:', err);
     return Response.json(
