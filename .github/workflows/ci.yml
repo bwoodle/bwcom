@@ -7,32 +7,16 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Build Next.js
-        run: |
-          cd bwcom-next
-          npm ci
-          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} \
-          NEXTAUTH_URL=https://brentwoodle.com \
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-          NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/brentwoodle.com \
-          npm run build
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to ECR
@@ -40,7 +24,9 @@ jobs:
       - name: Build and Push Docker
         run: |
           SHA=${GITHUB_SHA}
-          docker buildx build --platform linux/arm64 \
+          docker buildx build \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
             --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/brentwoodle.com \
             -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA} \
             -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest \
