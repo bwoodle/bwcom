@@ -2,6 +2,10 @@ import { tool } from 'langchain';
 import { z } from 'zod';
 import { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, MEDIA_TABLE_NAME } from './dynamodb';
+import {
+  MEDIA_TOOL_DESCRIPTIONS,
+  MEDIA_ARG_DESCRIPTIONS,
+} from './prompts/tool-descriptions/media';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -93,29 +97,16 @@ export const listMedia = tool(
   },
   {
     name: 'listMedia',
-    description: `List media entries from the media tracking table.
-
-If month and year are provided, returns only entries for that month.
-Otherwise returns all entries, sorted newest month first.
-
-Each item contains:
-  monthKey  – partition key, e.g. "2026-02"
-  sk        – sort key (timestamp#title), needed for updates and deletes
-  title     – the title of the book, movie, show, etc.
-  format    – e.g. "audiobook", "book", "movie", "TV", "podcast"
-  comments  – optional multi-line comments/review (may be null)
-
-Always call this before attempting to remove or update an entry so you have
-the exact sk value.`,
+    description: MEDIA_TOOL_DESCRIPTIONS.listMedia,
     schema: z.object({
       month: z
         .string()
         .optional()
-        .describe('Month name (e.g. "February" or "Feb"). Omit to list all months.'),
+        .describe(MEDIA_ARG_DESCRIPTIONS.monthOptional),
       year: z
         .number()
         .optional()
-        .describe('Four-digit year (e.g. 2026). Required if month is provided.'),
+        .describe(MEDIA_ARG_DESCRIPTIONS.yearOptional),
     }),
   }
 );
@@ -148,31 +139,16 @@ export const addMedia = tool(
   },
   {
     name: 'addMedia',
-    description: `Add a new media entry to the tracking table.
-
-Use this when the user says they consumed a book, movie, audiobook, TV show,
-podcast, etc.
-
-The comments field is optional and supports multi-line text. Use it for
-reviews, thoughts, or notes about the media.
-
-Examples:
-  { month: "February", year: 2026, title: "Paradais", format: "audiobook",
-    comments: "Jeselnik book club for February.\\nWild beginning chapter." }
-  { month: "January", year: 2026, title: "The Bear Season 3", format: "TV" }`,
+    description: MEDIA_TOOL_DESCRIPTIONS.addMedia,
     schema: z.object({
-      month: z.string().describe('Month name (e.g. "February", "Feb").'),
-      year: z.number().describe('Four-digit year (e.g. 2026).'),
-      title: z.string().describe('Title of the media (book, movie, show, etc.).'),
-      format: z
-        .string()
-        .describe('Format / medium — e.g. "audiobook", "book", "movie", "TV", "podcast".'),
+      month: z.string().describe(MEDIA_ARG_DESCRIPTIONS.monthRequired),
+      year: z.number().describe(MEDIA_ARG_DESCRIPTIONS.yearRequired),
+      title: z.string().describe(MEDIA_ARG_DESCRIPTIONS.title),
+      format: z.string().describe(MEDIA_ARG_DESCRIPTIONS.format),
       comments: z
         .string()
         .optional()
-        .describe(
-          'Optional multi-line comments or review. Use newline characters (\\n) to separate lines.'
-        ),
+        .describe(MEDIA_ARG_DESCRIPTIONS.commentsOptional),
     }),
   }
 );
@@ -189,21 +165,10 @@ export const removeMedia = tool(
   },
   {
     name: 'removeMedia',
-    description: `Remove a media entry from the tracking table.
-
-**IMPORTANT: Always ask the user for confirmation before calling this tool.**
-
-Before calling this tool you MUST first call listMedia to discover the exact
-monthKey and sk of the entry the user wants to delete.
-
-Parameters:
-  monthKey – the partition key (e.g. "2026-02")
-  sk       – the exact sort key (e.g. "2026-02-08T12:00:00.000Z#Paradais")
-
-The entry is permanently deleted. This cannot be undone.`,
+    description: MEDIA_TOOL_DESCRIPTIONS.removeMedia,
     schema: z.object({
-      monthKey: z.string().describe('The monthKey (partition key) of the entry to delete.'),
-      sk: z.string().describe('The exact sk (sort key) of the entry to delete. Get this from listMedia.'),
+      monthKey: z.string().describe(MEDIA_ARG_DESCRIPTIONS.monthKey),
+      sk: z.string().describe(MEDIA_ARG_DESCRIPTIONS.skToDelete),
     }),
   }
 );
@@ -233,27 +198,14 @@ export const updateMediaComments = tool(
   },
   {
     name: 'updateMediaComments',
-    description: `Update the comments on an existing media entry.
-
-Before calling this tool you MUST first call listMedia to discover the exact
-monthKey and sk of the entry the user wants to update.
-
-The comments field supports multi-line text. Pass an empty string or omit
-to clear the comments entirely.
-
-Parameters:
-  monthKey – the partition key (e.g. "2026-02")
-  sk       – the exact sort key
-  comments – new multi-line comments text, or empty string to clear`,
+    description: MEDIA_TOOL_DESCRIPTIONS.updateMediaComments,
     schema: z.object({
-      monthKey: z.string().describe('The monthKey (partition key) of the entry.'),
-      sk: z.string().describe('The exact sk (sort key) of the entry. Get this from listMedia.'),
+      monthKey: z.string().describe(MEDIA_ARG_DESCRIPTIONS.monthKey),
+      sk: z.string().describe(MEDIA_ARG_DESCRIPTIONS.skToUpdate),
       comments: z
         .string()
         .optional()
-        .describe(
-          'New comments text (supports multi-line with \\n). Omit or pass empty string to clear.'
-        ),
+        .describe(MEDIA_ARG_DESCRIPTIONS.commentsUpdate),
     }),
   }
 );

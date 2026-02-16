@@ -2,6 +2,10 @@ import { tool } from 'langchain';
 import { z } from 'zod';
 import { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, RACES_TABLE_NAME } from './dynamodb';
+import {
+  RACE_TOOL_DESCRIPTIONS,
+  RACE_ARG_DESCRIPTIONS,
+} from './prompts/tool-descriptions/races';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,27 +84,12 @@ export const listRaces = tool(
   },
   {
     name: 'listRaces',
-    description: `List race results from the race history table.
-
-If year is provided, returns only results for that year.
-Otherwise returns all results, sorted newest first.
-
-Each item contains:
-  yearKey   – partition key, e.g. "2026"
-  sk        – sort key (date#distance), needed for updates and deletes
-  date      – display date, e.g. "Feb 8, 2026"
-  distance  – e.g. "5K", "Half Marathon", "Marathon"
-  time      – finish time as a string, e.g. "3:12:45" or "18:30"
-  vdot      – VDOT score, e.g. 67.0
-  comments  – optional multi-line comments (may be null)
-
-Always call this before attempting to remove or update an entry so you have
-the exact yearKey and sk values.`,
+    description: RACE_TOOL_DESCRIPTIONS.listRaces,
     schema: z.object({
       year: z
         .number()
         .optional()
-        .describe('Four-digit year (e.g. 2026). Omit to list all years.'),
+        .describe(RACE_ARG_DESCRIPTIONS.yearOptional),
     }),
   }
 );
@@ -155,36 +144,16 @@ export const addRace = tool(
   },
   {
     name: 'addRace',
-    description: `Add a new race result to the race history table.
-
-Use this when the user tells you about a race they ran.
-
-**IMPORTANT: Before calling this tool, you MUST have ALL of the following:**
-  - date     – the race date
-  - distance – the race distance (e.g. "5K", "10K", "Half Marathon", "Marathon")
-  - time     – the finish time
-  - vdot     – the VDOT score
-
-If the user has not provided any of these, ask a follow-up question to get
-the missing information. Do NOT guess or assume values — especially VDOT.
-
-Parameters:
-  date     – the race date, e.g. "Feb 8, 2026" or "2026-02-08"
-  distance – e.g. "5K", "10K", "Half Marathon", "Marathon"
-  time     – finish time as a string, e.g. "3:12:45" or "18:30"
-  vdot     – VDOT score as a number, e.g. 67.0
-  comments – optional multi-line comments about the race`,
+    description: RACE_TOOL_DESCRIPTIONS.addRace,
     schema: z.object({
-      date: z.string().describe('Race date, e.g. "Feb 8, 2026" or "2026-02-08".'),
-      distance: z.string().describe('Race distance, e.g. "5K", "10K", "Half Marathon", "Marathon".'),
-      time: z.string().describe('Finish time as a string, e.g. "3:12:45" or "18:30".'),
-      vdot: z.number().describe('VDOT score, e.g. 67.0.'),
+      date: z.string().describe(RACE_ARG_DESCRIPTIONS.date),
+      distance: z.string().describe(RACE_ARG_DESCRIPTIONS.distance),
+      time: z.string().describe(RACE_ARG_DESCRIPTIONS.time),
+      vdot: z.number().describe(RACE_ARG_DESCRIPTIONS.vdot),
       comments: z
         .string()
         .optional()
-        .describe(
-          'Optional multi-line comments about the race. Use newline characters (\\n) to separate lines.'
-        ),
+        .describe(RACE_ARG_DESCRIPTIONS.commentsOptional),
     }),
   }
 );
@@ -206,21 +175,10 @@ export const removeRace = tool(
   },
   {
     name: 'removeRace',
-    description: `Remove a race result from the race history table.
-
-**IMPORTANT: Always ask the user for confirmation before calling this tool.**
-
-Before calling this tool you MUST first call listRaces to discover the exact
-yearKey and sk of the entry the user wants to delete.
-
-Parameters:
-  yearKey – the partition key (e.g. "2026")
-  sk      – the exact sort key (e.g. "2026-02-08#5K")
-
-The entry is permanently deleted. This cannot be undone.`,
+    description: RACE_TOOL_DESCRIPTIONS.removeRace,
     schema: z.object({
-      yearKey: z.string().describe('The yearKey (partition key) of the entry to delete.'),
-      sk: z.string().describe('The exact sk (sort key) of the entry to delete. Get this from listRaces.'),
+      yearKey: z.string().describe(RACE_ARG_DESCRIPTIONS.yearKeyDelete),
+      sk: z.string().describe(RACE_ARG_DESCRIPTIONS.skDelete),
     }),
   }
 );
@@ -281,36 +239,16 @@ export const updateRace = tool(
   },
   {
     name: 'updateRace',
-    description: `Update fields on an existing race result.
-
-Before calling this tool you MUST first call listRaces to discover the exact
-yearKey and sk of the entry the user wants to update.
-
-You can update any combination of:
-  time     – new finish time string
-  vdot     – new VDOT score
-  comments – new comments text (supports multi-line with \\n), or empty string to clear
-
-**To change a race's date or distance**, use removeRace followed by addRace instead,
-because date and distance are part of the key and cannot be updated in place.
-
-Parameters:
-  yearKey  – the partition key (e.g. "2026")
-  sk       – the exact sort key (e.g. "2026-02-08#5K")
-  time     – optional new finish time
-  vdot     – optional new VDOT score
-  comments – optional new comments text, or empty string to clear`,
+    description: RACE_TOOL_DESCRIPTIONS.updateRace,
     schema: z.object({
-      yearKey: z.string().describe('The yearKey (partition key) of the entry.'),
-      sk: z.string().describe('The exact sk (sort key) of the entry. Get this from listRaces.'),
-      time: z.string().optional().describe('New finish time string.'),
-      vdot: z.number().optional().describe('New VDOT score.'),
+      yearKey: z.string().describe(RACE_ARG_DESCRIPTIONS.yearKeyUpdate),
+      sk: z.string().describe(RACE_ARG_DESCRIPTIONS.skUpdate),
+      time: z.string().optional().describe(RACE_ARG_DESCRIPTIONS.timeUpdate),
+      vdot: z.number().optional().describe(RACE_ARG_DESCRIPTIONS.vdotUpdate),
       comments: z
         .string()
         .optional()
-        .describe(
-          'New comments text (supports multi-line with \\n). Pass empty string to clear.'
-        ),
+        .describe(RACE_ARG_DESCRIPTIONS.commentsUpdate),
     }),
   }
 );
