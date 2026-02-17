@@ -35,6 +35,30 @@ function isSundayDate(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.getDay() === 0;
 }
 
+function isIsoDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function requiredStringField(
+  value: unknown,
+  fieldName: string,
+): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Missing required field: ${fieldName}`);
+  }
+  return value.trim();
+}
+
+function requiredNumberField(
+  value: unknown,
+  fieldName: string,
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`Missing required field: ${fieldName}`);
+  }
+  return value;
+}
+
 // ---------------------------------------------------------------------------
 // Tools
 // ---------------------------------------------------------------------------
@@ -96,17 +120,21 @@ export const listTrainingLog = tool(
 export const addDailyWorkout = tool(
   async ({ logId, date, slot, description, miles, highlight }) => {
     try {
-      const sk = buildDailySk(date, slot);
+      const safeLogId = requiredStringField(logId, 'logId');
+      const safeDate = requiredStringField(date, 'date');
+      const safeDescription = requiredStringField(description, 'description');
+      const safeMiles = requiredNumberField(miles, 'miles');
+      const sk = buildDailySk(safeDate, slot);
       const createdAt = new Date().toISOString();
 
       const item: Record<string, unknown> = {
-        logId,
+        logId: safeLogId,
         sk,
-        date,
+        date: safeDate,
         slot,
         entryType: 'daily',
-        description,
-        miles,
+        description: safeDescription,
+        miles: safeMiles,
         createdAt,
       };
       if (highlight) {
@@ -120,7 +148,16 @@ export const addDailyWorkout = tool(
         })
       );
 
-      return JSON.stringify({ success: true, logId, sk, date, slot, description, miles, highlight: highlight ?? false });
+      return JSON.stringify({
+        success: true,
+        logId: safeLogId,
+        sk,
+        date: safeDate,
+        slot,
+        description: safeDescription,
+        miles: safeMiles,
+        highlight: highlight ?? false,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       return JSON.stringify({ success: false, error: `Failed to add daily workout: ${message}` });
@@ -130,13 +167,21 @@ export const addDailyWorkout = tool(
     name: 'addDailyWorkout',
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.addDailyWorkout,
     schema: z.object({
-      logId: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
-      date: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.date),
+      logId: z.string().trim().min(1).describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
+      date: z
+        .string()
+        .trim()
+        .refine(isIsoDate, { message: 'Date must be YYYY-MM-DD.' })
+        .describe(TRAINING_LOG_ARG_DESCRIPTIONS.date),
       slot: z
         .enum(['workout1', 'workout2'])
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.slot),
-      description: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.description),
-      miles: z.number().describe(TRAINING_LOG_ARG_DESCRIPTIONS.miles),
+      description: z
+        .string()
+        .trim()
+        .min(1)
+        .describe(TRAINING_LOG_ARG_DESCRIPTIONS.description),
+      miles: z.number().finite().describe(TRAINING_LOG_ARG_DESCRIPTIONS.miles),
       highlight: z
         .boolean()
         .optional()
@@ -148,24 +193,33 @@ export const addDailyWorkout = tool(
 export const addWeeklySummary = tool(
   async ({ logId, date, description }) => {
     try {
-      const sk = buildWeeklySk(date);
+      const safeLogId = requiredStringField(logId, 'logId');
+      const safeDate = requiredStringField(date, 'date');
+      const safeDescription = requiredStringField(description, 'description');
+      const sk = buildWeeklySk(safeDate);
       const createdAt = new Date().toISOString();
 
       await docClient.send(
         new PutCommand({
           TableName: TRAINING_LOG_TABLE_NAME,
           Item: {
-            logId,
+            logId: safeLogId,
             sk,
-            date,
+            date: safeDate,
             entryType: 'week',
-            description,
+            description: safeDescription,
             createdAt,
           },
         })
       );
 
-      return JSON.stringify({ success: true, logId, sk, date, description });
+      return JSON.stringify({
+        success: true,
+        logId: safeLogId,
+        sk,
+        date: safeDate,
+        description: safeDescription,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       return JSON.stringify({ success: false, error: `Failed to add weekly summary: ${message}` });
@@ -175,15 +229,18 @@ export const addWeeklySummary = tool(
     name: 'addWeeklySummary',
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.addWeeklySummary,
     schema: z.object({
-      logId: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
+      logId: z.string().trim().min(1).describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
       date: z
         .string()
+        .trim()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.weeklyDate)
         .refine(isSundayDate, {
           message: 'Weekly summary date must be a Sunday (YYYY-MM-DD).',
         }),
       description: z
         .string()
+        .trim()
+        .min(1)
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.weeklyDescription),
     }),
   }
