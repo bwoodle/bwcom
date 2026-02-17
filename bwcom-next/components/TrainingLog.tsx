@@ -64,6 +64,8 @@ type WeekGroup = {
   weeklySummary?: WeeklyEntry;
 };
 
+type SortMode = 'newest' | 'oldest';
+
 /* ------------------------------------------------------------------ */
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
@@ -98,7 +100,10 @@ const addDays = (date: Date, days: number) => {
 const formatMiles = (value: number) =>
   value % 1 === 0 ? `${value}` : `${value.toFixed(1)}`;
 
-const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
+const buildWeekGroups = (
+  entries: TrainingLogEntry[],
+  sortMode: SortMode,
+): WeekGroup[] => {
   const weeklyEntries = entries
     .filter((entry): entry is WeeklyEntry => entry.entryType === 'week');
 
@@ -106,13 +111,13 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
     (entry): entry is DailyEntry => entry.entryType === 'daily',
   );
 
-  // Build a map of weekly summaries keyed by date (the Saturday ending the week)
+  // Build a map of weekly summaries keyed by date (the Sunday ending the week)
   const summaryByDate = new Map<string, WeeklyEntry>();
   for (const w of weeklyEntries) {
     summaryByDate.set(w.date, w);
   }
 
-  // Discover all week-ending Saturdays from daily entries + weekly summaries
+  // Discover all week-ending Sundays from daily entries + weekly summaries
   const weekEndingSet = new Set<string>();
 
   // Add weeks from weekly summaries
@@ -120,19 +125,19 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
     weekEndingSet.add(w.date);
   }
 
-  // Add weeks from daily entries — find the Saturday ending each entry's week
+  // Add weeks from daily entries — find the Sunday ending each entry's week
   for (const d of dailyEntries) {
     const date = parseDate(d.date);
     const dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
-    const daysUntilSat = (6 - dayOfWeek + 7) % 7 || 7; // Sun(0)->6 days, Mon(1)->5, ... Sat(6)->7 (next Sat)
-    // If the entry is on a Saturday, it belongs to the week ending that Saturday
-    const satDate = dayOfWeek === 6 ? date : addDays(date, daysUntilSat);
-    weekEndingSet.add(satDate.toISOString().slice(0, 10));
+    const daysUntilSun = (7 - dayOfWeek) % 7; // Sun(0)->0 days, Mon(1)->6, ... Sat(6)->1
+    const sunDate = addDays(date, daysUntilSun);
+    weekEndingSet.add(sunDate.toISOString().slice(0, 10));
   }
 
-  const weekEndings = Array.from(weekEndingSet).sort((a, b) =>
-    parseDate(b).getTime() - parseDate(a).getTime(),
-  );
+  const weekEndings = Array.from(weekEndingSet).sort((a, b) => {
+    const delta = parseDate(a).getTime() - parseDate(b).getTime();
+    return sortMode === 'newest' ? -delta : delta;
+  });
 
   return weekEndings.map((weekEnding) => {
     const weekEnd = parseDate(weekEnding);
@@ -142,7 +147,12 @@ const buildWeekGroups = (entries: TrainingLogEntry[]): WeekGroup[] => {
       addDays(weekStart, index),
     );
 
-    const dailyRows: DayRow[] = weekDays.map((day) => {
+    const orderedWeekDays =
+      sortMode === 'newest'
+        ? [...weekDays].reverse()
+        : weekDays;
+
+    const dailyRows: DayRow[] = orderedWeekDays.map((day) => {
       const date = day.toISOString().slice(0, 10);
       const entriesForDay = dailyEntries.filter(
         (entry) => entry.date === date,
@@ -345,6 +355,7 @@ const WeekCard: React.FC<{ week: WeekGroup }> = ({ week }) => {
 
 const TrainingLog: React.FC = () => {
   const [activeLogId, setActiveLogId] = useState(sectionConfigs[0].id);
+  const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [sectionState, setSectionState] = useState<
     Record<string, SectionState>
   >({});
@@ -403,7 +414,7 @@ const TrainingLog: React.FC = () => {
       return <StatusIndicator type="error">{state.message}</StatusIndicator>;
     }
 
-    const weekGroups = buildWeekGroups(state.data.entries);
+    const weekGroups = buildWeekGroups(state.data.entries, sortMode);
 
     return (
       <SpaceBetween size="l">
@@ -419,18 +430,31 @@ const TrainingLog: React.FC = () => {
 
   return (
     <div>
-      {sectionConfigs.length > 1 && (
-        <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16 }}>
+        <SpaceBetween size="s">
           <SegmentedControl
-            selectedId={activeLogId}
-            onChange={({ detail }) => setActiveLogId(detail.selectedId)}
-            options={sectionConfigs.map((s) => ({
-              id: s.id,
-              text: s.name,
-            }))}
+            selectedId={sortMode}
+            onChange={({ detail }) =>
+              setSortMode(detail.selectedId as SortMode)
+            }
+            options={[
+              { id: 'newest', text: 'Newest first' },
+              { id: 'oldest', text: 'Oldest first' },
+            ]}
           />
-        </div>
-      )}
+
+          {sectionConfigs.length > 1 && (
+            <SegmentedControl
+              selectedId={activeLogId}
+              onChange={({ detail }) => setActiveLogId(detail.selectedId)}
+              options={sectionConfigs.map((s) => ({
+                id: s.id,
+                text: s.name,
+              }))}
+            />
+          )}
+        </SpaceBetween>
+      </div>
 
       <Container header={<Header variant="h1">{sectionName}</Header>}>
         {renderContent()}

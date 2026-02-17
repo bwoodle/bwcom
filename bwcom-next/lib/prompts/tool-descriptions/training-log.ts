@@ -11,7 +11,7 @@ The table contains two kinds of entries, distinguished by the sort key prefix:
    highlight (boolean), createdAt
 
 2. **Weekly summary entries** — sk starts with "week#"
-   Fields: logId, sk, date (the Saturday that ends the week), description
+  Fields: logId, sk, date (the Sunday that ends the week), description
    (summary text), miles (total for the week), createdAt
 
 Always call this before attempting to remove or update an entry so you have
@@ -55,7 +55,7 @@ Optional:
     addWeeklySummary: `Add a weekly summary entry to the training log.
 
 A weekly summary adds an optional description/note to a training week. The
-date should be the Saturday that ends the week. Weekly summaries are NOT
+date should be the Sunday that ends the week. Weekly summaries are NOT
 required — weeks are automatically discovered from daily workout entries.
 The total miles for a week are always computed from the daily workouts.
 
@@ -64,7 +64,7 @@ or comment (e.g. "Solid base week; legs felt fresh.").
 
 Parameters:
   logId       – training cycle ID (e.g. "paris-2026")
-  date        – the Saturday ending the week, YYYY-MM-DD format
+  date        – the Sunday ending the week, YYYY-MM-DD format
   description – brief summary/note about the week`,
 
     removeTrainingLogEntry: `Remove a training log entry (daily workout or weekly summary).
@@ -103,7 +103,7 @@ export const TRAINING_LOG_ARG_DESCRIPTIONS = {
     description: 'Workout description. Supports multi-line with \\n.',
     miles: 'Distance in miles.',
     highlightOptional: 'True for key workouts (long runs, races, breakthroughs).',
-    weeklyDate: 'The Saturday ending the week, YYYY-MM-DD format.',
+    weeklyDate: 'The Sunday ending the week, YYYY-MM-DD format.',
     weeklyDescription: 'Brief summary/note about the training week.',
     deleteLogId: 'The logId (partition key) of the entry to delete.',
     deleteSk: 'The exact sk (sort key) of the entry to delete. Get this from listTrainingLog.',
