@@ -274,6 +274,7 @@ const styles = {
     fontSize: 12,
     color: '#545b64',
     lineHeight: 1.4,
+    whiteSpace: 'pre-line' as const,
   } as React.CSSProperties,
 } as const;
 

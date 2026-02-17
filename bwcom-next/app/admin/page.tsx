@@ -281,13 +281,13 @@ const AdminPage: React.FC = () => {
               }
             >
               {msg.role === 'assistant' ? (
-                <div className="chat-markdown">
+                <div className="chat-markdown" style={{ whiteSpace: 'pre-wrap' }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.content}
                   </ReactMarkdown>
                 </div>
               ) : (
-                msg.content
+                <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
               )}
             </ChatBubble>
           ))}

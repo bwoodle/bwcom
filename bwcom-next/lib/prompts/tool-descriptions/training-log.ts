@@ -65,7 +65,7 @@ or comment (e.g. "Solid base week; legs felt fresh.").
 Parameters:
   logId       – training cycle ID (e.g. "paris-2026")
   date        – the Sunday ending the week, YYYY-MM-DD format
-  description – brief summary/note about the week`,
+  description – brief summary/note about the week (supports multi-line with \\n)`,
 
     removeTrainingLogEntry: `Remove a training log entry (daily workout or weekly summary).
 
@@ -104,7 +104,7 @@ export const TRAINING_LOG_ARG_DESCRIPTIONS = {
     miles: 'Distance in miles.',
     highlightOptional: 'True for key workouts (long runs, races, breakthroughs).',
     weeklyDate: 'The Sunday ending the week, YYYY-MM-DD format.',
-    weeklyDescription: 'Brief summary/note about the training week.',
+    weeklyDescription: 'Brief summary/note about the training week. Supports multi-line with \\n.',
     deleteLogId: 'The logId (partition key) of the entry to delete.',
     deleteSk: 'The exact sk (sort key) of the entry to delete. Get this from listTrainingLog.',
     updateLogId: 'The logId (partition key) of the entry.',
