@@ -1,4 +1,4 @@
-import { QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, TRAINING_LOG_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
 
 interface DailyEntry {

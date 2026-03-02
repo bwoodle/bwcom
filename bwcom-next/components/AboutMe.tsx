@@ -122,7 +122,7 @@ const AboutMe: React.FC = () => {
               I stayed with the company through M&A, leadership changes, and founder exits as Corepoint became Rhapsody. Between 2021 and 2024, I held a series of roles including Engineering Manager, Director of Engineering overseeing the Corepoint product, and Cloud Engineering Manager, where I led the effort to deliver Corepoint as a PaaS on AWS. In these roles, I really rounded out my servant leadership and product management skills as we began to develop the first cloud-native solutions for our security-minded customers who traditionally relied on on-premises deployments.
             </p>
             <p>
-              More recently, I’ve returned to a Principal Software Engineer role building Axon, the LLM-backed intelligence layer for Rhapsody’s chatbots and agentic features. Our stack includes LangGraph, FastAPI, Next.js, and Langfuse, all hosted on AWS. This is a team that genuinely embraces the DevOps mindset—focusing on delivering value quickly and safely. This is the first time in my career where I've been in a role where my team and I can ship something from idea to production in a single day.
+              More recently, I’ve returned to a Principal Software Engineer role building Axon, the LLM-backed intelligence layer for Rhapsody’s chatbots and agentic features. Our stack includes LangGraph, FastAPI, Next.js, and Langfuse, all hosted on AWS. This is a team that genuinely embraces the DevOps mindset—focusing on delivering value quickly and safely. This is the first time in my career where I&apos;ve been in a role where my team and I can ship something from idea to production in a single day.
             </p>
           </SpaceBetween>
         </section>
@@ -155,9 +155,11 @@ const AboutMe: React.FC = () => {
         size="large"
       >
         {selectedPhoto && (
-          <img
+          <Image
             src={selectedPhoto.fullSrc}
             alt={selectedPhoto.alt}
+            width={1200}
+            height={1200}
             style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
           />
         )}
