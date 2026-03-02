@@ -20,7 +20,7 @@
     "@langchain/core": "^1.1.19",
     "@langchain/langgraph": "^1.1.4",
     "langchain": "^1.2.18",
-    "next": "^15.5.10",
+    "next": "^16.1.6",
     "next-auth": "^4.24.13",
     "react": "19.2.4",
     "react-dom": "19.2.4",
