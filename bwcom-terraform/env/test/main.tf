@@ -17,7 +17,6 @@ module "ecs_next" {
   google_client_id = var.google_client_id
   google_client_secret = var.google_client_secret
   ecr_repository_url = "685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next"
-  allowance_table_name    = var.allowance_table_name
   media_table_name         = var.media_table_name
   races_table_name         = var.races_table_name
   training_log_table_name  = var.training_log_table_name
@@ -48,12 +47,6 @@ variable "google_client_secret" {
 }
 
 # test will use module default image_tag ("latest") unless overridden
-
-variable "allowance_table_name" {
-  description = "Name of the DynamoDB allowance table for test"
-  type        = string
-  default     = "allowance-test-v1"
-}
 
 variable "media_table_name" {
   description = "Name of the DynamoDB media table for test"

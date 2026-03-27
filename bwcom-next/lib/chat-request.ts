@@ -16,7 +16,6 @@ export function buildSystemPrompt(): string {
   });
 
   const sections = [
-    SYSTEM_PROMPT_SECTIONS.allowance,
     SYSTEM_PROMPT_SECTIONS.media,
     SYSTEM_PROMPT_SECTIONS.races,
     SYSTEM_PROMPT_SECTIONS.trainingLog,

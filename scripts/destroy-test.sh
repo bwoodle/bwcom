@@ -31,7 +31,6 @@ cd bwcom-terraform/env/test
 export TF_VAR_nextauth_secret="$NEXTAUTH_SECRET"
 export TF_VAR_google_client_id="$GOOGLE_CLIENT_ID"
 export TF_VAR_google_client_secret="$GOOGLE_CLIENT_SECRET"
-export TF_VAR_allowance_table_name="unused"
 
 echo "Initializing Terraform (env/test)"
 terraform init

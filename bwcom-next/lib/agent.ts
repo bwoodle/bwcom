@@ -1,7 +1,6 @@
 import { ChatBedrockConverse } from '@langchain/aws';
 import { createAgent } from 'langchain';
 import { TTLMemorySaver } from './TTLMemorySaver';
-import { allowanceTools } from './allowance-tools';
 import { mediaTools } from './media-tools';
 import { raceTools } from './race-tools';
 import { trainingLogTools } from './training-log-tools';
@@ -21,7 +20,7 @@ const llm = new ChatBedrockConverse({
 
 const agent = createAgent({
   model: llm,
-  tools: [...allowanceTools, ...mediaTools, ...raceTools, ...trainingLogTools],
+  tools: [...mediaTools, ...raceTools, ...trainingLogTools],
   systemPrompt: buildSystemPrompt(),
   checkpointer,
 });

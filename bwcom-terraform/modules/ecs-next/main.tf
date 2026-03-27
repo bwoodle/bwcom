@@ -260,7 +260,6 @@ resource "aws_iam_role_policy" "ecs_task_dynamodb" {
         Effect = "Allow"
         Action = "dynamodb:*"
         Resource = [
-          "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.allowance_table_name}",
           "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.media_table_name}",
           "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.races_table_name}",
           "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${var.training_log_table_name}"
@@ -305,10 +304,6 @@ resource "aws_ecs_task_definition" "next" {
       {
         name  = "GOOGLE_CLIENT_SECRET"
         value = var.google_client_secret
-      },
-      {
-        name  = "ALLOWANCE_TABLE_NAME"
-        value = var.allowance_table_name
       },
       {
         name  = "MEDIA_TABLE_NAME"

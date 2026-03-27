@@ -60,10 +60,6 @@ echo "Syncing images to test S3 bucket"
 ./scripts/sync-images.sh test.brentwoodle.com
 cd bwcom-terraform/env/test-data
 
-# Capture the table name from the data tier output
-ALLOWANCE_TABLE_NAME=$(terraform output -raw allowance_table_name)
-echo "Allowance table: ${ALLOWANCE_TABLE_NAME}"
-
 MEDIA_TABLE_NAME=$(terraform output -raw media_table_name)
 echo "Media table: ${MEDIA_TABLE_NAME}"
 
@@ -76,7 +72,6 @@ cd ../test
 export TF_VAR_nextauth_secret="$NEXTAUTH_SECRET"
 export TF_VAR_google_client_id="$GOOGLE_CLIENT_ID"
 export TF_VAR_google_client_secret="$GOOGLE_CLIENT_SECRET"
-export TF_VAR_allowance_table_name="$ALLOWANCE_TABLE_NAME"
 export TF_VAR_media_table_name="$MEDIA_TABLE_NAME"
 export TF_VAR_races_table_name="$RACES_TABLE_NAME"
 

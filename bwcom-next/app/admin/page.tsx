@@ -15,7 +15,6 @@ import ChatBubble from '@cloudscape-design/chat-components/chat-bubble';
 import Avatar from '@cloudscape-design/chat-components/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import Allowance from '../../components/Allowance';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -28,7 +27,6 @@ const AdminPage: React.FC = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [allowanceKey, setAllowanceKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -125,40 +123,7 @@ const AdminPage: React.FC = () => {
               });
             }
             if (data.toolCall) {
-              const { name, result: resultStr } = data.toolCall;
-              let parsed: Record<string, unknown> = {};
-              try {
-                parsed = JSON.parse(resultStr);
-              } catch {
-                // result may not be JSON for list tool
-              }
-              let summary = '';
-              if (name === 'addAllowanceEntry' && parsed.success) {
-                const amt = Number(parsed.amount) || 0;
-                const sign = amt >= 0 ? '+' : '-';
-                summary = `✅ Added ${sign}$${Math.abs(amt).toFixed(2)} for ${parsed.childName}: ${parsed.description}`;
-              } else if (name === 'removeAllowanceEntry' && parsed.success) {
-                const del = parsed.deleted as { childName?: string; timestamp?: string } | undefined;
-                summary = `🗑️ Removed entry for ${del?.childName} at ${del?.timestamp}`;
-              } else if (name === 'listRecentAllowanceEntries') {
-                // result is a JSON array; try to summarize from it
-                let children: string[] = [];
-                try {
-                  const arr = Array.isArray(parsed) ? parsed : JSON.parse(resultStr);
-                  children = arr.map((c: { childName: string }) => c.childName);
-                } catch { /* ignore */ }
-                summary = `📋 Fetched recent entries${children.length ? ` for ${children.join(' and ')}` : ''}`;
-              }
-              if (summary) {
-                setMessages((prev) => [
-                  ...prev,
-                  { role: 'assistant', content: summary },
-                ]);
-              }
-              // Refresh the Allowance display after any mutation
-              if (name === 'addAllowanceEntry' || name === 'removeAllowanceEntry') {
-                setAllowanceKey((k) => k + 1);
-              }
+              // Tool calls are streamed for transparency; no local side-effects required.
             }
           } catch {
             // skip malformed JSON lines
@@ -195,7 +160,6 @@ const AdminPage: React.FC = () => {
     return (
       <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
         <SpaceBetween size="l">
-        <Allowance key={allowanceKey} />
         <Container header={<Header variant="h1">Admin</Header>}>
           <Box textAlign="center" padding={{ vertical: 'xxl' }}>
             <Spinner size="large" />
@@ -212,7 +176,6 @@ const AdminPage: React.FC = () => {
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
     <SpaceBetween size="l">
-    <Allowance key={allowanceKey} />
     <Container
       header={
         <Header
