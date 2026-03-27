@@ -7,6 +7,15 @@ import {
   MEDIA_ARG_DESCRIPTIONS,
 } from './prompts/tool-descriptions/media';
 
+const MEDIA_FORMAT_OPTIONS = [
+  'book',
+  'audiobook',
+  'kindle',
+  'movie',
+  'tv',
+  'podcast',
+] as const;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -144,7 +153,7 @@ export const addMedia = tool(
       month: z.string().describe(MEDIA_ARG_DESCRIPTIONS.monthRequired),
       year: z.number().describe(MEDIA_ARG_DESCRIPTIONS.yearRequired),
       title: z.string().describe(MEDIA_ARG_DESCRIPTIONS.title),
-      format: z.string().describe(MEDIA_ARG_DESCRIPTIONS.format),
+      format: z.enum(MEDIA_FORMAT_OPTIONS).describe(MEDIA_ARG_DESCRIPTIONS.format),
       comments: z
         .string()
         .optional()

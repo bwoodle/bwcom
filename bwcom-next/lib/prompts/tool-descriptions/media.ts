@@ -8,7 +8,7 @@ Each item contains:
   monthKey  – partition key, e.g. "2026-02"
   sk        – sort key (timestamp#title), needed for updates and deletes
   title     – the title of the book, movie, show, etc.
-  format    – e.g. "audiobook", "book", "movie", "TV", "podcast"
+  format    – one of: "book", "audiobook", "kindle", "movie", "tv", "podcast"
   comments  – optional multi-line comments/review (may be null)
 
 Always call this before attempting to remove or update an entry so you have
@@ -19,13 +19,19 @@ the exact sk value.`,
 Use this when the user says they consumed a book, movie, audiobook, TV show,
 podcast, etc.
 
+Allowed format values are exactly:
+  "book", "audiobook", "kindle", "movie", "tv", "podcast"
+
+If the user requests another wording (for example "television"), map it to the
+closest allowed value ("tv").
+
 The comments field is optional and supports multi-line text. Use it for
 reviews, thoughts, or notes about the media.
 
 Examples:
   { month: "February", year: 2026, title: "Paradais", format: "audiobook",
     comments: "Jeselnik book club for February.\\nWild beginning chapter." }
-  { month: "January", year: 2026, title: "The Bear Season 3", format: "TV" }`,
+  { month: "January", year: 2026, title: "The Bear Season 3", format: "tv" }`,
 
   removeMedia: `Remove a media entry from the tracking table.
 
@@ -33,6 +39,9 @@ Examples:
 
 Before calling this tool you MUST first call listMedia to discover the exact
 monthKey and sk of the entry the user wants to delete.
+
+Use this as the first step when fixing mistakes in title, month, year, or
+format: remove the incorrect row, then call addMedia with corrected values.
 
 Parameters:
   monthKey – the partition key (e.g. "2026-02")
@@ -60,11 +69,13 @@ export const MEDIA_ARG_DESCRIPTIONS = {
   monthRequired: 'Month name (e.g. "February", "Feb").',
   yearRequired: 'Four-digit year (e.g. 2026).',
   title: 'Title of the media (book, movie, show, etc.).',
-  format: 'Format / medium — e.g. "audiobook", "book", "movie", "TV", "podcast".',
+  format:
+    'Format / medium. Allowed values only: "book", "audiobook", "kindle", "movie", "tv", "podcast".',
   commentsOptional:
     'Optional multi-line comments or review. Use newline characters (\\n) to separate lines.',
   monthKey: 'The monthKey (partition key) of the entry to delete.',
-  skToDelete: 'The exact sk (sort key) of the entry to delete. Get this from listMedia.',
+  skToDelete:
+    'The exact sk (sort key) of the entry to delete. Get this from listMedia. For correcting bad title/month/format values, delete the incorrect entry then add a new corrected one.',
   skToUpdate: 'The exact sk (sort key) of the entry. Get this from listMedia.',
   commentsUpdate:
     'New comments text (supports multi-line with \\n). Omit or pass empty string to clear.',
