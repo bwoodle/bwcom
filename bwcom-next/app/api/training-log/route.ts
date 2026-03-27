@@ -1,32 +1,14 @@
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { docClient, TRAINING_LOG_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
-
-interface DailyEntry {
-  logId: string;
-  sk: string;
-  date: string;
-  entryType: 'daily';
-  slot: 'workout1' | 'workout2';
-  description: string;
-  miles: number;
-  highlight?: boolean;
-}
-
-interface WeeklyEntry {
-  logId: string;
-  sk: string;
-  date: string;
-  entryType: 'week';
-  description: string;
-}
-
-type TrainingLogEntry = DailyEntry | WeeklyEntry;
-
-interface TrainingLogSection {
-  id: string;
-  name: string;
-  entries: TrainingLogEntry[];
-}
+import type {
+  TrainingLogEntry,
+  TrainingLogSection,
+  TrainingLogBatchUpdateItem,
+  TrainingLogBatchUpdateRequest,
+  TrainingLogBatchUpdateResponse,
+} from '@/types/training-log';
 
 /** Map logId → display name. Add new cycles here. */
 const LOG_NAMES: Record<string, string> = {
@@ -53,6 +35,50 @@ function toEntry(item: Record<string, unknown>): TrainingLogEntry {
   }
 
   return { ...base, entryType: 'week' };
+}
+
+function isAdminSession(session: Awaited<ReturnType<typeof getServerSession>>) {
+  return Boolean(session?.user?.email && session.user.role === 'admin');
+}
+
+function isSkSupported(sk: string): boolean {
+  return sk.startsWith('daily#') || sk.startsWith('week#');
+}
+
+function validateUpdateItem(item: TrainingLogBatchUpdateItem): string | null {
+  if (!item.sk || typeof item.sk !== 'string' || !isSkSupported(item.sk)) {
+    return 'Invalid sk format. Expected daily#... or week#...';
+  }
+
+  if (item.description !== undefined) {
+    if (typeof item.description !== 'string' || item.description.trim().length === 0) {
+      return 'Description must be a non-empty string when provided.';
+    }
+  }
+
+  if (item.miles !== undefined) {
+    if (typeof item.miles !== 'number' || !Number.isFinite(item.miles)) {
+      return 'Miles must be a finite number when provided.';
+    }
+  }
+
+  if (item.highlight !== undefined && typeof item.highlight !== 'boolean') {
+    return 'Highlight must be a boolean when provided.';
+  }
+
+  if (
+    item.description === undefined &&
+    item.miles === undefined &&
+    item.highlight === undefined
+  ) {
+    return 'No update fields provided.';
+  }
+
+  if (item.sk.startsWith('week#') && (item.miles !== undefined || item.highlight !== undefined)) {
+    return 'Weekly entries only support description updates.';
+  }
+
+  return null;
 }
 
 /**
@@ -104,4 +130,98 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * PATCH /api/training-log
+ * Body: { logId: string, updates: [{ sk, description?, miles?, highlight? }] }
+ * Applies row-level updates in bulk and returns per-row results.
+ */
+export async function PATCH(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!isAdminSession(session)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: TrainingLogBatchUpdateRequest;
+  try {
+    body = (await request.json()) as TrainingLogBatchUpdateRequest;
+  } catch {
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (!body?.logId || typeof body.logId !== 'string') {
+    return Response.json({ error: 'logId is required' }, { status: 400 });
+  }
+  if (!Array.isArray(body.updates) || body.updates.length === 0) {
+    return Response.json({ error: 'updates must be a non-empty array' }, { status: 400 });
+  }
+  if (body.updates.length > 200) {
+    return Response.json({ error: 'updates cannot exceed 200 items' }, { status: 400 });
+  }
+
+  const results: TrainingLogBatchUpdateResponse['results'] = [];
+
+  for (const item of body.updates) {
+    const validationError = validateUpdateItem(item);
+    if (validationError) {
+      results.push({ sk: item?.sk ?? 'unknown', success: false, error: validationError });
+      continue;
+    }
+
+    const updates: string[] = [];
+    const values: Record<string, unknown> = {};
+    const removes: string[] = [];
+
+    if (item.description !== undefined) {
+      updates.push('description = :d');
+      values[':d'] = item.description.trim();
+    }
+    if (item.miles !== undefined) {
+      updates.push('miles = :m');
+      values[':m'] = item.miles;
+    }
+    if (item.highlight === true) {
+      updates.push('highlight = :h');
+      values[':h'] = true;
+    } else if (item.highlight === false) {
+      removes.push('highlight');
+    }
+
+    let updateExpression = '';
+    if (updates.length > 0) {
+      updateExpression += `SET ${updates.join(', ')}`;
+    }
+    if (removes.length > 0) {
+      updateExpression += `${updateExpression ? ' ' : ''}REMOVE ${removes.join(', ')}`;
+    }
+
+    try {
+      await docClient.send(
+        new UpdateCommand({
+          TableName: TABLE_NAME,
+          Key: { logId: body.logId, sk: item.sk },
+          ConditionExpression: 'attribute_exists(logId) AND attribute_exists(sk)',
+          UpdateExpression: updateExpression,
+          ...(Object.keys(values).length > 0
+            ? { ExpressionAttributeValues: values }
+            : {}),
+        })
+      );
+      results.push({ sk: item.sk, success: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown update error';
+      results.push({ sk: item.sk, success: false, error: message });
+    }
+  }
+
+  const successCount = results.filter((result) => result.success).length;
+  const failureCount = results.length - successCount;
+
+  return Response.json({
+    logId: body.logId,
+    successCount,
+    failureCount,
+    results,
+  } satisfies TrainingLogBatchUpdateResponse);
 }

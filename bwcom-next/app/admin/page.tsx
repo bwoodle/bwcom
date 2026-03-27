@@ -9,12 +9,14 @@ import {
   Box,
   Spinner,
   StatusIndicator,
+  SegmentedControl,
 } from '@cloudscape-design/components';
 import PromptInput from '@cloudscape-design/components/prompt-input';
 import ChatBubble from '@cloudscape-design/chat-components/chat-bubble';
 import Avatar from '@cloudscape-design/chat-components/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import TrainingLogBulkEditor from '@/components/TrainingLogBulkEditor';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -22,6 +24,7 @@ interface Message {
 }
 
 const AdminPage: React.FC = () => {
+  const [mode, setMode] = useState<'chat' | 'training-log'>('training-log');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -173,13 +176,11 @@ const AdminPage: React.FC = () => {
     );
   }
 
-  return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
-    <SpaceBetween size="l">
+  const renderChat = () => (
     <Container
       header={
         <Header
-          variant="h1"
+          variant="h2"
           actions={
             <Button
               onClick={handleReset}
@@ -190,11 +191,11 @@ const AdminPage: React.FC = () => {
             </Button>
           }
         >
+          Admin Chat
         </Header>
       }
     >
       <SpaceBetween size="m">
-        {/* Message list */}
         <div
           style={{
             maxHeight: '60vh',
@@ -258,12 +259,10 @@ const AdminPage: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Error display */}
         {error && (
           <StatusIndicator type="error">{error}</StatusIndicator>
         )}
 
-        {/* Input area */}
         <PromptInput
           value={input}
           onChange={({ detail }) => setInput(detail.value)}
@@ -274,6 +273,25 @@ const AdminPage: React.FC = () => {
         />
       </SpaceBetween>
     </Container>
+  );
+
+  return (
+    <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+    <SpaceBetween size="l">
+      <Container
+        header={<Header variant="h1">Admin</Header>}
+      >
+        <SegmentedControl
+          selectedId={mode}
+          onChange={({ detail }) => setMode(detail.selectedId as 'chat' | 'training-log')}
+          options={[
+            { id: 'training-log', text: 'Training log bulk edit' },
+            { id: 'chat', text: 'Assistant chat' },
+          ]}
+        />
+      </Container>
+
+      {mode === 'training-log' ? <TrainingLogBulkEditor /> : renderChat()}
     </SpaceBetween>
     </div>
   );
