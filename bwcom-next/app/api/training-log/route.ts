@@ -1,5 +1,6 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { getServerSession } from 'next-auth';
+import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { docClient, TRAINING_LOG_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
 import type {
@@ -37,8 +38,8 @@ function toEntry(item: Record<string, unknown>): TrainingLogEntry {
   return { ...base, entryType: 'week' };
 }
 
-function isAdminSession(session: Awaited<ReturnType<typeof getServerSession>>) {
-  return Boolean(session?.user?.email && session.user.role === 'admin');
+function isAdminSession(session: Session | null) {
+  return Boolean(session?.user?.email && session?.user?.role === 'admin');
 }
 
 function isSkSupported(sk: string): boolean {
