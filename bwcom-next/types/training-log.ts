@@ -49,3 +49,18 @@ export type TrainingLogBatchUpdateResponse = {
   failureCount: number;
   results: TrainingLogBatchUpdateResult[];
 };
+
+export type TrainingLogCreateRequest = {
+  logId: string;
+  entryType: 'daily' | 'week';
+  date: string;
+  description: string;
+  slot?: 'workout1' | 'workout2';
+  miles?: number;
+  highlight?: boolean;
+};
+
+export type TrainingLogCreateResponse = {
+  success: true;
+  entry: TrainingLogEntry;
+};

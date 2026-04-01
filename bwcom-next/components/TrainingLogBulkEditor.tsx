@@ -18,6 +18,8 @@ import {
 import type {
   TrainingLogBatchUpdateItem,
   TrainingLogBatchUpdateResponse,
+  TrainingLogCreateRequest,
+  TrainingLogCreateResponse,
   TrainingLogEntry,
   TrainingLogSection,
 } from '@/types/training-log';
@@ -110,6 +112,14 @@ const TrainingLogBulkEditor: React.FC = () => {
   const [query, setQuery] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [newEntryType, setNewEntryType] = useState<'daily' | 'week'>('daily');
+  const [newDate, setNewDate] = useState('');
+  const [newSlot, setNewSlot] = useState<'workout1' | 'workout2'>('workout1');
+  const [newDescription, setNewDescription] = useState('');
+  const [newMiles, setNewMiles] = useState('');
+  const [newHighlight, setNewHighlight] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createMessage, setCreateMessage] = useState<string | null>(null);
 
   const loadSection = useCallback(async (logId: string) => {
     setStatus('loading');
@@ -327,6 +337,70 @@ const TrainingLogBulkEditor: React.FC = () => {
     }
   };
 
+  const onCreateEntry = async () => {
+    if (!section) return;
+
+    setCreateMessage(null);
+    if (!newDate) {
+      setCreateMessage('Date is required.');
+      return;
+    }
+    if (!newDescription.trim()) {
+      setCreateMessage('Description is required.');
+      return;
+    }
+    if (newEntryType === 'daily' && !Number.isFinite(Number(newMiles))) {
+      setCreateMessage('Miles must be a valid number for daily entries.');
+      return;
+    }
+
+    const payload: TrainingLogCreateRequest = {
+      logId: section.id,
+      entryType: newEntryType,
+      date: newDate,
+      description: newDescription.trim(),
+      ...(newEntryType === 'daily'
+        ? {
+            slot: newSlot,
+            miles: Number(newMiles),
+            ...(newHighlight ? { highlight: true } : {}),
+          }
+        : {}),
+    };
+
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/training-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body?.error || `Create failed with status ${response.status}`);
+      }
+
+      const result = body as TrainingLogCreateResponse;
+      setSection((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          entries: [result.entry, ...current.entries],
+        };
+      });
+      setCreateMessage('Entry created.');
+      setNewDescription('');
+      setNewMiles('');
+      setNewHighlight(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown create error';
+      setCreateMessage(`Create failed: ${message}`);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const allVisibleSelected =
     filteredEntries.length > 0 &&
     filteredEntries.every((entry) => Boolean(selectedSk[entry.sk]));
@@ -362,6 +436,95 @@ const TrainingLogBulkEditor: React.FC = () => {
           onChange={({ detail }) => setActiveLogId(detail.selectedId)}
           options={logConfigs.map((config) => ({ id: config.id, text: config.name }))}
         />
+
+        <Container
+          header={<Header variant="h3">New Entry</Header>}
+        >
+          <SpaceBetween size="m">
+            <SpaceBetween direction="horizontal" size="l">
+              <FormField label="Entry type">
+                <SegmentedControl
+                  selectedId={newEntryType}
+                  onChange={({ detail }) => setNewEntryType(detail.selectedId as 'daily' | 'week')}
+                  options={[
+                    { id: 'daily', text: 'Daily workout' },
+                    { id: 'week', text: 'Weekly summary' },
+                  ]}
+                />
+              </FormField>
+              <FormField label="Date">
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(event) => setNewDate(event.target.value)}
+                />
+              </FormField>
+              {newEntryType === 'daily' && (
+                <FormField label="Slot">
+                  <SegmentedControl
+                    selectedId={newSlot}
+                    onChange={({ detail }) => setNewSlot(detail.selectedId as 'workout1' | 'workout2')}
+                    options={[
+                      { id: 'workout1', text: 'Workout 1' },
+                      { id: 'workout2', text: 'Workout 2' },
+                    ]}
+                  />
+                </FormField>
+              )}
+              {newEntryType === 'daily' && (
+                <FormField label="Miles">
+                  <Input
+                    type="number"
+                    step={0.1}
+                    value={newMiles}
+                    onChange={({ detail }) => setNewMiles(detail.value)}
+                    placeholder="e.g. 8.5"
+                  />
+                </FormField>
+              )}
+              {newEntryType === 'daily' && (
+                <FormField label="Highlight">
+                  <Checkbox
+                    checked={newHighlight}
+                    onChange={({ detail }) => setNewHighlight(detail.checked)}
+                  >
+                    Mark as highlight
+                  </Checkbox>
+                </FormField>
+              )}
+            </SpaceBetween>
+
+            <FormField
+              label={newEntryType === 'daily' ? 'Workout description' : 'Weekly summary'}
+              description={
+                newEntryType === 'week'
+                  ? 'Weekly summaries must use a Sunday date.'
+                  : undefined
+              }
+            >
+              <Textarea
+                rows={3}
+                value={newDescription}
+                onChange={({ detail }) => setNewDescription(detail.value)}
+              />
+            </FormField>
+
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                variant="primary"
+                onClick={onCreateEntry}
+                loading={isCreating}
+              >
+                Add entry
+              </Button>
+              {createMessage && (
+                <StatusIndicator type={createMessage.startsWith('Create failed') ? 'error' : 'success'}>
+                  {createMessage}
+                </StatusIndicator>
+              )}
+            </SpaceBetween>
+          </SpaceBetween>
+        </Container>
 
         <SpaceBetween direction="horizontal" size="l">
           <FormField label="Search">

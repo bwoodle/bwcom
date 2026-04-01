@@ -1,4 +1,4 @@
-import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -9,6 +9,8 @@ import type {
   TrainingLogBatchUpdateItem,
   TrainingLogBatchUpdateRequest,
   TrainingLogBatchUpdateResponse,
+  TrainingLogCreateRequest,
+  TrainingLogCreateResponse,
 } from '@/types/training-log';
 
 /** Map logId → display name. Add new cycles here. */
@@ -44,6 +46,24 @@ function isAdminSession(session: Session | null) {
 
 function isSkSupported(sk: string): boolean {
   return sk.startsWith('daily#') || sk.startsWith('week#');
+}
+
+function isIsoDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function isSundayDate(value: string): boolean {
+  if (!isIsoDate(value)) return false;
+  const d = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(d.getTime()) && d.getDay() === 0;
+}
+
+function buildDailySk(date: string, slot: 'workout1' | 'workout2'): string {
+  return `daily#${date}#${slot}`;
+}
+
+function buildWeeklySk(date: string): string {
+  return `week#${date}`;
 }
 
 function validateUpdateItem(item: TrainingLogBatchUpdateItem): string | null {
@@ -225,4 +245,99 @@ export async function PATCH(request: Request) {
     failureCount,
     results,
   } satisfies TrainingLogBatchUpdateResponse);
+}
+
+/**
+ * POST /api/training-log
+ * Body daily: { logId, entryType: 'daily', date, slot, description, miles, highlight? }
+ * Body week: { logId, entryType: 'week', date, description }
+ */
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!isAdminSession(session)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: TrainingLogCreateRequest;
+  try {
+    body = (await request.json()) as TrainingLogCreateRequest;
+  } catch {
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (!body?.logId || typeof body.logId !== 'string') {
+    return Response.json({ error: 'logId is required' }, { status: 400 });
+  }
+  if (!body?.entryType || (body.entryType !== 'daily' && body.entryType !== 'week')) {
+    return Response.json({ error: 'entryType must be daily or week' }, { status: 400 });
+  }
+  if (!isIsoDate(body.date)) {
+    return Response.json({ error: 'date must be YYYY-MM-DD' }, { status: 400 });
+  }
+  if (!body.description || typeof body.description !== 'string' || body.description.trim().length === 0) {
+    return Response.json({ error: 'description is required' }, { status: 400 });
+  }
+
+  try {
+    if (body.entryType === 'daily') {
+      if (body.slot !== 'workout1' && body.slot !== 'workout2') {
+        return Response.json({ error: 'slot must be workout1 or workout2 for daily entries' }, { status: 400 });
+      }
+      if (typeof body.miles !== 'number' || !Number.isFinite(body.miles)) {
+        return Response.json({ error: 'miles must be a finite number for daily entries' }, { status: 400 });
+      }
+
+      const entry: TrainingLogEntry = {
+        logId: body.logId,
+        sk: buildDailySk(body.date, body.slot),
+        date: body.date,
+        entryType: 'daily',
+        slot: body.slot,
+        description: body.description.trim(),
+        miles: body.miles,
+        ...(body.highlight ? { highlight: true } : {}),
+      };
+
+      await docClient.send(
+        new PutCommand({
+          TableName: TABLE_NAME,
+          Item: {
+            ...entry,
+            createdAt: new Date().toISOString(),
+          },
+          ConditionExpression: 'attribute_not_exists(logId) AND attribute_not_exists(sk)',
+        })
+      );
+
+      return Response.json({ success: true, entry } satisfies TrainingLogCreateResponse);
+    }
+
+    if (!isSundayDate(body.date)) {
+      return Response.json({ error: 'Weekly summary date must be a Sunday' }, { status: 400 });
+    }
+
+    const entry: TrainingLogEntry = {
+      logId: body.logId,
+      sk: buildWeeklySk(body.date),
+      date: body.date,
+      entryType: 'week',
+      description: body.description.trim(),
+    };
+
+    await docClient.send(
+      new PutCommand({
+        TableName: TABLE_NAME,
+        Item: {
+          ...entry,
+          createdAt: new Date().toISOString(),
+        },
+        ConditionExpression: 'attribute_not_exists(logId) AND attribute_not_exists(sk)',
+      })
+    );
+
+    return Response.json({ success: true, entry } satisfies TrainingLogCreateResponse);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to create entry';
+    return Response.json({ error: message }, { status: 400 });
+  }
 }
