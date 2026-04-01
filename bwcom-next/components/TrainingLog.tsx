@@ -373,13 +373,39 @@ const TrainingLog: React.FC = () => {
     });
 
     try {
-      const response = await fetch(
-        `/api/training-log?sectionId=${sectionId}`,
-      );
-      if (!response.ok)
-        throw new Error(`Request failed with ${response.status}`);
+      const allEntries: TrainingLogEntry[] = [];
+      let cursor: string | null = null;
+      let sectionName =
+        sectionConfigs.find((section) => section.id === sectionId)?.name ?? sectionId;
 
-      const data: TrainingLogSection = await response.json();
+      for (let page = 0; page < 20; page += 1) {
+        const params = new URLSearchParams({ sectionId, limit: '1000' });
+        if (cursor) {
+          params.set('cursor', cursor);
+        }
+
+        const response = await fetch(`/api/training-log?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Request failed with ${response.status}`);
+        }
+
+        const data = (await response.json()) as TrainingLogSection & { nextCursor?: string | null };
+        sectionName = data.name;
+        allEntries.push(...(data.entries ?? []));
+
+        cursor = typeof data.nextCursor === 'string' && data.nextCursor.length > 0
+          ? data.nextCursor
+          : null;
+        if (!cursor) {
+          break;
+        }
+      }
+
+      const data: TrainingLogSection = {
+        id: sectionId,
+        name: sectionName,
+        entries: allEntries,
+      };
       setSectionState((current) => ({
         ...current,
         [sectionId]: { status: 'loaded', data },

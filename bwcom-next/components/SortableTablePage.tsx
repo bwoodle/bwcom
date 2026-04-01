@@ -56,10 +56,33 @@ function SortableTablePage<T>({
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setItems(extractItems(data));
+        const baseUrl = new URL(apiUrl, window.location.origin);
+        baseUrl.searchParams.set('limit', '1000');
+
+        const pages: Record<string, unknown>[] = [];
+        let cursor: string | null = null;
+
+        for (let page = 0; page < 20; page += 1) {
+          const url = new URL(baseUrl.toString());
+          if (cursor) {
+            url.searchParams.set('cursor', cursor);
+          }
+
+          const res = await fetch(url.toString());
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          const data = (await res.json()) as Record<string, unknown>;
+          pages.push(data);
+
+          const nextCursor = data.nextCursor;
+          cursor = typeof nextCursor === 'string' && nextCursor.length > 0 ? nextCursor : null;
+          if (!cursor) {
+            break;
+          }
+        }
+
+        const allItems = pages.flatMap((page) => extractItems(page));
+        setItems(allItems);
         setStatus('loaded');
       } catch (err) {
         console.error(`Failed to load ${emptyNoun}:`, err);

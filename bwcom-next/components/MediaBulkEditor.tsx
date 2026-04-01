@@ -105,12 +105,32 @@ const MediaBulkEditor: React.FC = () => {
     setSaveMessage(null);
 
     try {
-      const response = await fetch('/api/media');
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
+      const pages: MediaApiResponse[] = [];
+      let cursor: string | null = null;
+
+      for (let page = 0; page < 20; page += 1) {
+        const params = new URLSearchParams({ limit: '1000' });
+        if (cursor) {
+          params.set('cursor', cursor);
+        }
+
+        const response = await fetch(`/api/media?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = (await response.json()) as MediaApiResponse & { nextCursor?: string | null };
+        pages.push(data);
+
+        cursor = typeof data.nextCursor === 'string' && data.nextCursor.length > 0
+          ? data.nextCursor
+          : null;
+        if (!cursor) {
+          break;
+        }
       }
-      const data = (await response.json()) as MediaApiResponse;
-      const nextItems = (data.months ?? []).flatMap((month) => month.items ?? []);
+
+      const nextItems = pages.flatMap((page) => (page.months ?? []).flatMap((month) => month.items ?? []));
       nextItems.sort((a, b) => {
         const monthDelta = b.monthKey.localeCompare(a.monthKey);
         if (monthDelta !== 0) return monthDelta;
