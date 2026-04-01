@@ -1,5 +1,12 @@
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, RACES_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
+import {
+  decodeCursor,
+  encodeCursor,
+  parseLimit,
+  PUBLIC_CACHE_HEADERS,
+  rateLimitPublicRequest,
+} from '@/lib/public-api-guards';
 
 export interface RaceItem {
   yearKey: string;    // e.g. "2026"
@@ -16,39 +23,46 @@ export interface RaceItem {
  * GET /api/races — Return all race results as a flat list, newest first.
  * Public endpoint (no auth required).
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = rateLimitPublicRequest(request, 'races-get', 60);
+  if (limited) {
+    return limited;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const limit = parseLimit(searchParams.get('limit'), 500, 1000);
+  const cursor = decodeCursor(searchParams.get('cursor'));
+
   try {
-    const allItems: RaceItem[] = [];
-    let lastEvaluatedKey: Record<string, unknown> | undefined;
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+        Limit: limit,
+        ExclusiveStartKey: cursor,
+      })
+    );
 
-    do {
-      const result = await docClient.send(
-        new ScanCommand({
-          TableName: TABLE_NAME,
-          ExclusiveStartKey: lastEvaluatedKey,
-        })
-      );
-
-      for (const item of result.Items ?? []) {
-        allItems.push({
-          yearKey: item.yearKey as string,
-          sk: item.sk as string,
-          date: item.date as string,
-          distance: item.distance as string,
-          time: item.time as string,
-          vdot: item.vdot as number,
-          comments: item.comments as string | undefined,
-          createdAt: item.createdAt as string,
-        });
-      }
-
-      lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
-    } while (lastEvaluatedKey);
+    const allItems: RaceItem[] = (result.Items ?? []).map((item) => ({
+      yearKey: item.yearKey as string,
+      sk: item.sk as string,
+      date: item.date as string,
+      distance: item.distance as string,
+      time: item.time as string,
+      vdot: item.vdot as number,
+      comments: item.comments as string | undefined,
+      createdAt: item.createdAt as string,
+    }));
 
     // Sort newest first by sort key (which starts with YYYY-MM-DD)
     allItems.sort((a, b) => b.sk.localeCompare(a.sk));
 
-    return Response.json({ races: allItems });
+    return Response.json(
+      {
+        races: allItems,
+        nextCursor: encodeCursor(result.LastEvaluatedKey as Record<string, unknown> | undefined),
+      },
+      { headers: PUBLIC_CACHE_HEADERS }
+    );
   } catch (err) {
     console.error('Failed to fetch race data:', err);
     return Response.json(

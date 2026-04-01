@@ -13,6 +13,8 @@ mkdir -p "${THUMBS_DIR}"
 npx sharp-cli -i "${PHOTOS_DIR}/web-content/*.jpg" -o "${THUMBS_DIR}" resize 800
 
 echo "==> Syncing to s3://${BUCKET}/..."
-aws s3 sync "${PHOTOS_DIR}/" "s3://${BUCKET}/" --delete
+aws s3 sync "${PHOTOS_DIR}/" "s3://${BUCKET}/" \
+	--delete \
+	--cache-control "public,max-age=31536000,immutable"
 
 echo "==> Done."

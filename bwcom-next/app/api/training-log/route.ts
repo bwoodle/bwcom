@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { docClient, TRAINING_LOG_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
+import {
+  decodeCursor,
+  encodeCursor,
+  parseLimit,
+  PUBLIC_CACHE_HEADERS,
+  rateLimitPublicRequest,
+} from '@/lib/public-api-guards';
 import type {
   TrainingLogEntry,
   TrainingLogSection,
@@ -107,35 +114,38 @@ function validateUpdateItem(item: TrainingLogBatchUpdateItem): string | null {
  * Returns a single training log section with all entries, or 404.
  */
 export async function GET(request: Request) {
+  const limited = rateLimitPublicRequest(request, 'training-log-get', 60);
+  if (limited) {
+    return limited;
+  }
+
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
+  const limit = parseLimit(searchParams.get('limit'), 500, 1000);
+  const cursor = decodeCursor(searchParams.get('cursor'));
 
   if (!sectionId) {
     return Response.json({ error: 'sectionId query parameter is required' }, { status: 400 });
   }
 
   try {
-    const allItems: Record<string, unknown>[] = [];
-    let lastEvaluatedKey: Record<string, unknown> | undefined;
+    const result = await docClient.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        KeyConditionExpression: 'logId = :lid',
+        ExpressionAttributeValues: { ':lid': sectionId },
+        ExclusiveStartKey: cursor,
+        Limit: limit,
+      })
+    );
 
-    do {
-      const result = await docClient.send(
-        new QueryCommand({
-          TableName: TABLE_NAME,
-          KeyConditionExpression: 'logId = :lid',
-          ExpressionAttributeValues: { ':lid': sectionId },
-          ExclusiveStartKey: lastEvaluatedKey,
-        })
-      );
-      allItems.push(...(result.Items ?? []));
-      lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
-    } while (lastEvaluatedKey);
+    const items = result.Items ?? [];
 
-    if (allItems.length === 0) {
+    if (items.length === 0) {
       // Return an empty section rather than 404 — the cycle exists but has no data yet
     }
 
-    const entries = allItems.map(toEntry);
+    const entries = items.map((item) => toEntry(item as Record<string, unknown>));
 
     const section: TrainingLogSection = {
       id: sectionId,
@@ -143,7 +153,13 @@ export async function GET(request: Request) {
       entries,
     };
 
-    return Response.json(section);
+    return Response.json(
+      {
+        ...section,
+        nextCursor: encodeCursor(result.LastEvaluatedKey as Record<string, unknown> | undefined),
+      },
+      { headers: PUBLIC_CACHE_HEADERS }
+    );
   } catch (err) {
     console.error('Failed to fetch training log data:', err);
     return Response.json(

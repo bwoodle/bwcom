@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { docClient, MEDIA_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
+import {
+  decodeCursor,
+  encodeCursor,
+  parseLimit,
+  PUBLIC_CACHE_HEADERS,
+  rateLimitPublicRequest,
+} from '@/lib/public-api-guards';
 import type {
   MediaItem,
   MediaFormat,
@@ -53,32 +60,33 @@ function formatMonthLabel(monthKey: string): string {
  * GET /api/media — Return all media items grouped by month, newest first.
  * Public endpoint (no auth required).
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = rateLimitPublicRequest(request, 'media-get', 60);
+  if (limited) {
+    return limited;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const limit = parseLimit(searchParams.get('limit'), 500, 1000);
+  const cursor = decodeCursor(searchParams.get('cursor'));
+
   try {
-    const allItems: MediaItem[] = [];
-    let lastEvaluatedKey: Record<string, unknown> | undefined;
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+        Limit: limit,
+        ExclusiveStartKey: cursor,
+      })
+    );
 
-    do {
-      const result = await docClient.send(
-        new ScanCommand({
-          TableName: TABLE_NAME,
-          ExclusiveStartKey: lastEvaluatedKey,
-        })
-      );
-
-      for (const item of result.Items ?? []) {
-        allItems.push({
-          monthKey: item.monthKey as string,
-          sk: item.sk as string,
-          title: item.title as string,
-          format: item.format as MediaFormat,
-          comments: item.comments as string | undefined,
-          createdAt: item.createdAt as string,
-        });
-      }
-
-      lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
-    } while (lastEvaluatedKey);
+    const allItems: MediaItem[] = (result.Items ?? []).map((item) => ({
+      monthKey: item.monthKey as string,
+      sk: item.sk as string,
+      title: item.title as string,
+      format: item.format as MediaFormat,
+      comments: item.comments as string | undefined,
+      createdAt: item.createdAt as string,
+    }));
 
     // Group by monthKey
     const groupMap = new Map<string, MediaItem[]>();
@@ -97,7 +105,13 @@ export async function GET() {
         items: items.sort((a, b) => a.title.localeCompare(b.title)),
       }));
 
-    return Response.json({ months });
+    return Response.json(
+      {
+        months,
+        nextCursor: encodeCursor(result.LastEvaluatedKey as Record<string, unknown> | undefined),
+      },
+      { headers: PUBLIC_CACHE_HEADERS }
+    );
   } catch (err) {
     console.error('Failed to fetch media data:', err);
     return Response.json(
