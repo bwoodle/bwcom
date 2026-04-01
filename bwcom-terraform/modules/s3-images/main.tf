@@ -36,7 +36,35 @@ resource "aws_s3_bucket_public_access_block" "images" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "images" {
+resource "aws_s3_bucket_policy" "images_cloudfront" {
+  count  = length(var.cloudfront_distribution_arns) > 0 ? 1 : 0
+  bucket = aws_s3_bucket.images.id
+
+  depends_on = [aws_s3_bucket_public_access_block.images]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "CloudFrontReadGetObject"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.images.arn}/*"
+        Condition = {
+          ArnLike = {
+            "AWS:SourceArn" = var.cloudfront_distribution_arns
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_policy" "images_public" {
+  count  = length(var.cloudfront_distribution_arns) == 0 ? 1 : 0
   bucket = aws_s3_bucket.images.id
 
   depends_on = [aws_s3_bucket_public_access_block.images]

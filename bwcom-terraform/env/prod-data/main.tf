@@ -46,7 +46,14 @@ output "races_table_arn" {
 module "images_bucket" {
   source = "../../modules/s3-images"
 
-  bucket_name = "brentwoodle.com"
+  bucket_name                 = "brentwoodle.com"
+  cloudfront_distribution_arns = var.images_cloudfront_distribution_arns
+}
+
+variable "images_cloudfront_distribution_arns" {
+  description = "CloudFront distribution ARNs allowed to read prod images bucket. Leave empty to keep public read until cutover."
+  type        = list(string)
+  default     = []
 }
 
 output "training_log_table_name" {
