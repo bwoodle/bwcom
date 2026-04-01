@@ -17,6 +17,7 @@ import Avatar from '@cloudscape-design/chat-components/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import TrainingLogBulkEditor from '@/components/TrainingLogBulkEditor';
+import MediaBulkEditor from '@/components/MediaBulkEditor';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -24,7 +25,7 @@ interface Message {
 }
 
 const AdminPage: React.FC = () => {
-  const [mode, setMode] = useState<'chat' | 'training-log'>('training-log');
+  const [mode, setMode] = useState<'chat' | 'training-log' | 'media'>('training-log');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -283,15 +284,18 @@ const AdminPage: React.FC = () => {
       >
         <SegmentedControl
           selectedId={mode}
-          onChange={({ detail }) => setMode(detail.selectedId as 'chat' | 'training-log')}
+          onChange={({ detail }) => setMode(detail.selectedId as 'chat' | 'training-log' | 'media')}
           options={[
             { id: 'training-log', text: 'Training log bulk edit' },
+            { id: 'media', text: 'Media bulk edit' },
             { id: 'chat', text: 'Assistant chat' },
           ]}
         />
       </Container>
 
-      {mode === 'training-log' ? <TrainingLogBulkEditor /> : renderChat()}
+      {mode === 'training-log' ? <TrainingLogBulkEditor /> : null}
+      {mode === 'media' ? <MediaBulkEditor /> : null}
+      {mode === 'chat' ? renderChat() : null}
     </SpaceBetween>
     </div>
   );
