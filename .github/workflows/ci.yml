@@ -46,6 +46,19 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Deploy image CDN stack (prod)
         run: |
+          if aws cloudformation describe-stacks --region us-east-1 --stack-name bwcom-images-cdn-prod >/dev/null 2>&1; then
+            STACK_STATUS=$(aws cloudformation describe-stacks \
+              --region us-east-1 \
+              --stack-name bwcom-images-cdn-prod \
+              --query "Stacks[0].StackStatus" \
+              --output text)
+
+            if [[ "${STACK_STATUS}" == "ROLLBACK_COMPLETE" || "${STACK_STATUS}" == "ROLLBACK_FAILED" ]]; then
+              aws cloudformation delete-stack --region us-east-1 --stack-name bwcom-images-cdn-prod
+              aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name bwcom-images-cdn-prod
+            fi
+          fi
+
           aws cloudformation deploy \
             --region us-east-1 \
             --stack-name bwcom-images-cdn-prod \
