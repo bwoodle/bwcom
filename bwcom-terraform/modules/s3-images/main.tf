@@ -36,13 +36,12 @@ resource "aws_s3_bucket_public_access_block" "images" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "images_cloudfront" {
-  count  = length(var.cloudfront_distribution_arns) > 0 ? 1 : 0
+resource "aws_s3_bucket_policy" "images" {
   bucket = aws_s3_bucket.images.id
 
   depends_on = [aws_s3_bucket_public_access_block.images]
 
-  policy = jsonencode({
+  policy = length(var.cloudfront_distribution_arns) > 0 ? jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -60,16 +59,7 @@ resource "aws_s3_bucket_policy" "images_cloudfront" {
         }
       }
     ]
-  })
-}
-
-resource "aws_s3_bucket_policy" "images_public" {
-  count  = length(var.cloudfront_distribution_arns) == 0 ? 1 : 0
-  bucket = aws_s3_bucket.images.id
-
-  depends_on = [aws_s3_bucket_public_access_block.images]
-
-  policy = jsonencode({
+  }) : jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
