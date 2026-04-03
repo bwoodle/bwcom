@@ -170,6 +170,10 @@ bwcom-terraform/       # Terraform infrastructure
     test/              # Test infra tier (ECS + ALB)
   modules/             # Reusable Terraform modules
 photos/                # Source images (synced to S3)
+cfn/                   # CloudFormation templates
+  bwcom-static/
+    s3-cloudfront-stack/
+      images-cdn.yml   # Image-only CloudFront stack (used by CI + deploy-test)
 scripts/               # deploy-test.sh, destroy-test.sh, sync-images.sh
 .github/workflows/     # CI/CD pipeline
 ```
