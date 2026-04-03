@@ -50,7 +50,8 @@ jobs:
             --region us-east-1 \
             --stack-name bwcom-images-cdn-prod \
             --template-file cfn/bwcom-static/s3-cloudfront-stack/images-cdn.yml \
-            --parameter-overrides BucketName=brentwoodle.com CreateDNS=false
+            --parameter-overrides BucketName=brentwoodle.com CreateDNS=false \
+            --no-fail-on-empty-changeset
       - name: Read image CDN outputs
         run: |
           IMAGE_CDN_DOMAIN=$(aws cloudformation describe-stacks \
@@ -89,10 +90,8 @@ jobs:
         run: terraform init
         working-directory: bwcom-terraform/env/prod-data
       - name: Terraform Apply (prod-data)
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var='images_cloudfront_distribution_arns=["'"${IMAGE_CDN_ARN}"'"]'
         working-directory: bwcom-terraform/env/prod-data
-        env:
-          TF_VAR_images_cloudfront_distribution_arns: '["${{ env.IMAGE_CDN_ARN }}"]'
       - name: Sync images to S3
         run: ./scripts/sync-images.sh brentwoodle.com
       - name: Terraform Init

@@ -9,6 +9,7 @@ ACCOUNT_ID="685339315795"
 ECR_REPO="bwcom-next"
 ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 FULL_REPO="${ECR_REGISTRY}/${ECR_REPO}"
+IMAGE_CDN_STACK="bwcom-images-cdn-test"
 
 # Load secrets from .env.local
 if [[ ! -f "bwcom-next/.env.local" ]]; then
@@ -32,6 +33,31 @@ done
 echo "Logging into ECR"
 aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
+echo "Deploying image CDN stack: ${IMAGE_CDN_STACK}"
+aws cloudformation deploy \
+  --region us-east-1 \
+  --stack-name ${IMAGE_CDN_STACK} \
+  --template-file cfn/bwcom-static/s3-cloudfront-stack/images-cdn.yml \
+  --parameter-overrides BucketName=test.brentwoodle.com CreateDNS=false \
+  --no-fail-on-empty-changeset
+
+IMAGE_CDN_DOMAIN=$(aws cloudformation describe-stacks \
+  --region us-east-1 \
+  --stack-name ${IMAGE_CDN_STACK} \
+  --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" \
+  --output text)
+
+IMAGE_CDN_ARN=$(aws cloudformation describe-stacks \
+  --region us-east-1 \
+  --stack-name ${IMAGE_CDN_STACK} \
+  --query "Stacks[0].Outputs[?OutputKey=='DistributionArn'].OutputValue" \
+  --output text)
+
+if [[ -z "${IMAGE_CDN_DOMAIN}" || -z "${IMAGE_CDN_ARN}" ]]; then
+  echo "Error: missing CloudFront outputs from ${IMAGE_CDN_STACK}" >&2
+  exit 1
+fi
+
 echo "Building and tagging image: ${FULL_REPO}:latest"
 cd bwcom-next
 docker buildx create --use >/dev/null 2>&1 || true
@@ -39,7 +65,7 @@ docker buildx create --use >/dev/null 2>&1 || true
 CACHE_DIR="${HOME}/.cache/buildx/bwcom-next"
 mkdir -p "${CACHE_DIR}"
 docker buildx build --platform linux/arm64 \
-  --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/test.brentwoodle.com \
+  --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://${IMAGE_CDN_DOMAIN} \
   -t ${FULL_REPO}:latest \
   --cache-from type=local,src=${CACHE_DIR} \
   --cache-to type=local,dest=${CACHE_DIR},mode=max \
@@ -52,7 +78,7 @@ echo "Initializing Terraform (env/test-data)"
 terraform init
 
 echo "Applying Terraform (env/test-data)"
-terraform apply -auto-approve
+TF_VAR_images_cloudfront_distribution_arns='["'"${IMAGE_CDN_ARN}"'"]' terraform apply -auto-approve
 
 # Sync images to test S3 bucket
 cd ../..

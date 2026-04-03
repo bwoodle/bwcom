@@ -1,6 +1,6 @@
 # brentwoodle.com
 
-Personal website built with Next.js 15, deployed on AWS ECS Fargate (ARM64) behind an ALB. Uses DynamoDB for data, S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
+Personal website built with Next.js 15, deployed on AWS ECS Fargate (ARM64) behind an ALB. Uses DynamoDB for data, CloudFront+S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
 
 ## Architecture overview
 
@@ -12,8 +12,8 @@ Personal website built with Next.js 15, deployed on AWS ECS Fargate (ARM64) behi
 │         ▼                                               │
 │  ECS Fargate (ARM64, Next.js standalone)                │
 │         ▼                    ▼                           │
-│  DynamoDB tables        S3 images bucket                │
-│  (allowance, media,     (brentwoodle.com)               │
+│  DynamoDB tables        CloudFront image CDN            │
+│  (allowance, media,     -> S3 images bucket             │
 │   races, training-log)                                  │
 │         ▼                                               │
 │  Amazon Bedrock (Nova)                                  │
@@ -22,10 +22,8 @@ Personal website built with Next.js 15, deployed on AWS ECS Fargate (ARM64) behi
 
 Infrastructure is managed with Terraform using a **two-tier** pattern:
 
-| Tier | Resources | Lifecycle |
-|------|-----------|-----------|
-| **Data** (`env/*-data`) | DynamoDB tables, S3 images bucket | Long-lived, never destroyed |
-| **Infra** (`env/test`, `env/prod`) | VPC, ALB, ECS cluster/service, Route 53 records | Can be created/destroyed independently |
+- **Data tier** (`env/*-data`): DynamoDB tables and the S3 images bucket. Long-lived, never destroyed.
+- **Infra tier** (`env/test`, `env/prod`): VPC, ALB, ECS cluster/service, Route 53 records. Can be created/destroyed independently.
 
 Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environment name.
 
@@ -58,17 +56,17 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
    terraform apply
    ```
 
-2. Create `bwcom-next/.env.local` with your secrets:
+1. Create `bwcom-next/.env.local` with your secrets:
 
-   ```env
+  ```env
    NEXTAUTH_SECRET=<your-secret>
    NEXTAUTH_URL=http://localhost:3000
    GOOGLE_CLIENT_ID=<your-google-client-id>
    GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-   NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/test.brentwoodle.com
+  NEXT_PUBLIC_IMAGES_BASE_URL=https://test-image-cdn.example.cloudfront.net
    ```
 
-3. Install dependencies and start the dev server:
+1. Install dependencies and start the dev server:
 
    ```bash
    cd bwcom-next
@@ -94,7 +92,7 @@ Or directly:
 ./scripts/sync-images.sh test.brentwoodle.com
 ```
 
-Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Path-style S3 URLs are used because the bucket names contain dots, which breaks virtual-hosted SSL.
+Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Current deployments use CloudFront distribution domains instead of direct S3 URLs.
 
 ## Testing infrastructure changes
 
@@ -107,10 +105,11 @@ To stand up the full test ECS environment:
 This script (run from the repo root):
 
 1. Reads secrets from `bwcom-next/.env.local`
-2. Builds and pushes a Docker image to ECR (tagged `latest`)
-3. Applies the test data tier (`env/test-data`)
-4. Syncs images to the test S3 bucket
-5. Applies the test infra tier (`env/test`) — creates VPC, ALB, ECS service
+1. Deploys/updates test image CDN stack (`bwcom-images-cdn-test`) in `us-east-1`
+1. Builds and pushes a Docker image to ECR (tagged `latest`) using the test image CDN URL as `NEXT_PUBLIC_IMAGES_BASE_URL`
+1. Applies the test data tier (`env/test-data`) with the CDN distribution ARN wired to the S3 bucket policy
+1. Syncs images to the test S3 bucket
+1. Applies the test infra tier (`env/test`) — creates VPC, ALB, ECS service
 
 The test environment will be accessible at `https://test-next.brentwoodle.com`.
 
@@ -125,10 +124,12 @@ To tear it down (data tier is preserved):
 CI is defined in `.github/workflows/ci.yml`. On every push to `main`:
 
 1. Runs on a native ARM64 GitHub runner (`ubuntu-24.04-arm`)
-2. Builds the Docker image and pushes to ECR (tagged with commit SHA + `latest`), with GitHub Actions layer caching
-3. Applies `prod-data` Terraform (DynamoDB tables, S3 bucket)
-4. Syncs images to the prod S3 bucket
-5. Applies `prod` Terraform (ECS service picks up new image tag)
+1. Deploys/updates the prod image CDN stack (`bwcom-images-cdn-prod`) in `us-east-1`
+1. Reads CDN outputs (distribution domain + ARN)
+1. Builds the Docker image and pushes to ECR (tagged with commit SHA + `latest`), using the CDN domain as `NEXT_PUBLIC_IMAGES_BASE_URL`
+1. Applies `prod-data` Terraform with `TF_VAR_images_cloudfront_distribution_arns` so S3 object reads are limited to the CloudFront distribution
+1. Syncs images to the prod S3 bucket
+1. Applies `prod` Terraform (ECS service picks up new image tag)
 
 Secrets are stored in GitHub Actions secrets: `AWS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
 
@@ -145,14 +146,12 @@ The app is containerized via a multi-stage Dockerfile (`bwcom-next/Dockerfile`):
 
 ## Terraform modules
 
-| Module | Purpose |
-| --- | --- |
-| `modules/dynamodb-allowance` | Allowance tracker table (`childName` / `timestamp`) |
-| `modules/dynamodb-media` | Media entries table |
-| `modules/dynamodb-races` | Race history table |
-| `modules/dynamodb-training-log` | Training log table |
-| `modules/s3-images` | Public S3 bucket with versioning for photos |
-| `modules/ecs-next` | VPC, ALB (HTTPS + HTTP→HTTPS redirect), ECS Fargate service, Route 53, IAM roles (Bedrock, DynamoDB), optional www and woodle.org redirects |
+- `modules/dynamodb-allowance`: allowance tracker table (`childName` / `timestamp`)
+- `modules/dynamodb-media`: media entries table
+- `modules/dynamodb-races`: race history table
+- `modules/dynamodb-training-log`: training log table
+- `modules/s3-images`: S3 bucket with versioning for photos, with optional CloudFront-only read policy
+- `modules/ecs-next`: VPC, ALB (HTTPS + HTTP->HTTPS redirect), ECS Fargate service, Route 53, IAM roles (Bedrock, DynamoDB), optional www and woodle.org redirects
 
 ## Project structure
 
