@@ -48,22 +48,54 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
 
 ### Setup
 
-1. Ensure the test data tier is deployed:
+1. Deploy the test image CDN stack (CloudFront distribution for the test S3 bucket):
+
+   ```bash
+   aws cloudformation deploy \
+     --region us-east-1 \
+     --stack-name bwcom-images-cdn-test \
+     --template-file cfn/bwcom-static/s3-cloudfront-stack/images-cdn.yml \
+     --parameter-overrides BucketName=test.brentwoodle.com CreateDNS=false \
+     --no-fail-on-empty-changeset
+   ```
+
+   Then read the CloudFront domain and ARN:
+
+   ```bash
+   IMAGE_CDN_DOMAIN=$(aws cloudformation describe-stacks \
+     --region us-east-1 --stack-name bwcom-images-cdn-test \
+     --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" --output text)
+   IMAGE_CDN_ARN=$(aws cloudformation describe-stacks \
+     --region us-east-1 --stack-name bwcom-images-cdn-test \
+     --query "Stacks[0].Outputs[?OutputKey=='DistributionArn'].OutputValue" --output text)
+   echo "CDN domain: ${IMAGE_CDN_DOMAIN}"
+   ```
+
+1. Deploy the test data tier (DynamoDB tables + S3 bucket with CloudFront-only access):
 
    ```bash
    cd bwcom-terraform/env/test-data
    terraform init
-   terraform apply
+   TF_VAR_images_cloudfront_distribution_arns='["'"${IMAGE_CDN_ARN}"'"]' terraform apply
    ```
 
-1. Create `bwcom-next/.env.local` with your secrets:
+1. Sync images to the test S3 bucket:
 
-  ```env
+   ```bash
+   ./scripts/sync-images.sh test.brentwoodle.com
+   ```
+
+1. Create `bwcom-next/.env.local` with your secrets and table names:
+
+   ```env
    NEXTAUTH_SECRET=<your-secret>
    NEXTAUTH_URL=http://localhost:3000
    GOOGLE_CLIENT_ID=<your-google-client-id>
    GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-  NEXT_PUBLIC_IMAGES_BASE_URL=https://test-image-cdn.example.cloudfront.net
+   MEDIA_TABLE_NAME=media-test-v1
+   RACES_TABLE_NAME=races-test-v1
+   TRAINING_LOG_TABLE_NAME=training-log-test-v1
+   NEXT_PUBLIC_IMAGES_BASE_URL=https://<IMAGE_CDN_DOMAIN from step 1>
    ```
 
 1. Install dependencies and start the dev server:
@@ -74,7 +106,7 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
    npm run dev
    ```
 
-   The app runs at `http://localhost:3000`, hitting test DynamoDB tables and the test S3 images bucket.
+   The app runs at `http://localhost:3000`, hitting test DynamoDB tables and images served via CloudFront.
 
 ### Syncing images
 
@@ -92,7 +124,7 @@ Or directly:
 ./scripts/sync-images.sh test.brentwoodle.com
 ```
 
-Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Current deployments use CloudFront distribution domains instead of direct S3 URLs.
+Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Both test and prod S3 buckets are restricted to CloudFront-only access — images must be served through the CloudFront distributions.
 
 ## Testing infrastructure changes
 
@@ -152,6 +184,24 @@ The app is containerized via a multi-stage Dockerfile (`bwcom-next/Dockerfile`):
 - `modules/dynamodb-training-log`: training log table
 - `modules/s3-images`: S3 bucket with versioning for photos, with optional CloudFront-only read policy
 - `modules/ecs-next`: VPC, ALB (HTTPS + HTTP->HTTPS redirect), ECS Fargate service, Route 53, IAM roles (Bedrock, DynamoDB), optional www and woodle.org redirects
+
+## Adding a new data feature
+
+To add a new data-backed feature (e.g. a gallery page), follow this pattern:
+
+1. **Create a Terraform module** in `bwcom-terraform/modules/`. Use `dynamodb-media` as a template — it shows the standard pattern for a DynamoDB table with environment/version naming, outputs, and deletion protection.
+
+2. **Wire into both data tiers** — add a `module` block to both `env/prod-data/main.tf` and `env/test-data/main.tf`. Export the table name and ARN as outputs.
+
+3. **Add the table name to the ECS task definition** — add a new variable to `modules/ecs-next/variables.tf` and a corresponding `environment` entry in the container definition in `modules/ecs-next/main.tf`. Wire the variable in both `env/prod/main.tf` and `env/test/main.tf`.
+
+4. **Add the API route** in `bwcom-next/app/api/<feature>/route.ts`. Export the table name from `bwcom-next/lib/dynamodb.ts`.
+
+5. **Update local dev** — add `<TABLE>_TABLE_NAME=<table>-test-v1` to `bwcom-next/.env.local`.
+
+6. **Update `scripts/deploy-test.sh`** — read the new table name from Terraform output and pass it as `TF_VAR_<table>_table_name` to the test infra apply.
+
+7. **Deploy** — apply `test-data` Terraform, then verify locally with `npm run dev`. Prod picks up the change automatically via CI on push to `main`.
 
 ## Project structure
 

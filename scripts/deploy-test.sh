@@ -92,6 +92,9 @@ echo "Media table: ${MEDIA_TABLE_NAME}"
 RACES_TABLE_NAME=$(terraform output -raw races_table_name)
 echo "Races table: ${RACES_TABLE_NAME}"
 
+TRAINING_LOG_TABLE_NAME=$(terraform output -raw training_log_table_name)
+echo "Training log table: ${TRAINING_LOG_TABLE_NAME}"
+
 # Terraform apply in test environment
 cd ../test
 
@@ -100,6 +103,7 @@ export TF_VAR_google_client_id="$GOOGLE_CLIENT_ID"
 export TF_VAR_google_client_secret="$GOOGLE_CLIENT_SECRET"
 export TF_VAR_media_table_name="$MEDIA_TABLE_NAME"
 export TF_VAR_races_table_name="$RACES_TABLE_NAME"
+export TF_VAR_training_log_table_name="$TRAINING_LOG_TABLE_NAME"
 
 echo "Initializing Terraform (env/test)"
 terraform init

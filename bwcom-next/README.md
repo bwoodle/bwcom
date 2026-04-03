@@ -1,53 +1,36 @@
 # BWCom Next
 
-A Next.js application using CloudScape components for managing Brent's personal website
+Next.js application for [brentwoodle.com](https://brentwoodle.com). Uses CloudScape components, DynamoDB for data, CloudFront+S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
 
-## Features
+See the [root README](../README.md) for full architecture, deployment, and infrastructure documentation.
 
-- Main dashboard
-- Training Log
-- Race History
-- Reading List
-- Resume
-- Authentication with NextAuth
-- Footer displaying version and environment
-
-## Getting Started
-
-First, install dependencies:
+## Local development
 
 ```bash
 npm install
-```
-
-Then, run the development server:
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Requires `bwcom-next/.env.local`:
 
-## Environment Variables
-
-Create a `.env.local` file with:
-
-```
-NEXTAUTH_SECRET=your-secret-key
+```env
+NEXTAUTH_SECRET=<your-secret>
 NEXTAUTH_URL=http://localhost:3000
-CLIENT_SECRET=your-client-secret
+GOOGLE_CLIENT_ID=<your-google-client-id>
+GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+MEDIA_TABLE_NAME=media-test-v1
+RACES_TABLE_NAME=races-test-v1
+TRAINING_LOG_TABLE_NAME=training-log-test-v1
+NEXT_PUBLIC_IMAGES_BASE_URL=https://<test-cloudfront-domain>.cloudfront.net
 ```
+
+See the [root README setup steps](../README.md#setup) for how to deploy the test data tier and get the CloudFront domain.
 
 ## Docker
 
-To build and run with Docker:
-
 ```bash
-docker build -t bwcom-next .
+docker build --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=https://<cdn-domain> -t bwcom-next .
 docker run -p 3000:3000 bwcom-next
 ```
 
-## Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [CloudScape Design System](https://cloudscape.design/)
+`NEXT_PUBLIC_IMAGES_BASE_URL` must be passed as a `--build-arg` because `NEXT_PUBLIC_*` vars are inlined at build time.

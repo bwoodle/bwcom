@@ -32,11 +32,11 @@ Each bucket has a `web-content/` prefix containing full-size images and a `web-c
 - `deploy-test.sh` syncs to the test bucket after applying `test-data` Terraform.
 
 ### How images are referenced in Next.js
-The `NEXT_PUBLIC_IMAGES_BASE_URL` environment variable provides the CloudFront base URL (for example, `https://<distribution>.cloudfront.net`).
+The `NEXT_PUBLIC_IMAGES_BASE_URL` environment variable provides the CloudFront base URL (for example, `https://<distribution>.cloudfront.net`). Both test and prod S3 buckets are restricted to CloudFront-only access.
 
-For local development, set in `bwcom-next/.env.local`:
+For local development, set in `bwcom-next/.env.local` using the test CDN domain (see root README setup steps):
 ```
-NEXT_PUBLIC_IMAGES_BASE_URL=https://test-image-cdn.example.cloudfront.net
+NEXT_PUBLIC_IMAGES_BASE_URL=https://<test-cloudfront-domain>.cloudfront.net
 ```
 
 For Docker builds (test and prod), the URL is passed as a `--build-arg` since `NEXT_PUBLIC_*` vars are inlined at build time.
