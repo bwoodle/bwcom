@@ -13,7 +13,7 @@ Terraform state for each environment lives in the `bwcom-terraform-state` S3 buc
 
 ## Images / Static Assets
 
-Images are stored in S3. This keeps the container small and serves images directly from S3.
+Images are stored in S3 and served via CloudFront image distributions. This keeps the container small while avoiding direct public S3 serving.
 
 ### Bucket names
 | Environment | Bucket |
@@ -32,11 +32,11 @@ Each bucket has a `web-content/` prefix containing full-size images and a `web-c
 - `deploy-test.sh` syncs to the test bucket after applying `test-data` Terraform.
 
 ### How images are referenced in Next.js
-The `NEXT_PUBLIC_IMAGES_BASE_URL` environment variable provides the S3 base URL. Because bucket names contain dots, **path-style** S3 URLs are used (e.g. `https://s3.us-west-2.amazonaws.com/test.brentwoodle.com`). This avoids SSL certificate issues with virtual-hosted style URLs.
+The `NEXT_PUBLIC_IMAGES_BASE_URL` environment variable provides the CloudFront base URL (for example, `https://<distribution>.cloudfront.net`).
 
 For local development, set in `bwcom-next/.env.local`:
 ```
-NEXT_PUBLIC_IMAGES_BASE_URL=https://s3.us-west-2.amazonaws.com/test.brentwoodle.com
+NEXT_PUBLIC_IMAGES_BASE_URL=https://test-image-cdn.example.cloudfront.net
 ```
 
 For Docker builds (test and prod), the URL is passed as a `--build-arg` since `NEXT_PUBLIC_*` vars are inlined at build time.

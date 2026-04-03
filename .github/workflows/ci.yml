@@ -107,6 +107,14 @@ jobs:
         working-directory: bwcom-terraform/env/prod-data
       - name: Sync images to S3
         run: ./scripts/sync-images.sh brentwoodle.com
+      - name: Smoke test image CDN
+        run: |
+          URL="${IMAGE_CDN_BASE_URL}/web-content/thumbs/1.jpg"
+          HTTP_CODE=$(curl -sS -o /dev/null -w "%{http_code}" "$URL")
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "Image CDN smoke test failed: $URL returned $HTTP_CODE" >&2
+            exit 1
+          fi
       - name: Terraform Init
         run: terraform init
         working-directory: bwcom-terraform/env/prod
