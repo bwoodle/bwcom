@@ -1,0 +1,94 @@
+Description: Image CDN distribution for an existing S3 bucket (OAC + optional alias/DNS)
+Parameters:
+  BucketName:
+    Type: String
+  AliasDomain:
+    Type: String
+    Default: ""
+  CertificateARN:
+    Type: String
+    Default: ""
+  CreateDNS:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "false"
+  HostedZoneId:
+    Type: String
+    Default: ""
+Conditions:
+  HasAlias: !Not [!Equals [!Ref AliasDomain, ""]]
+  HasCertificate: !Not [!Equals [!Ref CertificateARN, ""]]
+  UseAcmCertificate: !And [!Condition HasAlias, !Condition HasCertificate]
+  ShouldCreateDNS: !And [!Equals [!Ref CreateDNS, "true"], !Condition HasAlias]
+Resources:
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: OAC for image bucket access
+        Name: !Sub ${BucketName}-images-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: !Ref BucketName
+            DomainName: !Sub ${BucketName}.s3.us-west-2.amazonaws.com
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+        Enabled: true
+        HttpVersion: http2
+        PriceClass: PriceClass_100
+        Aliases: !If [HasAlias, [!Ref AliasDomain], !Ref AWS::NoValue]
+        ViewerCertificate: !If
+          - UseAcmCertificate
+          - AcmCertificateArn: !Ref CertificateARN
+            MinimumProtocolVersion: TLSv1.2_2021
+            SslSupportMethod: sni-only
+          - CloudFrontDefaultCertificate: true
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          TargetOriginId: !Ref BucketName
+          MinTTL: 3600
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+
+  DNS:
+    Type: AWS::Route53::RecordSetGroup
+    Condition: ShouldCreateDNS
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        - Name: !Ref AliasDomain
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2
+            DNSName: !GetAtt CloudFrontDistribution.DomainName
+
+Outputs:
+  DistributionId:
+    Description: CloudFront distribution ID
+    Value: !Ref CloudFrontDistribution
+  DistributionArn:
+    Description: CloudFront distribution ARN
+    Value: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+  DistributionDomainName:
+    Description: CloudFront distribution domain name
+    Value: !GetAtt CloudFrontDistribution.DomainName
