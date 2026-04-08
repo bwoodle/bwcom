@@ -10,6 +10,7 @@ export type MediaItem = {
   monthKey: string;
   sk: string;
   title: string;
+  author?: string;
   format: MediaFormat;
   comments?: string;
   createdAt: string;
@@ -19,6 +20,7 @@ export type MediaBatchUpdateItem = {
   monthKey: string;
   sk: string;
   title?: string;
+  author?: string | null;
   format?: MediaFormat;
   comments?: string | null;
 };
@@ -43,6 +45,7 @@ export type MediaBatchUpdateResponse = {
 export type MediaCreateRequest = {
   monthKey: string;
   title: string;
+  author?: string;
   format: MediaFormat;
   comments?: string;
 };

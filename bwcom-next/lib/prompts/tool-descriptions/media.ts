@@ -8,6 +8,7 @@ Each item contains:
   monthKey  – partition key, e.g. "2026-02"
   sk        – sort key (timestamp#title), needed for updates and deletes
   title     – the title of the book, movie, show, etc.
+  author    – optional author / creator (may be null)
   format    – one of: "book", "audiobook", "kindle", "movie", "tv", "podcast"
   comments  – optional multi-line comments/review (may be null)
 
@@ -28,9 +29,12 @@ closest allowed value ("tv").
 The comments field is optional and supports multi-line text. Use it for
 reviews, thoughts, or notes about the media.
 
+The author field is optional and can capture the creator, writer, or host.
+
 Examples:
   { month: "February", year: 2026, title: "Paradais", format: "audiobook",
     comments: "Jeselnik book club for February.\\nWild beginning chapter." }
+  { month: "April", year: 2026, title: "Paradais", author: "Fernanda Melchor", format: "book" }
   { month: "January", year: 2026, title: "The Bear Season 3", format: "tv" }`,
 
   removeMedia: `Remove a media entry from the tracking table.
@@ -69,6 +73,7 @@ export const MEDIA_ARG_DESCRIPTIONS = {
   monthRequired: 'Month name (e.g. "February", "Feb").',
   yearRequired: 'Four-digit year (e.g. 2026).',
   title: 'Title of the media (book, movie, show, etc.).',
+  authorOptional: 'Optional author/creator/host name.',
   format:
     'Format / medium. Allowed values only: "book", "audiobook", "kindle", "movie", "tv", "podcast".',
   commentsOptional:

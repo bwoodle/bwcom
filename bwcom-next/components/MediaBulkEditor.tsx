@@ -33,6 +33,7 @@ type MediaApiResponse = {
 
 type RowDraft = {
   title?: string;
+  author?: string;
   format?: MediaFormat;
   comments?: string;
 };
@@ -51,6 +52,7 @@ const formatOptions: MediaFormat[] = [
 function hasChanges(item: MediaItem, draft: RowDraft | undefined): boolean {
   if (!draft) return false;
   if (draft.title !== undefined && draft.title !== item.title) return true;
+  if (draft.author !== undefined && draft.author !== (item.author ?? '')) return true;
   if (draft.format !== undefined && draft.format !== item.format) return true;
 
   const originalComments = item.comments ?? '';
@@ -63,8 +65,13 @@ function nextItem(item: MediaItem, update: MediaBatchUpdateItem): MediaItem {
   const next: MediaItem = {
     ...item,
     ...(update.title !== undefined ? { title: update.title } : {}),
+    ...(update.author !== undefined && update.author !== null ? { author: update.author } : {}),
     ...(update.format !== undefined ? { format: update.format } : {}),
   };
+
+  if (update.author === null) {
+    delete next.author;
+  }
 
   if (update.comments !== undefined) {
     if (update.comments === null) {
@@ -91,6 +98,7 @@ const MediaBulkEditor: React.FC = () => {
 
   const [newMonthKey, setNewMonthKey] = useState('');
   const [newTitle, setNewTitle] = useState('');
+  const [newAuthor, setNewAuthor] = useState('');
   const [newFormat, setNewFormat] = useState<MediaFormat>('book');
   const [newComments, setNewComments] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -160,6 +168,7 @@ const MediaBulkEditor: React.FC = () => {
       }
       return (
         item.title.toLowerCase().includes(normalizedQuery) ||
+        (item.author ?? '').toLowerCase().includes(normalizedQuery) ||
         item.format.toLowerCase().includes(normalizedQuery) ||
         (item.comments ?? '').toLowerCase().includes(normalizedQuery) ||
         item.monthKey.toLowerCase().includes(normalizedQuery)
@@ -228,6 +237,17 @@ const MediaBulkEditor: React.FC = () => {
     }));
   };
 
+  const onAuthorChange = (item: MediaItem, value: string) => {
+    const rowKey = `${item.monthKey}|${item.sk}`;
+    setDrafts((current) => ({
+      ...current,
+      [rowKey]: {
+        ...current[rowKey],
+        author: value,
+      },
+    }));
+  };
+
   const onCommentsChange = (item: MediaItem, value: string) => {
     const rowKey = `${item.monthKey}|${item.sk}`;
     setDrafts((current) => ({
@@ -256,6 +276,13 @@ const MediaBulkEditor: React.FC = () => {
 
       if (draft.title !== undefined && draft.title !== item.title) {
         next.title = draft.title;
+      }
+      if (draft.author !== undefined) {
+        const normalized = draft.author.trim();
+        const original = (item.author ?? '').trim();
+        if (normalized !== original) {
+          next.author = normalized.length === 0 ? null : draft.author;
+        }
       }
       if (draft.format !== undefined && draft.format !== item.format) {
         next.format = draft.format;
@@ -341,6 +368,7 @@ const MediaBulkEditor: React.FC = () => {
     const payload: MediaCreateRequest = {
       monthKey: newMonthKey,
       title: newTitle.trim(),
+      ...(newAuthor.trim() ? { author: newAuthor.trim() } : {}),
       format: newFormat,
       ...(newComments.trim() ? { comments: newComments.trim() } : {}),
     };
@@ -371,6 +399,7 @@ const MediaBulkEditor: React.FC = () => {
 
       setCreateMessage('Media entry created.');
       setNewTitle('');
+      setNewAuthor('');
       setNewComments('');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown create error';
@@ -442,6 +471,13 @@ const MediaBulkEditor: React.FC = () => {
               />
             </FormField>
 
+            <FormField label="Author (optional)">
+              <Input
+                value={newAuthor}
+                onChange={({ detail }) => setNewAuthor(detail.value)}
+              />
+            </FormField>
+
             <FormField label="Comments (optional)">
               <Textarea
                 value={newComments}
@@ -468,7 +504,7 @@ const MediaBulkEditor: React.FC = () => {
             <Input
               value={query}
               onChange={({ detail }) => setQuery(detail.value)}
-              placeholder="title, format, comments"
+              placeholder="title, author, format, comments"
             />
           </FormField>
 
@@ -519,6 +555,7 @@ const MediaBulkEditor: React.FC = () => {
                   </th>
                   <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Month</th>
                   <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Title</th>
+                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Author</th>
                   <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Format</th>
                   <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Comments</th>
                   <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>State</th>
@@ -548,6 +585,13 @@ const MediaBulkEditor: React.FC = () => {
                           value={draft?.title ?? item.title}
                           onChange={({ detail }) => onTitleChange(item, detail.value)}
                           ariaLabel={`Title ${item.title}`}
+                        />
+                      </td>
+                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, minWidth: 220 }}>
+                        <Input
+                          value={draft?.author ?? item.author ?? ''}
+                          onChange={({ detail }) => onAuthorChange(item, detail.value)}
+                          ariaLabel={`Author ${item.title}`}
                         />
                       </td>
                       <td style={{ borderBottom: '1px solid #eaeded', padding: 8, minWidth: 150 }}>

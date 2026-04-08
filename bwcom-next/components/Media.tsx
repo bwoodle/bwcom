@@ -8,27 +8,28 @@ interface MediaItem {
   monthKey: string;
   sk: string;
   title: string;
+  author?: string;
   format: string;
   comments?: string;
   createdAt: string;
 }
 
 const mediaTrackingNote = (
-  <Box
-    variant="small"
-    display="inline-block"
-    padding={{ vertical: 'xs', horizontal: 's' }}
+  <div
     style={{
       background: '#f4f9ff',
       borderLeft: '4px solid #0073bb',
       borderRadius: 4,
-      fontWeight: 600,
+      display: 'inline-block',
       maxWidth: '72ch',
+      padding: '8px 12px',
     }}
   >
-    I began tracking this data in early 2026, with the goal of tracking everything going
-    forward. I&apos;ll add some past comments for media that I really liked.
-  </Box>
+    <Box variant="small" fontWeight="bold">
+      I began tracking this data in early 2026, with the goal of tracking everything going
+      forward. I&apos;ll add some past comments for media that I really liked.
+    </Box>
+  </div>
 );
 
 const Media: React.FC = () => (
@@ -47,6 +48,12 @@ const Media: React.FC = () => (
         header: 'Title',
         cell: (item) => item.title,
         width: 280,
+      },
+      {
+        id: 'author',
+        header: 'Author',
+        cell: (item) => item.author ?? <Box color="text-body-secondary">—</Box>,
+        width: 220,
       },
       {
         id: 'format',

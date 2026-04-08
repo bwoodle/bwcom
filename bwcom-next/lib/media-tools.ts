@@ -70,6 +70,7 @@ export const listMedia = tool(
         monthKey: item.monthKey,
         sk: item.sk,
         title: item.title,
+        author: item.author ?? null,
         format: item.format,
         comments: item.comments ?? null,
       }));
@@ -94,6 +95,7 @@ export const listMedia = tool(
       monthKey: item.monthKey,
       sk: item.sk,
       title: item.title,
+      author: item.author ?? null,
       format: item.format,
       comments: item.comments ?? null,
     }));
@@ -121,7 +123,7 @@ export const listMedia = tool(
 );
 
 export const addMedia = tool(
-  async ({ month, year, title, format, comments }) => {
+  async ({ month, year, title, author, format, comments }) => {
     const monthKey = toMonthKey(month, year);
     const sk = buildSk(title);
     const createdAt = new Date().toISOString();
@@ -133,6 +135,9 @@ export const addMedia = tool(
       format,
       createdAt,
     };
+    if (author) {
+      item.author = author;
+    }
     if (comments) {
       item.comments = comments;
     }
@@ -144,7 +149,15 @@ export const addMedia = tool(
       })
     );
 
-    return JSON.stringify({ success: true, monthKey, sk, title, format, comments: comments ?? null });
+    return JSON.stringify({
+      success: true,
+      monthKey,
+      sk,
+      title,
+      author: author ?? null,
+      format,
+      comments: comments ?? null,
+    });
   },
   {
     name: 'addMedia',
@@ -153,6 +166,7 @@ export const addMedia = tool(
       month: z.string().describe(MEDIA_ARG_DESCRIPTIONS.monthRequired),
       year: z.number().describe(MEDIA_ARG_DESCRIPTIONS.yearRequired),
       title: z.string().describe(MEDIA_ARG_DESCRIPTIONS.title),
+      author: z.string().optional().describe(MEDIA_ARG_DESCRIPTIONS.authorOptional),
       format: z.enum(MEDIA_FORMAT_OPTIONS).describe(MEDIA_ARG_DESCRIPTIONS.format),
       comments: z
         .string()

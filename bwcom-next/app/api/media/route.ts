@@ -83,6 +83,7 @@ export async function GET(request: Request) {
       monthKey: item.monthKey as string,
       sk: item.sk as string,
       title: item.title as string,
+      author: item.author as string | undefined,
       format: item.format as MediaFormat,
       comments: item.comments as string | undefined,
       createdAt: item.createdAt as string,
@@ -147,11 +148,17 @@ export async function POST(request: Request) {
   if (!body.format || typeof body.format !== 'string' || !isValidFormat(body.format)) {
     return Response.json({ error: 'format is invalid' }, { status: 400 });
   }
+  if (body.author !== undefined && typeof body.author !== 'string') {
+    return Response.json({ error: 'author must be a string' }, { status: 400 });
+  }
 
   const entry: MediaItem = {
     monthKey: body.monthKey,
     sk: buildSk(body.title.trim()),
     title: body.title.trim(),
+    ...(body.author && body.author.trim().length > 0
+      ? { author: body.author.trim() }
+      : {}),
     format: body.format,
     ...(body.comments && body.comments.trim().length > 0
       ? { comments: body.comments.trim() }
@@ -230,6 +237,26 @@ export async function PATCH(request: Request) {
       continue;
     }
 
+    if (item.author !== undefined && item.author !== null && typeof item.author !== 'string') {
+      results.push({
+        monthKey: item.monthKey,
+        sk: item.sk,
+        success: false,
+        error: 'author must be a string',
+      });
+      continue;
+    }
+
+    if (item.author !== undefined && item.author !== null && item.author.trim().length === 0) {
+      results.push({
+        monthKey: item.monthKey,
+        sk: item.sk,
+        success: false,
+        error: 'author cannot be empty',
+      });
+      continue;
+    }
+
     const updates: string[] = [];
     const values: Record<string, unknown> = {};
     const names: Record<string, string> = {};
@@ -254,6 +281,15 @@ export async function PATCH(request: Request) {
       updates.push('#format = :f');
       names['#format'] = 'format';
       values[':f'] = item.format;
+    }
+
+    if (item.author !== undefined) {
+      if (item.author === null || item.author.trim().length === 0) {
+        removes.push('author');
+      } else {
+        updates.push('author = :a');
+        values[':a'] = item.author.trim();
+      }
     }
 
     if (item.comments !== undefined) {
