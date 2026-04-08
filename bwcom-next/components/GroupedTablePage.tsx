@@ -21,6 +21,8 @@ export interface GroupedTableGroup<T> {
 interface GroupedTablePageProps<T> {
   /** Page title shown in the container header */
   title: string;
+  /** Optional short note shown under the page title */
+  headerDescription?: React.ReactNode;
   /** API endpoint to fetch data from */
   apiUrl: string;
   /** Extract the groups array from the API response JSON */
@@ -37,6 +39,7 @@ interface GroupedTablePageProps<T> {
  */
 function GroupedTablePage<T>({
   title,
+  headerDescription,
   apiUrl,
   extractGroups,
   columnDefinitions,
@@ -106,7 +109,7 @@ function GroupedTablePage<T>({
 
   if (status === 'loading') {
     return (
-      <Container header={<Header variant="h1">{title}</Header>}>
+      <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
         <Box textAlign="center" padding={{ vertical: 'l' }}>
           <Spinner size="large" />
           <Box variant="p" margin={{ top: 's' }}>
@@ -119,14 +122,14 @@ function GroupedTablePage<T>({
 
   if (status === 'error') {
     return (
-      <Container header={<Header variant="h1">{title}</Header>}>
+      <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
         <StatusIndicator type="error">{errorMsg}</StatusIndicator>
       </Container>
     );
   }
 
   return (
-    <Container header={<Header variant="h1">{title}</Header>}>
+    <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
       {groups.length === 0 ? (
         <Box textAlign="center" color="text-body-secondary" padding="l">
           No {emptyNoun} yet.

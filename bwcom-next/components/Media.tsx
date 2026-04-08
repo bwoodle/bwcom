@@ -13,9 +13,28 @@ interface MediaItem {
   createdAt: string;
 }
 
+const mediaTrackingNote = (
+  <Box
+    variant="small"
+    display="inline-block"
+    padding={{ vertical: 'xs', horizontal: 's' }}
+    style={{
+      background: '#f4f9ff',
+      borderLeft: '4px solid #0073bb',
+      borderRadius: 4,
+      fontWeight: 600,
+      maxWidth: '72ch',
+    }}
+  >
+    I began tracking this data in early 2026, with the goal of tracking everything going
+    forward. I&apos;ll add some past comments for media that I really liked.
+  </Box>
+);
+
 const Media: React.FC = () => (
   <GroupedTablePage<MediaItem>
     title="Media"
+    headerDescription={mediaTrackingNote}
     apiUrl="/api/media"
     extractGroups={(data) =>
       ((data.months as { monthKey: string; label: string; items: MediaItem[] }[]) ?? []).map(
