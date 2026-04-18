@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import os
-import tempfile
+import pytest
 
+from strava_pipeline.models import TokenResponse
 from strava_pipeline.strava_client import (
     date_range_to_epochs,
     ensure_access_token,
@@ -73,7 +73,7 @@ class TestEnsureAccessToken:
             "STRAVA_CLIENT_SECRET": "secret",
         }
 
-        def mock_post(url, data):
+        def mock_post(url: str, data: dict[str, str]) -> TokenResponse:
             assert data["grant_type"] == "authorization_code"
             assert data["code"] == "test_code"
             return {
@@ -97,7 +97,7 @@ class TestEnsureAccessToken:
             "STRAVA_EXPIRES_AT": "0",  # expired
         }
 
-        def mock_post(url, data):
+        def mock_post(url: str, data: dict[str, str]) -> TokenResponse:
             assert data["grant_type"] == "refresh_token"
             assert data["refresh_token"] == "old_refresh"
             return {
@@ -124,8 +124,6 @@ class TestEnsureAccessToken:
 
     def test_no_tokens_no_code_exits(self):
         """Should exit with auth URL when no tokens and no code."""
-        import pytest
-
         creds = {
             "STRAVA_CLIENT_ID": "12345",
             "STRAVA_CLIENT_SECRET": "secret",

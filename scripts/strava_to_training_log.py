@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+from strava_pipeline.dynamo_writer import write_entries
 from strava_pipeline.strava_client import (
     DEFAULT_CREDENTIALS_PATH,
     date_range_to_epochs,
@@ -37,7 +38,6 @@ from strava_pipeline.transform import (
     filter_activities,
     format_entries_preview,
 )
-from strava_pipeline.dynamo_writer import write_entries
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,20 +45,28 @@ def parse_args() -> argparse.Namespace:
         description="Fetch Strava activities and generate training-log entries"
     )
     parser.add_argument("--start-date", required=True, help="Start date (YYYY-MM-DD)")
-    parser.add_argument("--end-date", required=True, help="End date (YYYY-MM-DD, inclusive)")
-    parser.add_argument("--log-id", required=True, help="Training log ID (e.g., paris-2026)")
     parser.add_argument(
-        "--env", choices=["test", "prod"], default="test",
-        help="Target environment (default: test)"
+        "--end-date", required=True, help="End date (YYYY-MM-DD, inclusive)"
+    )
+    parser.add_argument(
+        "--log-id", required=True, help="Training log ID (e.g., paris-2026)"
+    )
+    parser.add_argument(
+        "--env",
+        choices=["test", "prod"],
+        default="test",
+        help="Target environment (default: test)",
     )
     parser.add_argument("--code", help="One-time Strava OAuth authorization code")
     parser.add_argument(
-        "--write", action="store_true",
-        help="Actually write to DynamoDB (default is dry-run preview)"
+        "--write",
+        action="store_true",
+        help="Actually write to DynamoDB (default is dry-run preview)",
     )
     parser.add_argument(
-        "--credentials", default=DEFAULT_CREDENTIALS_PATH,
-        help=f"Path to credentials file (default: {DEFAULT_CREDENTIALS_PATH})"
+        "--credentials",
+        default=DEFAULT_CREDENTIALS_PATH,
+        help=f"Path to credentials file (default: {DEFAULT_CREDENTIALS_PATH})",
     )
     return parser.parse_args()
 
@@ -74,12 +82,20 @@ def main() -> None:
 
     # Fetch activities from Strava
     after_epoch, before_epoch = date_range_to_epochs(args.start_date, args.end_date)
-    print(f"Fetching activities from {args.start_date} to {args.end_date}...", file=sys.stderr)
-    activities, _ = fetch_activities(creds["STRAVA_ACCESS_TOKEN"], after_epoch, before_epoch)
+    print(
+        f"Fetching activities from {args.start_date} to {args.end_date}...",
+        file=sys.stderr,
+    )
+    activities, _ = fetch_activities(
+        creds["STRAVA_ACCESS_TOKEN"], after_epoch, before_epoch
+    )
 
     # Filter and transform
     filtered = filter_activities(activities)
-    print(f"Found {len(activities)} total activities, {len(filtered)} Run/Walk", file=sys.stderr)
+    print(
+        f"Found {len(activities)} total activities, {len(filtered)} Run/Walk",
+        file=sys.stderr,
+    )
 
     daily = build_daily_entries(filtered, args.log_id)
     weekly = build_weekly_entries(daily, args.log_id, args.start_date, args.end_date)
@@ -87,7 +103,11 @@ def main() -> None:
 
     # Preview
     print("\n" + format_entries_preview(all_entries))
-    print(f"\n{len(daily)} daily entries + {len(weekly)} weekly summaries = {len(all_entries)} total\n")
+    print(
+        "\n"
+        f"{len(daily)} daily entries + {len(weekly)} weekly summaries = "
+        f"{len(all_entries)} total\n"
+    )
 
     # Write
     counts = write_entries(all_entries, table_name, dry_run=not args.write)

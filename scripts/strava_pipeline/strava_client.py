@@ -14,7 +14,17 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any
+from typing import cast
+
+from strava_pipeline.models import (
+    Credentials,
+    HttpGet,
+    HttpPost,
+    JsonObject,
+    ResponseHeaders,
+    StravaActivity,
+    TokenResponse,
+)
 
 TOKEN_URL = "https://www.strava.com/oauth/token"
 ACTIVITIES_URL = "https://www.strava.com/api/v3/athlete/activities"
@@ -26,12 +36,16 @@ DEFAULT_CREDENTIALS_PATH = os.path.expanduser("~/.strava-credentials")
 USER_MANAGED_KEYS = {"STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET"}
 
 # Keys that the script manages (written back after token exchange/refresh)
-SCRIPT_MANAGED_KEYS = {"STRAVA_ACCESS_TOKEN", "STRAVA_REFRESH_TOKEN", "STRAVA_EXPIRES_AT"}
+SCRIPT_MANAGED_KEYS = {
+    "STRAVA_ACCESS_TOKEN",
+    "STRAVA_REFRESH_TOKEN",
+    "STRAVA_EXPIRES_AT",
+}
 
 
-def load_credentials(path: str = DEFAULT_CREDENTIALS_PATH) -> dict[str, str]:
+def load_credentials(path: str = DEFAULT_CREDENTIALS_PATH) -> Credentials:
     """Read KEY=VALUE credentials from *path*. Returns empty dict if missing."""
-    creds: dict[str, str] = {}
+    creds: Credentials = {}
     if not os.path.exists(path):
         return creds
     with open(path, encoding="utf-8") as f:
@@ -46,8 +60,8 @@ def load_credentials(path: str = DEFAULT_CREDENTIALS_PATH) -> dict[str, str]:
     return creds
 
 
-def save_credentials(path: str, creds: dict[str, str]) -> None:
-    """Write credentials back, preserving user-managed keys and updating script-managed ones."""
+def save_credentials(path: str, creds: Credentials) -> None:
+    """Write credentials back while preserving user-managed credentials."""
     existing = load_credentials(path)
     existing.update({k: v for k, v in creds.items() if k in SCRIPT_MANAGED_KEYS})
     # Ensure user-managed keys are preserved
@@ -59,26 +73,71 @@ def save_credentials(path: str, creds: dict[str, str]) -> None:
             f.write(f"{key}={value}\n")
 
 
-def _post_form(url: str, data: dict[str, str]) -> dict[str, Any]:
+def _load_json_object(body: str, *, context: str) -> JsonObject:
+    parsed = json.loads(body)
+    if not isinstance(parsed, dict):
+        raise SystemExit(
+            f"{context} returned {type(parsed).__name__}, expected JSON object"
+        )
+    return {str(key): value for key, value in parsed.items()}
+
+
+def _require_activity_list(payload: object) -> list[StravaActivity]:
+    if not isinstance(payload, list):
+        raise SystemExit(f"Unexpected API response: {type(payload).__name__}")
+
+    activities: list[StravaActivity] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            raise SystemExit(
+                f"Unexpected activity payload entry: {type(item).__name__}"
+            )
+        activities.append(
+            cast(StravaActivity, {str(key): value for key, value in item.items()})
+        )
+    return activities
+
+
+def _required_token_str(result: TokenResponse, field_name: str) -> str:
+    value = result.get(field_name)
+    if not isinstance(value, str) or value == "":
+        raise SystemExit(f"Token response missing string field: {field_name}")
+    return value
+
+
+def _required_token_int(result: TokenResponse, field_name: str) -> int:
+    value = result.get(field_name)
+    if not isinstance(value, int):
+        raise SystemExit(f"Token response missing integer field: {field_name}")
+    return value
+
+
+def _post_form(url: str, data: dict[str, str]) -> TokenResponse:
     """POST form-encoded data, return parsed JSON response."""
     encoded = urllib.parse.urlencode(data).encode("utf-8")
     req = urllib.request.Request(url, data=encoded, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return cast(
+                TokenResponse,
+                _load_json_object(
+                    resp.read().decode("utf-8"),
+                    context="Strava token request",
+                ),
+            )
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
         raise SystemExit(f"Strava token request failed ({exc.code}): {body}") from exc
 
 
-def _get_json(url: str, access_token: str) -> tuple[Any, dict[str, str]]:
+def _get_json(url: str, access_token: str) -> tuple[object, ResponseHeaders]:
     """GET JSON from *url* with bearer auth. Returns (parsed_body, headers)."""
     req = urllib.request.Request(url, method="GET")
     req.add_header("Authorization", f"Bearer {access_token}")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            headers = {k.lower(): v for k, v in resp.headers.items()}
+            headers: ResponseHeaders = {k.lower(): v for k, v in resp.headers.items()}
             return json.loads(resp.read().decode("utf-8")), headers
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
@@ -87,21 +146,23 @@ def _get_json(url: str, access_token: str) -> tuple[Any, dict[str, str]]:
 
 def get_authorize_url(client_id: str) -> str:
     """Return the URL the user should visit to authorize the app."""
-    params = urllib.parse.urlencode({
-        "client_id": client_id,
-        "response_type": "code",
-        "redirect_uri": "http://localhost",
-        "approval_prompt": "auto",
-        "scope": "activity:read_all",
-    })
+    params = urllib.parse.urlencode(
+        {
+            "client_id": client_id,
+            "response_type": "code",
+            "redirect_uri": "http://localhost",
+            "approval_prompt": "auto",
+            "scope": "activity:read_all",
+        }
+    )
     return f"{AUTHORIZE_URL}?{params}"
 
 
 def ensure_access_token(
-    creds: dict[str, str],
+    creds: Credentials,
     code: str | None = None,
-    http_post: Any = None,
-) -> dict[str, str]:
+    http_post: HttpPost | None = None,
+) -> Credentials:
     """Ensure we have a valid access token, exchanging or refreshing as needed.
 
     - If no tokens exist and *code* is provided, exchanges the code.
@@ -120,28 +181,36 @@ def ensure_access_token(
             "Missing STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET in credentials file"
         )
 
-    has_tokens = bool(creds.get("STRAVA_ACCESS_TOKEN") and creds.get("STRAVA_REFRESH_TOKEN"))
+    has_tokens = bool(
+        creds.get("STRAVA_ACCESS_TOKEN") and creds.get("STRAVA_REFRESH_TOKEN")
+    )
 
     if not has_tokens:
         if not code:
             url = get_authorize_url(client_id)
-            print(f"No tokens found. Visit this URL to authorize:\n\n  {url}\n", file=sys.stderr)
+            print(
+                f"No tokens found. Visit this URL to authorize:\n\n  {url}\n",
+                file=sys.stderr,
+            )
             print("Then re-run with --code <CODE_FROM_REDIRECT_URL>", file=sys.stderr)
             raise SystemExit(1)
 
         # Exchange authorization code for tokens
-        result = post(TOKEN_URL, {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": "authorization_code",
-            "code": code,
-        })
+        result = post(
+            TOKEN_URL,
+            {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+            },
+        )
         if "access_token" not in result:
             raise SystemExit(f"Token exchange failed: {json.dumps(result)}")
 
-        creds["STRAVA_ACCESS_TOKEN"] = result["access_token"]
-        creds["STRAVA_REFRESH_TOKEN"] = result["refresh_token"]
-        creds["STRAVA_EXPIRES_AT"] = str(result["expires_at"])
+        creds["STRAVA_ACCESS_TOKEN"] = _required_token_str(result, "access_token")
+        creds["STRAVA_REFRESH_TOKEN"] = _required_token_str(result, "refresh_token")
+        creds["STRAVA_EXPIRES_AT"] = str(_required_token_int(result, "expires_at"))
         return creds
 
     # Check if token is expired
@@ -152,18 +221,23 @@ def ensure_access_token(
 
     # Refresh the token
     print("Access token expired, refreshing...", file=sys.stderr)
-    result = post(TOKEN_URL, {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": "refresh_token",
-        "refresh_token": creds["STRAVA_REFRESH_TOKEN"],
-    })
+    result = post(
+        TOKEN_URL,
+        {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "refresh_token",
+            "refresh_token": creds["STRAVA_REFRESH_TOKEN"],
+        },
+    )
     if "access_token" not in result:
         raise SystemExit(f"Token refresh failed: {json.dumps(result)}")
 
-    creds["STRAVA_ACCESS_TOKEN"] = result["access_token"]
-    creds["STRAVA_REFRESH_TOKEN"] = result.get("refresh_token", creds["STRAVA_REFRESH_TOKEN"])
-    creds["STRAVA_EXPIRES_AT"] = str(result["expires_at"])
+    creds["STRAVA_ACCESS_TOKEN"] = _required_token_str(result, "access_token")
+    creds["STRAVA_REFRESH_TOKEN"] = result.get(
+        "refresh_token", creds["STRAVA_REFRESH_TOKEN"]
+    )
+    creds["STRAVA_EXPIRES_AT"] = str(_required_token_int(result, "expires_at"))
     return creds
 
 
@@ -178,8 +252,10 @@ def date_range_to_epochs(start_date: str, end_date: str) -> tuple[int, int]:
 
     start = dt.date.fromisoformat(start_date)
     end = dt.date.fromisoformat(end_date)
-    after_dt = dt.datetime.combine(start, dt.time(0, 0, 0), tzinfo=dt.timezone.utc)
-    before_dt = dt.datetime.combine(end + dt.timedelta(days=1), dt.time(0, 0, 0), tzinfo=dt.timezone.utc)
+    after_dt = dt.datetime.combine(start, dt.time(0, 0, 0), tzinfo=dt.UTC)
+    before_dt = dt.datetime.combine(
+        end + dt.timedelta(days=1), dt.time(0, 0, 0), tzinfo=dt.UTC
+    )
     return int(after_dt.timestamp()), int(before_dt.timestamp())
 
 
@@ -188,30 +264,30 @@ def fetch_activities(
     after_epoch: int,
     before_epoch: int,
     per_page: int = 200,
-    http_get: Any = None,
-) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    http_get: HttpGet | None = None,
+) -> tuple[list[StravaActivity], ResponseHeaders]:
     """Fetch all activities in the time range. Returns (activities, last_headers).
 
     *http_get* is injectable for testing (default: _get_json).
     """
     get = http_get or _get_json
-    activities: list[dict[str, Any]] = []
-    last_headers: dict[str, str] = {}
+    activities: list[StravaActivity] = []
+    last_headers: ResponseHeaders = {}
     page = 1
 
     while True:
-        query = urllib.parse.urlencode({
-            "after": after_epoch,
-            "before": before_epoch,
-            "per_page": per_page,
-            "page": page,
-        })
+        query = urllib.parse.urlencode(
+            {
+                "after": after_epoch,
+                "before": before_epoch,
+                "per_page": per_page,
+                "page": page,
+            }
+        )
         url = f"{ACTIVITIES_URL}?{query}"
-        batch, headers = get(url, access_token)
+        batch_value, headers = get(url, access_token)
+        batch = _require_activity_list(batch_value)
         last_headers = headers
-
-        if not isinstance(batch, list):
-            raise SystemExit(f"Unexpected API response: {type(batch).__name__}")
 
         activities.extend(batch)
         if len(batch) < per_page:

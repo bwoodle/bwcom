@@ -1,11 +1,17 @@
-import { tool } from 'langchain';
-import { z } from 'zod';
-import { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { docClient, TRAINING_LOG_TABLE_NAME } from './dynamodb';
+import { tool } from "langchain";
+import { z } from "zod";
+import {
+  ScanCommand,
+  PutCommand,
+  DeleteCommand,
+  UpdateCommand,
+  QueryCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { docClient, TRAINING_LOG_TABLE_NAME } from "./dynamodb";
 import {
   TRAINING_LOG_TOOL_DESCRIPTIONS,
   TRAINING_LOG_ARG_DESCRIPTIONS,
-} from './prompts/tool-descriptions/training-log';
+} from "./prompts/tool-descriptions/training-log";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -15,7 +21,7 @@ import {
  * Build the sort key for a daily workout entry: "daily#<date>#<slot>"
  * e.g. "daily#2026-02-08#workout1"
  */
-function buildDailySk(date: string, slot: 'workout1' | 'workout2'): string {
+function buildDailySk(date: string, slot: "workout1" | "workout2"): string {
   return `daily#${date}#${slot}`;
 }
 
@@ -39,21 +45,15 @@ function isIsoDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-function requiredStringField(
-  value: unknown,
-  fieldName: string,
-): string {
-  if (typeof value !== 'string' || value.trim().length === 0) {
+function requiredStringField(value: unknown, fieldName: string): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(`Missing required field: ${fieldName}`);
   }
   return value.trim();
 }
 
-function requiredNumberField(
-  value: unknown,
-  fieldName: string,
-): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
+function requiredNumberField(value: unknown, fieldName: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`Missing required field: ${fieldName}`);
   }
   return value;
@@ -70,9 +70,9 @@ export const listTrainingLog = tool(
         const result = await docClient.send(
           new QueryCommand({
             TableName: TRAINING_LOG_TABLE_NAME,
-            KeyConditionExpression: 'logId = :lid',
-            ExpressionAttributeValues: { ':lid': logId },
-          })
+            KeyConditionExpression: "logId = :lid",
+            ExpressionAttributeValues: { ":lid": logId },
+          }),
         );
         const items = (result.Items ?? []).map(formatItem);
         items.sort((a, b) => (b.sk as string).localeCompare(a.sk as string));
@@ -87,10 +87,12 @@ export const listTrainingLog = tool(
           new ScanCommand({
             TableName: TRAINING_LOG_TABLE_NAME,
             ExclusiveStartKey: lastEvaluatedKey,
-          })
+          }),
         );
         allItems.push(...(result.Items ?? []));
-        lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+        lastEvaluatedKey = result.LastEvaluatedKey as
+          | Record<string, unknown>
+          | undefined;
       } while (lastEvaluatedKey);
 
       const items = allItems.map(formatItem);
@@ -102,11 +104,14 @@ export const listTrainingLog = tool(
       return JSON.stringify(items, null, 2);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to list training log: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to list training log: ${message}`,
+      });
     }
   },
   {
-    name: 'listTrainingLog',
+    name: "listTrainingLog",
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.listTrainingLog,
     schema: z.object({
       logId: z
@@ -114,16 +119,16 @@ export const listTrainingLog = tool(
         .optional()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.logIdOptional),
     }),
-  }
+  },
 );
 
 export const addDailyWorkout = tool(
   async ({ logId, date, slot, description, miles, highlight }) => {
     try {
-      const safeLogId = requiredStringField(logId, 'logId');
-      const safeDate = requiredStringField(date, 'date');
-      const safeDescription = requiredStringField(description, 'description');
-      const safeMiles = requiredNumberField(miles, 'miles');
+      const safeLogId = requiredStringField(logId, "logId");
+      const safeDate = requiredStringField(date, "date");
+      const safeDescription = requiredStringField(description, "description");
+      const safeMiles = requiredNumberField(miles, "miles");
       const sk = buildDailySk(safeDate, slot);
       const createdAt = new Date().toISOString();
 
@@ -132,7 +137,7 @@ export const addDailyWorkout = tool(
         sk,
         date: safeDate,
         slot,
-        entryType: 'daily',
+        entryType: "daily",
         description: safeDescription,
         miles: safeMiles,
         createdAt,
@@ -145,7 +150,7 @@ export const addDailyWorkout = tool(
         new PutCommand({
           TableName: TRAINING_LOG_TABLE_NAME,
           Item: item,
-        })
+        }),
       );
 
       return JSON.stringify({
@@ -160,21 +165,28 @@ export const addDailyWorkout = tool(
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to add daily workout: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to add daily workout: ${message}`,
+      });
     }
   },
   {
-    name: 'addDailyWorkout',
+    name: "addDailyWorkout",
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.addDailyWorkout,
     schema: z.object({
-      logId: z.string().trim().min(1).describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
+      logId: z
+        .string()
+        .trim()
+        .min(1)
+        .describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
       date: z
         .string()
         .trim()
-        .refine(isIsoDate, { message: 'Date must be YYYY-MM-DD.' })
+        .refine(isIsoDate, { message: "Date must be YYYY-MM-DD." })
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.date),
       slot: z
-        .enum(['workout1', 'workout2'])
+        .enum(["workout1", "workout2"])
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.slot),
       description: z
         .string()
@@ -187,15 +199,15 @@ export const addDailyWorkout = tool(
         .optional()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.highlightOptional),
     }),
-  }
+  },
 );
 
 export const addWeeklySummary = tool(
   async ({ logId, date, description }) => {
     try {
-      const safeLogId = requiredStringField(logId, 'logId');
-      const safeDate = requiredStringField(date, 'date');
-      const safeDescription = requiredStringField(description, 'description');
+      const safeLogId = requiredStringField(logId, "logId");
+      const safeDate = requiredStringField(date, "date");
+      const safeDescription = requiredStringField(description, "description");
       const sk = buildWeeklySk(safeDate);
       const createdAt = new Date().toISOString();
 
@@ -206,11 +218,11 @@ export const addWeeklySummary = tool(
             logId: safeLogId,
             sk,
             date: safeDate,
-            entryType: 'week',
+            entryType: "week",
             description: safeDescription,
             createdAt,
           },
-        })
+        }),
       );
 
       return JSON.stringify({
@@ -222,20 +234,27 @@ export const addWeeklySummary = tool(
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to add weekly summary: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to add weekly summary: ${message}`,
+      });
     }
   },
   {
-    name: 'addWeeklySummary',
+    name: "addWeeklySummary",
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.addWeeklySummary,
     schema: z.object({
-      logId: z.string().trim().min(1).describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
+      logId: z
+        .string()
+        .trim()
+        .min(1)
+        .describe(TRAINING_LOG_ARG_DESCRIPTIONS.logId),
       date: z
         .string()
         .trim()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.weeklyDate)
         .refine(isSundayDate, {
-          message: 'Weekly summary date must be a Sunday (YYYY-MM-DD).',
+          message: "Weekly summary date must be a Sunday (YYYY-MM-DD).",
         }),
       description: z
         .string()
@@ -243,7 +262,7 @@ export const addWeeklySummary = tool(
         .min(1)
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.weeklyDescription),
     }),
-  }
+  },
 );
 
 export const removeTrainingLogEntry = tool(
@@ -253,22 +272,25 @@ export const removeTrainingLogEntry = tool(
         new DeleteCommand({
           TableName: TRAINING_LOG_TABLE_NAME,
           Key: { logId, sk },
-        })
+        }),
       );
       return JSON.stringify({ success: true, deleted: { logId, sk } });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to remove training log entry: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to remove training log entry: ${message}`,
+      });
     }
   },
   {
-    name: 'removeTrainingLogEntry',
+    name: "removeTrainingLogEntry",
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.removeTrainingLogEntry,
     schema: z.object({
       logId: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.deleteLogId),
       sk: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.deleteSk),
     }),
-  }
+  },
 );
 
 export const updateTrainingLogEntry = tool(
@@ -279,26 +301,29 @@ export const updateTrainingLogEntry = tool(
       const removes: string[] = [];
 
       if (description !== undefined) {
-        updates.push('description = :d');
-        values[':d'] = description;
+        updates.push("description = :d");
+        values[":d"] = description;
       }
       if (miles !== undefined) {
-        updates.push('miles = :m');
-        values[':m'] = miles;
+        updates.push("miles = :m");
+        values[":m"] = miles;
       }
       if (highlight === true) {
-        updates.push('highlight = :h');
-        values[':h'] = true;
+        updates.push("highlight = :h");
+        values[":h"] = true;
       } else if (highlight === false) {
-        removes.push('highlight');
+        removes.push("highlight");
       }
 
-      let updateExpr = '';
-      if (updates.length) updateExpr += `SET ${updates.join(', ')}`;
-      if (removes.length) updateExpr += ` REMOVE ${removes.join(', ')}`;
+      let updateExpr = "";
+      if (updates.length) updateExpr += `SET ${updates.join(", ")}`;
+      if (removes.length) updateExpr += ` REMOVE ${removes.join(", ")}`;
 
       if (!updateExpr) {
-        return JSON.stringify({ success: false, error: 'No fields to update.' });
+        return JSON.stringify({
+          success: false,
+          error: "No fields to update.",
+        });
       }
 
       await docClient.send(
@@ -306,18 +331,28 @@ export const updateTrainingLogEntry = tool(
           TableName: TRAINING_LOG_TABLE_NAME,
           Key: { logId, sk },
           UpdateExpression: updateExpr,
-          ...(Object.keys(values).length ? { ExpressionAttributeValues: values } : {}),
-        })
+          ...(Object.keys(values).length
+            ? { ExpressionAttributeValues: values }
+            : {}),
+        }),
       );
 
-      return JSON.stringify({ success: true, logId, sk, updated: { description, miles, highlight } });
+      return JSON.stringify({
+        success: true,
+        logId,
+        sk,
+        updated: { description, miles, highlight },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to update training log entry: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to update training log entry: ${message}`,
+      });
     }
   },
   {
-    name: 'updateTrainingLogEntry',
+    name: "updateTrainingLogEntry",
     description: TRAINING_LOG_TOOL_DESCRIPTIONS.updateTrainingLogEntry,
     schema: z.object({
       logId: z.string().describe(TRAINING_LOG_ARG_DESCRIPTIONS.updateLogId),
@@ -326,13 +361,16 @@ export const updateTrainingLogEntry = tool(
         .string()
         .optional()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.updateDescription),
-      miles: z.number().optional().describe(TRAINING_LOG_ARG_DESCRIPTIONS.updateMiles),
+      miles: z
+        .number()
+        .optional()
+        .describe(TRAINING_LOG_ARG_DESCRIPTIONS.updateMiles),
       highlight: z
         .boolean()
         .optional()
         .describe(TRAINING_LOG_ARG_DESCRIPTIONS.updateHighlight),
     }),
-  }
+  },
 );
 
 // ---------------------------------------------------------------------------

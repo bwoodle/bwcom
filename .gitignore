@@ -50,6 +50,9 @@ typings/
 # Optional npm cache directory
 .npm
 
+# Local Python virtual environments
+.venv/
+
 # Optional eslint cache
 .eslintcache
 

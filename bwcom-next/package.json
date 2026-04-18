@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "sync-images:test": "cd .. && ./scripts/sync-images.sh test.brentwoodle.com",
     "sync-images:prod": "cd .. && ./scripts/sync-images.sh brentwoodle.com"
   },
@@ -38,8 +42,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
+    "prettier": "^3.6.2",
     "sharp-cli": "^5.2.0",
     "tailwindcss": "^4",
-    "typescript": "^6"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.4"
   }
 }

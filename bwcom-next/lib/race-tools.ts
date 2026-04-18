@@ -1,11 +1,17 @@
-import { tool } from 'langchain';
-import { z } from 'zod';
-import { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { docClient, RACES_TABLE_NAME } from './dynamodb';
+import { tool } from "langchain";
+import { z } from "zod";
+import {
+  ScanCommand,
+  PutCommand,
+  DeleteCommand,
+  UpdateCommand,
+  QueryCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { docClient, RACES_TABLE_NAME } from "./dynamodb";
 import {
   RACE_TOOL_DESCRIPTIONS,
   RACE_ARG_DESCRIPTIONS,
-} from './prompts/tool-descriptions/races';
+} from "./prompts/tool-descriptions/races";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -31,9 +37,9 @@ export const listRaces = tool(
         const result = await docClient.send(
           new QueryCommand({
             TableName: RACES_TABLE_NAME,
-            KeyConditionExpression: 'yearKey = :yk',
-            ExpressionAttributeValues: { ':yk': yearKey },
-          })
+            KeyConditionExpression: "yearKey = :yk",
+            ExpressionAttributeValues: { ":yk": yearKey },
+          }),
         );
         const items = (result.Items ?? []).map((item) => ({
           yearKey: item.yearKey,
@@ -56,10 +62,12 @@ export const listRaces = tool(
           new ScanCommand({
             TableName: RACES_TABLE_NAME,
             ExclusiveStartKey: lastEvaluatedKey,
-          })
+          }),
         );
         allItems.push(...(result.Items ?? []));
-        lastEvaluatedKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+        lastEvaluatedKey = result.LastEvaluatedKey as
+          | Record<string, unknown>
+          | undefined;
       } while (lastEvaluatedKey);
 
       const items = allItems.map((item) => ({
@@ -79,19 +87,19 @@ export const listRaces = tool(
       return JSON.stringify(items, null, 2);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to list races: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to list races: ${message}`,
+      });
     }
   },
   {
-    name: 'listRaces',
+    name: "listRaces",
     description: RACE_TOOL_DESCRIPTIONS.listRaces,
     schema: z.object({
-      year: z
-        .number()
-        .optional()
-        .describe(RACE_ARG_DESCRIPTIONS.yearOptional),
+      year: z.number().optional().describe(RACE_ARG_DESCRIPTIONS.yearOptional),
     }),
-  }
+  },
 );
 
 export const addRace = tool(
@@ -100,7 +108,10 @@ export const addRace = tool(
       // Parse year from date string — expect formats like "Feb 8, 2026" or "2026-02-08"
       const parsed = new Date(date);
       if (isNaN(parsed.getTime())) {
-        return JSON.stringify({ success: false, error: `Invalid date: "${date}". Use a format like "Feb 8, 2026" or "2026-02-08".` });
+        return JSON.stringify({
+          success: false,
+          error: `Invalid date: "${date}". Use a format like "Feb 8, 2026" or "2026-02-08".`,
+        });
       }
       const yearKey = String(parsed.getFullYear());
       // Build a sortable date string for the sk: YYYY-MM-DD
@@ -109,11 +120,11 @@ export const addRace = tool(
       const createdAt = new Date().toISOString();
 
       // Format display date
-      const displayDate = parsed.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC',
+      const displayDate = parsed.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
       });
 
       const item: Record<string, unknown> = {
@@ -133,17 +144,29 @@ export const addRace = tool(
         new PutCommand({
           TableName: RACES_TABLE_NAME,
           Item: item,
-        })
+        }),
       );
 
-      return JSON.stringify({ success: true, yearKey, sk, date: displayDate, distance, time, vdot, comments: comments ?? null });
+      return JSON.stringify({
+        success: true,
+        yearKey,
+        sk,
+        date: displayDate,
+        distance,
+        time,
+        vdot,
+        comments: comments ?? null,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to add race: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to add race: ${message}`,
+      });
     }
   },
   {
-    name: 'addRace',
+    name: "addRace",
     description: RACE_TOOL_DESCRIPTIONS.addRace,
     schema: z.object({
       date: z.string().describe(RACE_ARG_DESCRIPTIONS.date),
@@ -155,7 +178,7 @@ export const addRace = tool(
         .optional()
         .describe(RACE_ARG_DESCRIPTIONS.commentsOptional),
     }),
-  }
+  },
 );
 
 export const removeRace = tool(
@@ -165,22 +188,25 @@ export const removeRace = tool(
         new DeleteCommand({
           TableName: RACES_TABLE_NAME,
           Key: { yearKey, sk },
-        })
+        }),
       );
       return JSON.stringify({ success: true, deleted: { yearKey, sk } });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to remove race: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to remove race: ${message}`,
+      });
     }
   },
   {
-    name: 'removeRace',
+    name: "removeRace",
     description: RACE_TOOL_DESCRIPTIONS.removeRace,
     schema: z.object({
       yearKey: z.string().describe(RACE_ARG_DESCRIPTIONS.yearKeyDelete),
       sk: z.string().describe(RACE_ARG_DESCRIPTIONS.skDelete),
     }),
-  }
+  },
 );
 
 export const updateRace = tool(
@@ -191,34 +217,38 @@ export const updateRace = tool(
       const removes: string[] = [];
 
       if (time !== undefined) {
-        updates.push('#t = :t');
-        values[':t'] = time;
+        updates.push("#t = :t");
+        values[":t"] = time;
       }
       if (vdot !== undefined) {
-        updates.push('vdot = :v');
-        values[':v'] = vdot;
+        updates.push("vdot = :v");
+        values[":v"] = vdot;
       }
       if (comments !== undefined) {
-        if (comments === '') {
-          removes.push('comments');
+        if (comments === "") {
+          removes.push("comments");
         } else {
-          updates.push('comments = :c');
-          values[':c'] = comments;
+          updates.push("comments = :c");
+          values[":c"] = comments;
         }
       }
 
-      let updateExpr = '';
-      if (updates.length) updateExpr += `SET ${updates.join(', ')}`;
-      if (removes.length) updateExpr += ` REMOVE ${removes.join(', ')}`;
+      let updateExpr = "";
+      if (updates.length) updateExpr += `SET ${updates.join(", ")}`;
+      if (removes.length) updateExpr += ` REMOVE ${removes.join(", ")}`;
 
       if (!updateExpr) {
-        return JSON.stringify({ success: false, error: 'No fields to update. Provide at least one of: time, vdot, comments.' });
+        return JSON.stringify({
+          success: false,
+          error:
+            "No fields to update. Provide at least one of: time, vdot, comments.",
+        });
       }
 
       // "time" is a DynamoDB reserved word, so use an expression attribute name
       const expressionAttributeNames: Record<string, string> = {};
       if (time !== undefined) {
-        expressionAttributeNames['#t'] = 'time';
+        expressionAttributeNames["#t"] = "time";
       }
 
       await docClient.send(
@@ -226,19 +256,31 @@ export const updateRace = tool(
           TableName: RACES_TABLE_NAME,
           Key: { yearKey, sk },
           UpdateExpression: updateExpr,
-          ...(Object.keys(values).length ? { ExpressionAttributeValues: values } : {}),
-          ...(Object.keys(expressionAttributeNames).length ? { ExpressionAttributeNames: expressionAttributeNames } : {}),
-        })
+          ...(Object.keys(values).length
+            ? { ExpressionAttributeValues: values }
+            : {}),
+          ...(Object.keys(expressionAttributeNames).length
+            ? { ExpressionAttributeNames: expressionAttributeNames }
+            : {}),
+        }),
       );
 
-      return JSON.stringify({ success: true, yearKey, sk, updated: { time, vdot, comments } });
+      return JSON.stringify({
+        success: true,
+        yearKey,
+        sk,
+        updated: { time, vdot, comments },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return JSON.stringify({ success: false, error: `Failed to update race: ${message}` });
+      return JSON.stringify({
+        success: false,
+        error: `Failed to update race: ${message}`,
+      });
     }
   },
   {
-    name: 'updateRace',
+    name: "updateRace",
     description: RACE_TOOL_DESCRIPTIONS.updateRace,
     schema: z.object({
       yearKey: z.string().describe(RACE_ARG_DESCRIPTIONS.yearKeyUpdate),
@@ -250,7 +292,7 @@ export const updateRace = tool(
         .optional()
         .describe(RACE_ARG_DESCRIPTIONS.commentsUpdate),
     }),
-  }
+  },
 );
 
 /** All race history tools, ready to pass to createAgent({ tools }). */

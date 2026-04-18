@@ -29,7 +29,8 @@ body {
 }
 
 /* Reset default browser spacing so header and content touch cleanly */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }

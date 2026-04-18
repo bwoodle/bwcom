@@ -1,12 +1,12 @@
-import { MemorySaver } from '@langchain/langgraph';
-import type { RunnableConfig } from '@langchain/core/runnables';
+import { MemorySaver } from "@langchain/langgraph";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import type {
   Checkpoint,
   CheckpointMetadata,
   CheckpointTuple,
   CheckpointListOptions,
   PendingWrite,
-} from '@langchain/langgraph-checkpoint';
+} from "@langchain/langgraph-checkpoint";
 
 interface TTLMemorySaverOptions {
   /** Default TTL in milliseconds */
@@ -35,7 +35,7 @@ export class TTLMemorySaver extends MemorySaver {
     const sweepMs = options.sweepIntervalMs ?? 60_000;
     this.sweepInterval = setInterval(() => {
       this.sweepExpired().catch((err) =>
-        console.error('[TTLMemorySaver] sweep error:', err)
+        console.error("[TTLMemorySaver] sweep error:", err),
       );
     }, sweepMs);
 
@@ -51,9 +51,7 @@ export class TTLMemorySaver extends MemorySaver {
 
   // --- Override every entry point to track access ---
 
-  async getTuple(
-    config: RunnableConfig
-  ): Promise<CheckpointTuple | undefined> {
+  async getTuple(config: RunnableConfig): Promise<CheckpointTuple | undefined> {
     const threadId = config.configurable?.thread_id;
     if (threadId && this.refreshOnRead) {
       this.touchThread(threadId);
@@ -63,7 +61,7 @@ export class TTLMemorySaver extends MemorySaver {
 
   async *list(
     config: RunnableConfig,
-    options?: CheckpointListOptions
+    options?: CheckpointListOptions,
   ): AsyncGenerator<CheckpointTuple> {
     const threadId = config.configurable?.thread_id;
     if (threadId && this.refreshOnRead) {
@@ -75,7 +73,7 @@ export class TTLMemorySaver extends MemorySaver {
   async put(
     config: RunnableConfig,
     checkpoint: Checkpoint,
-    metadata: CheckpointMetadata
+    metadata: CheckpointMetadata,
   ): Promise<RunnableConfig> {
     const threadId = config.configurable?.thread_id;
     if (threadId) this.touchThread(threadId);
@@ -85,7 +83,7 @@ export class TTLMemorySaver extends MemorySaver {
   async putWrites(
     config: RunnableConfig,
     writes: PendingWrite[],
-    taskId: string
+    taskId: string,
   ): Promise<void> {
     const threadId = config.configurable?.thread_id;
     if (threadId) this.touchThread(threadId);
@@ -112,7 +110,7 @@ export class TTLMemorySaver extends MemorySaver {
     if (expired.length > 0) {
       console.log(
         `[TTLMemorySaver] pruned ${expired.length} expired thread(s):`,
-        expired
+        expired,
       );
     }
 

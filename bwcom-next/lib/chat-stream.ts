@@ -1,5 +1,5 @@
-import { HumanMessage } from '@langchain/core/messages';
-import { agent } from './agent';
+import { HumanMessage } from "@langchain/core/messages";
+import { agent } from "./agent";
 
 /**
  * SSE event payload types sent to the client.
@@ -21,7 +21,10 @@ interface ChatStreamOptions {
  * Build an SSE ReadableStream that streams the agent's response token-by-token
  * and emits tool-call summaries when the agent invokes tools.
  */
-export function createChatStream({ userMessage, config }: ChatStreamOptions): ReadableStream {
+export function createChatStream({
+  userMessage,
+  config,
+}: ChatStreamOptions): ReadableStream {
   return new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
@@ -33,7 +36,7 @@ export function createChatStream({ userMessage, config }: ChatStreamOptions): Re
       try {
         const eventStream = agent.streamEvents(
           { messages: [new HumanMessage(userMessage)] },
-          { ...config, version: 'v2' }
+          { ...config, version: "v2" },
         );
 
         // Track in-flight tool calls so we can pair start → end
@@ -41,21 +44,21 @@ export function createChatStream({ userMessage, config }: ChatStreamOptions): Re
 
         for await (const event of eventStream) {
           // --- Streamed LLM text tokens ---
-          if (event.event === 'on_chat_model_stream') {
+          if (event.event === "on_chat_model_stream") {
             const chunk = event.data?.chunk;
             if (chunk?.content) {
               const text =
-                typeof chunk.content === 'string'
+                typeof chunk.content === "string"
                   ? chunk.content
                   : Array.isArray(chunk.content)
                     ? chunk.content
                         .filter(
                           (c: { type: string; text?: string }) =>
-                            c.type === 'text'
+                            c.type === "text",
                         )
                         .map((c: { text: string }) => c.text)
-                        .join('')
-                    : '';
+                        .join("")
+                    : "";
               if (text) {
                 send(JSON.stringify({ token: text }));
               }
@@ -63,12 +66,12 @@ export function createChatStream({ userMessage, config }: ChatStreamOptions): Re
           }
 
           // --- Tool invocation started ---
-          if (event.event === 'on_tool_start') {
+          if (event.event === "on_tool_start") {
             const runId = event.run_id;
-            const name = event.name ?? 'unknown_tool';
+            const name = event.name ?? "unknown_tool";
             let args = event.data?.input ?? {};
             // input may arrive as a JSON string — parse it if so
-            if (typeof args === 'string') {
+            if (typeof args === "string") {
               try {
                 args = JSON.parse(args);
               } catch {
@@ -79,31 +82,35 @@ export function createChatStream({ userMessage, config }: ChatStreamOptions): Re
           }
 
           // --- Tool invocation finished ---
-          if (event.event === 'on_tool_end') {
+          if (event.event === "on_tool_end") {
             const runId = event.run_id;
             const pending = pendingTools.get(runId);
             pendingTools.delete(runId);
 
-            const name = pending?.name ?? event.name ?? 'unknown_tool';
+            const name = pending?.name ?? event.name ?? "unknown_tool";
             const args = pending?.args ?? {};
-            const result = event.data?.output?.content ?? event.data?.output ?? '';
+            const result =
+              event.data?.output?.content ?? event.data?.output ?? "";
 
             send(
               JSON.stringify({
                 toolCall: {
                   name,
                   args,
-                  result: typeof result === 'string' ? result : JSON.stringify(result),
+                  result:
+                    typeof result === "string"
+                      ? result
+                      : JSON.stringify(result),
                 },
-              })
+              }),
             );
           }
         }
 
-        send('[DONE]');
+        send("[DONE]");
       } catch (err) {
-        console.error('[chat-stream] stream error:', err);
-        send(JSON.stringify({ error: 'Internal server error' }));
+        console.error("[chat-stream] stream error:", err);
+        send(JSON.stringify({ error: "Internal server error" }));
       } finally {
         controller.close();
       }

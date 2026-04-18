@@ -7,13 +7,20 @@ to avoid overwriting existing entries.
 from __future__ import annotations
 
 import sys
+from collections.abc import Mapping
 from decimal import Decimal
-from typing import Any
+
+from strava_pipeline.models import (
+    DynamoResourceLike,
+    JsonObject,
+    TrainingLogEntry,
+    WriteCounts,
+)
 
 
-def _convert_floats(item: dict[str, Any]) -> dict[str, Any]:
+def _convert_floats(item: Mapping[str, object]) -> JsonObject:
     """Convert float values to Decimal for DynamoDB compatibility."""
-    converted = {}
+    converted: JsonObject = {}
     for k, v in item.items():
         if isinstance(v, float):
             converted[k] = Decimal(str(v))
@@ -25,11 +32,11 @@ def _convert_floats(item: dict[str, Any]) -> dict[str, Any]:
 
 
 def write_entries(
-    entries: list[dict[str, Any]],
+    entries: list[TrainingLogEntry],
     table_name: str,
     dry_run: bool = True,
-    boto3_resource: Any = None,
-) -> dict[str, int]:
+    boto3_resource: DynamoResourceLike | None = None,
+) -> WriteCounts:
     """Write entries to DynamoDB, skipping duplicates.
 
     Args:
@@ -42,7 +49,10 @@ def write_entries(
         Dict with counts: {"written": N, "skipped": N, "failed": N}
     """
     if dry_run:
-        print(f"[DRY RUN] Would write {len(entries)} entries to {table_name}", file=sys.stderr)
+        print(
+            f"[DRY RUN] Would write {len(entries)} entries to {table_name}",
+            file=sys.stderr,
+        )
         return {"written": 0, "skipped": 0, "failed": 0}
 
     import boto3
@@ -52,14 +62,16 @@ def write_entries(
         boto3_resource = boto3.resource("dynamodb", region_name="us-west-2")
 
     table = boto3_resource.Table(table_name)
-    counts = {"written": 0, "skipped": 0, "failed": 0}
+    counts: WriteCounts = {"written": 0, "skipped": 0, "failed": 0}
 
     for entry in entries:
         item = _convert_floats(entry)
         try:
             table.put_item(
                 Item=item,
-                ConditionExpression="attribute_not_exists(logId) AND attribute_not_exists(sk)",
+                ConditionExpression=(
+                    "attribute_not_exists(logId) AND attribute_not_exists(sk)"
+                ),
             )
             counts["written"] += 1
             print(f"  ✓ {entry['sk']}", file=sys.stderr)

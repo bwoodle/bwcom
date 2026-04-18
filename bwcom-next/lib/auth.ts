@@ -1,7 +1,7 @@
-import type { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
+import type { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
-const ADMIN_EMAILS = ['bwoodle@gmail.com', 'nhughes137@gmail.com'];
+const ADMIN_EMAILS = ["bwoodle@gmail.com", "nhughes137@gmail.com"];
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token }) {
       if (token.email && ADMIN_EMAILS.includes(token.email)) {
-        token.role = 'admin';
+        token.role = "admin";
       }
       return token;
     },
@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       // Allow relative callback URLs
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allow callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;

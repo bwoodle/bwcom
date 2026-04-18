@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bwcom-scripts"
+version = "0.1.0"
+description = "Python tooling for the bwcom Strava scripts."
+requires-python = ">=3.12"
+dependencies = [
+  "boto3>=1.40,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.18,<2",
+  "pre-commit>=4.3,<5",
+  "pytest>=8.4,<9",
+  "ruff>=0.13,<0.14",
+]
+
+[tool.setuptools.packages.find]
+where = ["scripts"]
+include = ["strava_pipeline*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["scripts"]
+testpaths = ["scripts/tests"]
+
+[tool.ruff]
+target-version = "py312"
+src = ["scripts"]
+extend-exclude = ["scripts/.pytest_cache", "scripts/**/__pycache__"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = ["scripts"]
+files = [
+  "scripts/strava_pipeline",
+  "scripts/strava_to_training_log.py",
+  "scripts/strava_read_window.py",
+]
+exclude = ["scripts/.pytest_cache", "scripts/.*/__pycache__"]
+
+[[tool.mypy.overrides]]
+module = ["botocore.*", "boto3.*"]
+ignore_missing_imports = true

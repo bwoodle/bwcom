@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from tests.conftest import make_activity
 from strava_pipeline.transform import (
     build_daily_entries,
     build_weekly_entries,
@@ -11,6 +10,7 @@ from strava_pipeline.transform import (
     format_entries_preview,
     meters_to_miles,
 )
+from tests.conftest import make_activity
 
 
 class TestMetersToMiles:
@@ -76,11 +76,13 @@ class TestClassifySlot:
 
 class TestBuildDailyEntries:
     def test_single_run(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=8046.72,  # ~5.0 miles
-            start_date_local="2026-04-01T07:30:00Z",
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=8046.72,  # ~5.0 miles
+                start_date_local="2026-04-01T07:30:00Z",
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert len(entries) == 1
         entry = entries[0]
@@ -94,11 +96,13 @@ class TestBuildDailyEntries:
         assert "highlight" not in entry
 
     def test_single_walk(self):
-        activities = [make_activity(
-            activity_type="Walk",
-            distance=3218.69,  # ~2.0 miles
-            start_date_local="2026-04-01T06:00:00Z",
-        )]
+        activities = [
+            make_activity(
+                activity_type="Walk",
+                distance=3218.69,  # ~2.0 miles
+                start_date_local="2026-04-01T06:00:00Z",
+            )
+        ]
         entries = build_daily_entries(activities, "test-log")
         assert len(entries) == 1
         assert entries[0]["description"] == "2.0 mile walk"
@@ -125,53 +129,63 @@ class TestBuildDailyEntries:
         assert entry["miles"] == 7.8
 
     def test_afternoon_workout2(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=9656.06,  # ~6.0 miles
-            start_date_local="2026-04-01T17:00:00Z",
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=9656.06,  # ~6.0 miles
+                start_date_local="2026-04-01T17:00:00Z",
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert len(entries) == 1
         assert entries[0]["slot"] == "workout2"
         assert entries[0]["sk"] == "daily#2026-04-01#workout2"
 
     def test_highlight_race(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=42195.0,
-            start_date_local="2026-04-12T07:00:00Z",
-            workout_type=1,  # Race
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=42195.0,
+                start_date_local="2026-04-12T07:00:00Z",
+                workout_type=1,  # Race
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["highlight"] is True
 
     def test_highlight_long_run(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=32186.9,
-            start_date_local="2026-04-05T08:00:00Z",
-            workout_type=2,  # Long Run
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=32186.9,
+                start_date_local="2026-04-05T08:00:00Z",
+                workout_type=2,  # Long Run
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["highlight"] is True
 
     def test_highlight_workout(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=12874.8,
-            start_date_local="2026-04-03T07:00:00Z",
-            workout_type=3,  # Workout
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=12874.8,
+                start_date_local="2026-04-03T07:00:00Z",
+                workout_type=3,  # Workout
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["highlight"] is True
 
     def test_no_highlight_default(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=8046.72,
-            start_date_local="2026-04-01T07:30:00Z",
-            workout_type=0,
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=8046.72,
+                start_date_local="2026-04-01T07:30:00Z",
+                workout_type=0,
+            )
+        ]
         entries = build_daily_entries(activities, "paris-2026")
         assert "highlight" not in entries[0]
 
@@ -180,21 +194,25 @@ class TestBuildDailyEntries:
         assert entries == []
 
     def test_manual_run_is_treadmill(self):
-        activities = [make_activity(
-            activity_type="Run",
-            distance=8046.72,
-            start_date_local="2026-04-06T17:00:00Z",
-        )]
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=8046.72,
+                start_date_local="2026-04-06T17:00:00Z",
+            )
+        ]
         activities[0]["manual"] = True
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["description"] == "5.0 mile treadmill run"
 
     def test_manual_walk_stays_walk(self):
-        activities = [make_activity(
-            activity_type="Walk",
-            distance=3218.69,
-            start_date_local="2026-04-06T06:00:00Z",
-        )]
+        activities = [
+            make_activity(
+                activity_type="Walk",
+                distance=3218.69,
+                start_date_local="2026-04-06T06:00:00Z",
+            )
+        ]
         activities[0]["manual"] = True
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["description"] == "2.0 mile walk"

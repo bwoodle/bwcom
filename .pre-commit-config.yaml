@@ -1,0 +1,38 @@
+repos:
+  - repo: local
+    hooks:
+      - id: python-format
+        name: Python format
+        entry: python3 -m ruff format scripts
+        language: system
+        pass_filenames: false
+      - id: python-lint
+        name: Python lint
+        entry: python3 -m ruff check scripts
+        language: system
+        pass_filenames: false
+      - id: python-typecheck
+        name: Python type check
+        entry: python3 -m mypy scripts/strava_pipeline scripts/strava_to_training_log.py scripts/strava_read_window.py
+        language: system
+        pass_filenames: false
+      - id: python-unit-tests
+        name: Python unit tests
+        entry: python3 -m pytest scripts/tests -q
+        language: system
+        pass_filenames: false
+      - id: next-format-check
+        name: Next.js format check
+        entry: bash -lc 'cd bwcom-next && npm run format:check'
+        language: system
+        pass_filenames: false
+      - id: next-lint
+        name: Next.js lint
+        entry: bash -lc 'cd bwcom-next && npm run lint'
+        language: system
+        pass_filenames: false
+      - id: next-unit-tests
+        name: Next.js unit tests
+        entry: bash -lc 'cd bwcom-next && npm run test'
+        language: system
+        pass_filenames: false

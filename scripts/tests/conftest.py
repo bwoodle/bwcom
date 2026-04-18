@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from strava_pipeline.models import StravaActivity
+
 
 def make_activity(
     *,
@@ -12,7 +14,7 @@ def make_activity(
     start_date_local: str = "2026-04-01T07:30:00Z",
     workout_type: int | None = None,
     name: str = "Morning Run",
-) -> dict:
+) -> StravaActivity:
     """Build a minimal Strava activity dict for testing."""
     activity = {
         "type": activity_type,

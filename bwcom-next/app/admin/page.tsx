@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Container,
   Header,
@@ -10,31 +10,33 @@ import {
   Spinner,
   StatusIndicator,
   SegmentedControl,
-} from '@cloudscape-design/components';
-import PromptInput from '@cloudscape-design/components/prompt-input';
-import ChatBubble from '@cloudscape-design/chat-components/chat-bubble';
-import Avatar from '@cloudscape-design/chat-components/avatar';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import TrainingLogBulkEditor from '@/components/TrainingLogBulkEditor';
-import MediaBulkEditor from '@/components/MediaBulkEditor';
+} from "@cloudscape-design/components";
+import PromptInput from "@cloudscape-design/components/prompt-input";
+import ChatBubble from "@cloudscape-design/chat-components/chat-bubble";
+import Avatar from "@cloudscape-design/chat-components/avatar";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import TrainingLogBulkEditor from "@/components/TrainingLogBulkEditor";
+import MediaBulkEditor from "@/components/MediaBulkEditor";
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
 const AdminPage: React.FC = () => {
-  const [mode, setMode] = useState<'chat' | 'training-log' | 'media'>('training-log');
+  const [mode, setMode] = useState<"chat" | "training-log" | "media">(
+    "training-log",
+  );
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const res = await fetch('/api/chat');
+        const res = await fetch("/api/chat");
         if (res.ok) {
           const data = await res.json();
           if (data.messages?.length > 0) {
@@ -53,7 +55,7 @@ const AdminPage: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error('Failed to load chat history:', err);
+        console.error("Failed to load chat history:", err);
       } finally {
         setIsLoading(false);
       }
@@ -66,21 +68,21 @@ const AdminPage: React.FC = () => {
     if (!trimmed || isStreaming) return;
 
     setError(null);
-    setInput('');
+    setInput("");
     setIsStreaming(true);
 
     // Add user message immediately
-    const userMsg: Message = { role: 'user', content: trimmed };
+    const userMsg: Message = { role: "user", content: trimmed };
     setMessages((prev) => [...prev, userMsg]);
 
     // Add a placeholder for the assistant response
-    const assistantMsg: Message = { role: 'assistant', content: '' };
+    const assistantMsg: Message = { role: "assistant", content: "" };
     setMessages((prev) => [...prev, assistantMsg]);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed }),
       });
 
@@ -89,23 +91,23 @@ const AdminPage: React.FC = () => {
       }
 
       const reader = res.body?.getReader();
-      if (!reader) throw new Error('No response body');
+      if (!reader) throw new Error("No response body");
 
       const decoder = new TextDecoder();
-      let buffer = '';
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
+          if (!line.startsWith("data: ")) continue;
           const payload = line.slice(6).trim();
-          if (payload === '[DONE]') continue;
+          if (payload === "[DONE]") continue;
 
           try {
             const data = JSON.parse(payload);
@@ -117,7 +119,7 @@ const AdminPage: React.FC = () => {
               setMessages((prev) => {
                 const updated = [...prev];
                 const last = updated[updated.length - 1];
-                if (last?.role === 'assistant') {
+                if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
                     ...last,
                     content: last.content + data.token,
@@ -135,12 +137,12 @@ const AdminPage: React.FC = () => {
         }
       }
     } catch (err) {
-      console.error('Chat error:', err);
-      setError('Failed to get a response. Please try again.');
+      console.error("Chat error:", err);
+      setError("Failed to get a response. Please try again.");
       // Remove the empty assistant placeholder on error
       setMessages((prev) => {
         const last = prev[prev.length - 1];
-        if (last?.role === 'assistant' && !last.content) {
+        if (last?.role === "assistant" && !last.content) {
           return prev.slice(0, -1);
         }
         return prev;
@@ -152,26 +154,26 @@ const AdminPage: React.FC = () => {
 
   const handleReset = async () => {
     try {
-      await fetch('/api/chat', { method: 'DELETE' });
+      await fetch("/api/chat", { method: "DELETE" });
       setMessages([]);
       setError(null);
     } catch (err) {
-      console.error('Failed to reset session:', err);
+      console.error("Failed to reset session:", err);
     }
   };
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%" }}>
         <SpaceBetween size="l">
-        <Container header={<Header variant="h1">Admin</Header>}>
-          <Box textAlign="center" padding={{ vertical: 'xxl' }}>
-            <Spinner size="large" />
-            <Box variant="p" margin={{ top: 's' }}>
-              Loading chat session...
+          <Container header={<Header variant="h1">Admin</Header>}>
+            <Box textAlign="center" padding={{ vertical: "xxl" }}>
+              <Spinner size="large" />
+              <Box variant="p" margin={{ top: "s" }}>
+                Loading chat session...
+              </Box>
             </Box>
-          </Box>
-        </Container>
+          </Container>
         </SpaceBetween>
       </div>
     );
@@ -199,18 +201,18 @@ const AdminPage: React.FC = () => {
       <SpaceBetween size="m">
         <div
           style={{
-            maxHeight: '60vh',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
+            maxHeight: "60vh",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
           }}
         >
           {messages.length === 0 && (
             <Box
               textAlign="center"
               color="text-body-secondary"
-              padding={{ vertical: 'xxl' }}
+              padding={{ vertical: "xxl" }}
             >
               Start a conversation with the assistant.
             </Box>
@@ -219,10 +221,10 @@ const AdminPage: React.FC = () => {
           {messages.map((msg, idx) => (
             <ChatBubble
               key={idx}
-              type={msg.role === 'user' ? 'outgoing' : 'incoming'}
+              type={msg.role === "user" ? "outgoing" : "incoming"}
               ariaLabel={`${msg.role} message ${idx + 1}`}
               avatar={
-                msg.role === 'user' ? (
+                msg.role === "user" ? (
                   <Avatar
                     ariaLabel="User"
                     tooltipText="You"
@@ -240,19 +242,22 @@ const AdminPage: React.FC = () => {
               }
               showLoadingBar={
                 isStreaming &&
-                msg.role === 'assistant' &&
+                msg.role === "assistant" &&
                 idx === messages.length - 1 &&
                 !msg.content
               }
             >
-              {msg.role === 'assistant' ? (
-                <div className="chat-markdown" style={{ whiteSpace: 'pre-wrap' }}>
+              {msg.role === "assistant" ? (
+                <div
+                  className="chat-markdown"
+                  style={{ whiteSpace: "pre-wrap" }}
+                >
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.content}
                   </ReactMarkdown>
                 </div>
               ) : (
-                <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
               )}
             </ChatBubble>
           ))}
@@ -260,9 +265,7 @@ const AdminPage: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {error && (
-          <StatusIndicator type="error">{error}</StatusIndicator>
-        )}
+        {error && <StatusIndicator type="error">{error}</StatusIndicator>}
 
         <PromptInput
           value={input}
@@ -277,26 +280,26 @@ const AdminPage: React.FC = () => {
   );
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
-    <SpaceBetween size="l">
-      <Container
-        header={<Header variant="h1">Admin</Header>}
-      >
-        <SegmentedControl
-          selectedId={mode}
-          onChange={({ detail }) => setMode(detail.selectedId as 'chat' | 'training-log' | 'media')}
-          options={[
-            { id: 'training-log', text: 'Training log bulk edit' },
-            { id: 'media', text: 'Media bulk edit' },
-            { id: 'chat', text: 'Assistant chat' },
-          ]}
-        />
-      </Container>
+    <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+      <SpaceBetween size="l">
+        <Container header={<Header variant="h1">Admin</Header>}>
+          <SegmentedControl
+            selectedId={mode}
+            onChange={({ detail }) =>
+              setMode(detail.selectedId as "chat" | "training-log" | "media")
+            }
+            options={[
+              { id: "training-log", text: "Training log bulk edit" },
+              { id: "media", text: "Media bulk edit" },
+              { id: "chat", text: "Assistant chat" },
+            ]}
+          />
+        </Container>
 
-      {mode === 'training-log' ? <TrainingLogBulkEditor /> : null}
-      {mode === 'media' ? <MediaBulkEditor /> : null}
-      {mode === 'chat' ? renderChat() : null}
-    </SpaceBetween>
+        {mode === "training-log" ? <TrainingLogBulkEditor /> : null}
+        {mode === "media" ? <MediaBulkEditor /> : null}
+        {mode === "chat" ? renderChat() : null}
+      </SpaceBetween>
     </div>
   );
 };

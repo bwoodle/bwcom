@@ -1,10 +1,10 @@
-import { ChatBedrockConverse } from '@langchain/aws';
-import { createAgent } from 'langchain';
-import { TTLMemorySaver } from './TTLMemorySaver';
-import { mediaTools } from './media-tools';
-import { raceTools } from './race-tools';
-import { trainingLogTools } from './training-log-tools';
-import { buildSystemPrompt } from './chat-request';
+import { ChatBedrockConverse } from "@langchain/aws";
+import { createAgent } from "langchain";
+import { TTLMemorySaver } from "./TTLMemorySaver";
+import { mediaTools } from "./media-tools";
+import { raceTools } from "./race-tools";
+import { trainingLogTools } from "./training-log-tools";
+import { buildSystemPrompt } from "./chat-request";
 
 // Module-level singletons — persist across requests in the same server process
 const checkpointer = new TTLMemorySaver({
@@ -14,8 +14,8 @@ const checkpointer = new TTLMemorySaver({
 });
 
 const llm = new ChatBedrockConverse({
-  model: 'us.amazon.nova-lite-v1:0',
-  region: 'us-west-2',
+  model: "us.amazon.nova-lite-v1:0",
+  region: "us-west-2",
 });
 
 const agent = createAgent({

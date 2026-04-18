@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from strava_pipeline.dynamo_writer import write_entries
 
@@ -22,7 +22,9 @@ class TestWriteEntries:
         entries = [
             {"logId": "test", "sk": "daily#2026-04-01#workout1", "miles": 5.0},
         ]
-        result = write_entries(entries, "test-table", dry_run=False, boto3_resource=mock_resource)
+        result = write_entries(
+            entries, "test-table", dry_run=False, boto3_resource=mock_resource
+        )
         assert result["written"] == 1
         assert result["skipped"] == 0
         mock_table.put_item.assert_called_once()
@@ -39,7 +41,9 @@ class TestWriteEntries:
         )
 
         entries = [{"logId": "test", "sk": "daily#2026-04-01#workout1"}]
-        result = write_entries(entries, "test-table", dry_run=False, boto3_resource=mock_resource)
+        result = write_entries(
+            entries, "test-table", dry_run=False, boto3_resource=mock_resource
+        )
         assert result["skipped"] == 1
         assert result["written"] == 0
 
@@ -50,11 +54,18 @@ class TestWriteEntries:
         mock_table = MagicMock()
         mock_resource.Table.return_value = mock_table
         mock_table.put_item.side_effect = ClientError(
-            {"Error": {"Code": "ProvisionedThroughputExceededException", "Message": "throttled"}},
+            {
+                "Error": {
+                    "Code": "ProvisionedThroughputExceededException",
+                    "Message": "throttled",
+                }
+            },
             "PutItem",
         )
 
         entries = [{"logId": "test", "sk": "daily#2026-04-01#workout1"}]
-        result = write_entries(entries, "test-table", dry_run=False, boto3_resource=mock_resource)
+        result = write_entries(
+            entries, "test-table", dry_run=False, boto3_resource=mock_resource
+        )
         assert result["failed"] == 1
         assert result["written"] == 0

@@ -24,6 +24,7 @@ Use the execute agent for #42        # Implement with TDD
 ```
 
 Or launch directly from the command line:
+
 ```bash
 copilot --agent=refine --prompt "Refine #42"
 copilot --agent=plan --prompt "Plan #42"
@@ -84,15 +85,18 @@ When verifying the local dev server (`npm run dev` on port 3000), check the foll
 Images are stored in S3 and served via CloudFront image distributions. This keeps the container small while avoiding direct public S3 serving.
 
 ### Bucket names
-| Environment | Bucket |
-|---|---|
-| Test | `test.brentwoodle.com` |
-| Prod | `brentwoodle.com` |
+
+| Environment | Bucket                 |
+| ----------- | ---------------------- |
+| Test        | `test.brentwoodle.com` |
+| Prod        | `brentwoodle.com`      |
 
 ### Folder structure
+
 Each bucket has a `web-content/` prefix containing full-size images and a `web-content/thumbs/` prefix containing 800px-wide thumbnails.
 
 ### How images are managed
+
 - Source images live in the repo under `photos/web-content/`.
 - Thumbnails are generated and all images are synced to S3 via `scripts/sync-images.sh <bucket-name>`.
 - Convenience npm scripts: `npm run sync-images:test` and `npm run sync-images:prod`.
@@ -100,9 +104,11 @@ Each bucket has a `web-content/` prefix containing full-size images and a `web-c
 - `deploy-test.sh` syncs to the test bucket after applying `test-data` Terraform.
 
 ### How images are referenced in Next.js
+
 The `NEXT_PUBLIC_IMAGES_BASE_URL` environment variable provides the CloudFront base URL (for example, `https://<distribution>.cloudfront.net`). Both test and prod S3 buckets are restricted to CloudFront-only access.
 
 For local development, set in `bwcom-next/.env.local` using the test CDN domain (see root README setup steps):
+
 ```
 NEXT_PUBLIC_IMAGES_BASE_URL=https://<test-cloudfront-domain>.cloudfront.net
 ```
