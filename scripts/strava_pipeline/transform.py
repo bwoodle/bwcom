@@ -41,6 +41,14 @@ def classify_slot(start_date_local: str) -> str:
     return "workout1" if local_dt.hour < 12 else "workout2"
 
 
+def _describe_activity_type(activity: dict[str, Any]) -> str:
+    """Human-readable activity type: lowercase, 'treadmill run' for manual runs."""
+    activity_type = activity.get("type", "Run").lower()
+    if activity_type == "run" and activity.get("manual", False):
+        return "treadmill run"
+    return activity_type
+
+
 def _activity_sort_key(activity: dict[str, Any]) -> tuple[int, str]:
     """Sort key: Walk before Run, then by start time."""
     type_order = 0 if activity.get("type") == "Walk" else 1
@@ -74,7 +82,7 @@ def build_daily_entries(
 
         for a in group:
             dist_miles = meters_to_miles(a.get("distance", 0))
-            activity_type = a.get("type", "Run")
+            activity_type = _describe_activity_type(a)
             descriptions.append(f"{dist_miles} mile {activity_type}")
             total_miles += dist_miles
             if a.get("workout_type") in HIGHLIGHT_WORKOUT_TYPES:

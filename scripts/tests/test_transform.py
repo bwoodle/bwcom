@@ -89,7 +89,7 @@ class TestBuildDailyEntries:
         assert entry["date"] == "2026-04-01"
         assert entry["entryType"] == "daily"
         assert entry["slot"] == "workout1"
-        assert entry["description"] == "5.0 mile Run"
+        assert entry["description"] == "5.0 mile run"
         assert entry["miles"] == 5.0
         assert "highlight" not in entry
 
@@ -101,7 +101,7 @@ class TestBuildDailyEntries:
         )]
         entries = build_daily_entries(activities, "test-log")
         assert len(entries) == 1
-        assert entries[0]["description"] == "2.0 mile Walk"
+        assert entries[0]["description"] == "2.0 mile walk"
 
     def test_walk_and_run_same_morning_slot(self):
         activities = [
@@ -121,7 +121,7 @@ class TestBuildDailyEntries:
         entry = entries[0]
         assert entry["slot"] == "workout1"
         # Walk should be listed first
-        assert entry["description"] == "2.3 mile Walk\n5.5 mile Run"
+        assert entry["description"] == "2.3 mile walk\n5.5 mile run"
         assert entry["miles"] == 7.8
 
     def test_afternoon_workout2(self):
@@ -179,6 +179,26 @@ class TestBuildDailyEntries:
         entries = build_daily_entries([], "paris-2026")
         assert entries == []
 
+    def test_manual_run_is_treadmill(self):
+        activities = [make_activity(
+            activity_type="Run",
+            distance=8046.72,
+            start_date_local="2026-04-06T17:00:00Z",
+        )]
+        activities[0]["manual"] = True
+        entries = build_daily_entries(activities, "paris-2026")
+        assert entries[0]["description"] == "5.0 mile treadmill run"
+
+    def test_manual_walk_stays_walk(self):
+        activities = [make_activity(
+            activity_type="Walk",
+            distance=3218.69,
+            start_date_local="2026-04-06T06:00:00Z",
+        )]
+        activities[0]["manual"] = True
+        entries = build_daily_entries(activities, "paris-2026")
+        assert entries[0]["description"] == "2.0 mile walk"
+
     def test_multiple_days(self):
         activities = [
             make_activity(start_date_local="2026-04-01T07:00:00Z"),
@@ -233,13 +253,13 @@ class TestFormatEntriesPreview:
                 "date": "2026-04-01",
                 "entryType": "daily",
                 "slot": "workout1",
-                "description": "5.0 mile Run",
+                "description": "5.0 mile run",
                 "miles": 5.0,
             },
         ]
         preview = format_entries_preview(entries)
         assert "Wednesday, April 01, 2026" in preview
-        assert "workout1: 5.0 mile Run (5.0 mi)" in preview
+        assert "workout1: 5.0 mile run (5.0 mi)" in preview
 
     def test_highlight_star(self):
         entries = [
@@ -248,7 +268,7 @@ class TestFormatEntriesPreview:
                 "date": "2026-04-12",
                 "entryType": "daily",
                 "slot": "workout1",
-                "description": "26.2 mile Run",
+                "description": "26.2 mile run",
                 "miles": 26.2,
                 "highlight": True,
             },
