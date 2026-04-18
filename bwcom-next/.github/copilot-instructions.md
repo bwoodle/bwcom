@@ -2,6 +2,58 @@
 - Follow development best practices.
 - Recommend changes in design patterns when appropriate.
 
+## Development Workflow: Refine → Plan → Execute
+
+This repository uses three custom agents that form a structured development workflow. Context is passed between agents via GitHub issues on the `bwoodle/bwcom` repository.
+
+### How It Works
+
+1. **Refine** (`refine` agent) — Defines **WHAT** to build. Explores the codebase, asks the user clarifying questions, and writes a "Refined Criteria" section to a GitHub issue.
+2. **Plan** (`plan` agent) — Defines **HOW** to build it. Reads the Refined Criteria, performs deep codebase analysis, and writes a "Technical Plan" section to the same GitHub issue.
+3. **Execute** (`execute` agent) — **BUILDS** it using TDD. Reads both sections, writes tests first, then implementation, validates with tests/lint/build.
+
+### Invoking the Agents
+
+Use the `/agent` slash command to select an agent, or reference it in a prompt:
+
+```
+Use the refine agent for #42        # Refine an existing issue
+Use the refine agent                 # Create a new issue and refine it
+Use the plan agent for #42           # Create a technical plan
+Use the execute agent for #42        # Implement with TDD
+```
+
+Or launch directly from the command line:
+```bash
+copilot --agent=refine --prompt "Refine #42"
+copilot --agent=plan --prompt "Plan #42"
+copilot --agent=execute --prompt "Execute #42"
+```
+
+### GitHub Issue Structure
+
+After all three agents have run, the issue will contain:
+
+```
+[Original description]
+
+## Refined Criteria
+[Requirements, user stories, acceptance criteria — written by refine agent]
+
+## Technical Plan
+[Architecture changes, implementation steps, testing strategy — written by plan agent]
+```
+
+### Architecture Principles (Execute Agent)
+
+The execute agent follows these principles and may refactor existing code to align:
+
+- **Dependency injection** over direct imports for service dependencies
+- **Loose coupling** — modules depend on abstractions, not concrete implementations
+- **Modularity** — small, focused, composable units with single responsibilities
+- **Testability** — every module independently testable; mock boundaries via DI
+- **TDD** — tests first, implementation second, refactor third
+
 ## Environments
 
 There are two environments: **test** and **prod**.
@@ -71,6 +123,27 @@ For Docker builds (test and prod), the URL is passed as a `--build-arg` since `N
 - **ECR**: `685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next`
 - **DynamoDB test tables**: `media-test-v1`, `races-test-v1`, `training-log-test-v1`
 - **DynamoDB prod tables**: `media-v1`, `races-v1`, `training-log-v1`
+
+## Build, Lint, and Test
+
+```bash
+cd bwcom-next
+npm run build    # Next.js production build
+npm run lint     # ESLint
+# No test runner is currently configured — the execute agent should set up
+# a test framework (e.g., vitest) when first implementing TDD for an issue
+```
+
+## Updating the Test Data Layer
+
+When adding or modifying DynamoDB tables for a new feature:
+
+1. Create/modify Terraform module in `bwcom-terraform/modules/`
+2. Wire into `bwcom-terraform/env/test-data/main.tf` and `env/prod-data/main.tf`
+3. Apply test data: `cd bwcom-terraform/env/test-data && terraform init && terraform apply`
+4. Add table name to `bwcom-next/.env.local` (e.g., `NEW_TABLE_NAME=new-table-test-v1`)
+5. Update `scripts/deploy-test.sh` to wire new table name for ECS
+6. Restart dev server after `.env.local` changes
 
 ## Next.js Configuration Notes
 
