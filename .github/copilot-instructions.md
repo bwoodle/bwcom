@@ -134,7 +134,9 @@ npm run lint     # ESLint
 
 ## Deploying the Test Environment
 
-To stand up the full test ECS environment for manual testing:
+The full test ECS environment is **not** deployed for normal day-to-day development. In most cases, use the local dev server (`bwcom-next`) against the test data tier.
+
+Deploy test ECS only when validating infrastructure or deployment changes end-to-end:
 
 ```bash
 # From repo root
