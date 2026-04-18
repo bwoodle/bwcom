@@ -7,8 +7,15 @@ from __future__ import annotations
 
 import datetime as dt
 from collections import defaultdict
-from typing import Any
 from zoneinfo import ZoneInfo
+
+from strava_pipeline.models import (
+    DailyEntry,
+    StravaActivity,
+    TrainingLogEntry,
+    TrainingLogSlot,
+    WeeklyEntry,
+)
 
 CENTRAL_TZ = ZoneInfo("America/Chicago")
 METERS_PER_MILE = 1609.344
@@ -22,12 +29,12 @@ def meters_to_miles(distance_meters: float) -> float:
     return round(distance_meters / METERS_PER_MILE, 1)
 
 
-def filter_activities(activities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def filter_activities(activities: list[StravaActivity]) -> list[StravaActivity]:
     """Keep only Run and Walk activities."""
     return [a for a in activities if a.get("type") in ("Run", "Walk")]
 
 
-def classify_slot(start_date_local: str) -> str:
+def classify_slot(start_date_local: str) -> TrainingLogSlot:
     """Return 'workout1' (before noon CT) or 'workout2' (at/after noon CT).
 
     Strava's start_date_local is in the format '2026-04-01T07:30:00Z' but
@@ -41,7 +48,7 @@ def classify_slot(start_date_local: str) -> str:
     return "workout1" if local_dt.hour < 12 else "workout2"
 
 
-def _describe_activity_type(activity: dict[str, Any]) -> str:
+def _describe_activity_type(activity: StravaActivity) -> str:
     """Human-readable activity type: lowercase, 'treadmill run' for manual runs."""
     activity_type = activity.get("type", "Run").lower()
     if activity_type == "run" and activity.get("manual", False):
@@ -49,29 +56,34 @@ def _describe_activity_type(activity: dict[str, Any]) -> str:
     return activity_type
 
 
-def _activity_sort_key(activity: dict[str, Any]) -> tuple[int, str]:
+def _activity_sort_key(activity: StravaActivity) -> tuple[int, str]:
     """Sort key: Walk before Run, then by start time."""
     type_order = 0 if activity.get("type") == "Walk" else 1
     return (type_order, activity.get("start_date_local", ""))
 
 
+def _activity_distance_meters(activity: StravaActivity) -> float:
+    distance = activity.get("distance", 0.0)
+    return float(distance)
+
+
 def build_daily_entries(
-    activities: list[dict[str, Any]],
+    activities: list[StravaActivity],
     log_id: str,
-) -> list[dict[str, Any]]:
+) -> list[DailyEntry]:
     """Group activities by date + slot, build DynamoDB items.
 
     Walk+Run in the same slot are combined (walks listed first).
     """
     # Group by (date, slot)
-    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    groups: dict[tuple[str, TrainingLogSlot], list[StravaActivity]] = defaultdict(list)
     for a in activities:
         start = a.get("start_date_local", "")
         date_str = start[:10]  # YYYY-MM-DD
         slot = classify_slot(start)
         groups[(date_str, slot)].append(a)
 
-    entries: list[dict[str, Any]] = []
+    entries: list[DailyEntry] = []
     for (date_str, slot), group in sorted(groups.items()):
         # Sort: walks first, then runs
         group.sort(key=_activity_sort_key)
@@ -81,14 +93,14 @@ def build_daily_entries(
         has_highlight = False
 
         for a in group:
-            dist_miles = meters_to_miles(a.get("distance", 0))
+            dist_miles = meters_to_miles(_activity_distance_meters(a))
             activity_type = _describe_activity_type(a)
             descriptions.append(f"{dist_miles} mile {activity_type}")
             total_miles += dist_miles
             if a.get("workout_type") in HIGHLIGHT_WORKOUT_TYPES:
                 has_highlight = True
 
-        entry: dict[str, Any] = {
+        entry: DailyEntry = {
             "logId": log_id,
             "sk": f"daily#{date_str}#{slot}",
             "date": date_str,
@@ -96,7 +108,7 @@ def build_daily_entries(
             "slot": slot,
             "description": "\n".join(descriptions),
             "miles": round(total_miles, 1),
-            "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "createdAt": dt.datetime.now(dt.UTC).isoformat(),
         }
         if has_highlight:
             entry["highlight"] = True
@@ -107,11 +119,11 @@ def build_daily_entries(
 
 
 def build_weekly_entries(
-    daily_entries: list[dict[str, Any]],
+    daily_entries: list[DailyEntry],
     log_id: str,
     start_date: str,
     end_date: str,
-) -> list[dict[str, Any]]:
+) -> list[WeeklyEntry]:
     """Generate weekly summary entries for Sundays in the date range."""
     start = dt.date.fromisoformat(start_date)
     end = dt.date.fromisoformat(end_date)
@@ -122,7 +134,7 @@ def build_weekly_entries(
         date_str = entry["date"]
         daily_miles[date_str] = daily_miles.get(date_str, 0) + entry.get("miles", 0)
 
-    entries: list[dict[str, Any]] = []
+    entries: list[WeeklyEntry] = []
     current = start
     while current <= end:
         if current.weekday() == 6:  # Sunday
@@ -135,20 +147,22 @@ def build_weekly_entries(
                 day += dt.timedelta(days=1)
 
             total = round(total, 1)
-            entries.append({
-                "logId": log_id,
-                "sk": f"week#{current.isoformat()}",
-                "date": current.isoformat(),
-                "entryType": "week",
-                "description": f"Week total: {total} miles",
-                "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(),
-            })
+            entries.append(
+                {
+                    "logId": log_id,
+                    "sk": f"week#{current.isoformat()}",
+                    "date": current.isoformat(),
+                    "entryType": "week",
+                    "description": f"Week total: {total} miles",
+                    "createdAt": dt.datetime.now(dt.UTC).isoformat(),
+                }
+            )
         current += dt.timedelta(days=1)
 
     return entries
 
 
-def format_entries_preview(entries: list[dict[str, Any]]) -> str:
+def format_entries_preview(entries: list[TrainingLogEntry]) -> str:
     """Format entries for human-readable dry-run display."""
     lines: list[str] = []
     current_date = ""

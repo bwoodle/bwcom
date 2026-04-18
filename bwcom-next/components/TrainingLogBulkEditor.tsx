@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -14,7 +14,7 @@ import {
   StatusIndicator,
   Textarea,
   SegmentedControl,
-} from '@cloudscape-design/components';
+} from "@cloudscape-design/components";
 import type {
   TrainingLogBatchUpdateItem,
   TrainingLogBatchUpdateResponse,
@@ -22,7 +22,7 @@ import type {
   TrainingLogCreateResponse,
   TrainingLogEntry,
   TrainingLogSection,
-} from '@/types/training-log';
+} from "@/types/training-log";
 
 type RowDraft = {
   description?: string;
@@ -32,18 +32,20 @@ type RowDraft = {
 
 type RowErrorMap = Record<string, string>;
 
-type EditorStatus = 'idle' | 'loading' | 'loaded' | 'error';
+type EditorStatus = "idle" | "loading" | "loaded" | "error";
 
 type LogConfig = { id: string; name: string };
 
-const logConfigs: LogConfig[] = [{ id: 'paris-2026', name: 'Paris 2026' }];
+const logConfigs: LogConfig[] = [{ id: "paris-2026", name: "Paris 2026" }];
 
 function parseDate(date: string): number {
   return new Date(`${date}T00:00:00`).getTime();
 }
 
-function isDaily(entry: TrainingLogEntry): entry is Extract<TrainingLogEntry, { entryType: 'daily' }> {
-  return entry.entryType === 'daily';
+function isDaily(
+  entry: TrainingLogEntry,
+): entry is Extract<TrainingLogEntry, { entryType: "daily" }> {
+  return entry.entryType === "daily";
 }
 
 function initialDraft(entry: TrainingLogEntry): RowDraft {
@@ -57,10 +59,16 @@ function initialDraft(entry: TrainingLogEntry): RowDraft {
   return { description: entry.description };
 }
 
-function hasDraftChanges(entry: TrainingLogEntry, draft: RowDraft | undefined): boolean {
+function hasDraftChanges(
+  entry: TrainingLogEntry,
+  draft: RowDraft | undefined,
+): boolean {
   if (!draft) return false;
 
-  if (draft.description !== undefined && draft.description !== entry.description) {
+  if (
+    draft.description !== undefined &&
+    draft.description !== entry.description
+  ) {
     return true;
   }
 
@@ -79,17 +87,24 @@ function hasDraftChanges(entry: TrainingLogEntry, draft: RowDraft | undefined): 
   return false;
 }
 
-function nextEntry(entry: TrainingLogEntry, update: TrainingLogBatchUpdateItem): TrainingLogEntry {
-  if (entry.entryType === 'week') {
+function nextEntry(
+  entry: TrainingLogEntry,
+  update: TrainingLogBatchUpdateItem,
+): TrainingLogEntry {
+  if (entry.entryType === "week") {
     return {
       ...entry,
-      ...(update.description !== undefined ? { description: update.description } : {}),
+      ...(update.description !== undefined
+        ? { description: update.description }
+        : {}),
     };
   }
 
   return {
     ...entry,
-    ...(update.description !== undefined ? { description: update.description } : {}),
+    ...(update.description !== undefined
+      ? { description: update.description }
+      : {}),
     ...(update.miles !== undefined ? { miles: update.miles } : {}),
     ...(update.highlight !== undefined
       ? update.highlight
@@ -101,7 +116,7 @@ function nextEntry(entry: TrainingLogEntry, update: TrainingLogBatchUpdateItem):
 
 const TrainingLogBulkEditor: React.FC = () => {
   const [activeLogId, setActiveLogId] = useState<string>(logConfigs[0].id);
-  const [status, setStatus] = useState<EditorStatus>('idle');
+  const [status, setStatus] = useState<EditorStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [section, setSection] = useState<TrainingLogSection | null>(null);
   const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
@@ -109,20 +124,20 @@ const TrainingLogBulkEditor: React.FC = () => {
   const [rowErrors, setRowErrors] = useState<RowErrorMap>({});
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [query, setQuery] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [newEntryType, setNewEntryType] = useState<'daily' | 'week'>('daily');
-  const [newDate, setNewDate] = useState('');
-  const [newSlot, setNewSlot] = useState<'workout1' | 'workout2'>('workout1');
-  const [newDescription, setNewDescription] = useState('');
-  const [newMiles, setNewMiles] = useState('');
+  const [query, setQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [newEntryType, setNewEntryType] = useState<"daily" | "week">("daily");
+  const [newDate, setNewDate] = useState("");
+  const [newSlot, setNewSlot] = useState<"workout1" | "workout2">("workout1");
+  const [newDescription, setNewDescription] = useState("");
+  const [newMiles, setNewMiles] = useState("");
   const [newHighlight, setNewHighlight] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
 
   const loadSection = useCallback(async (logId: string) => {
-    setStatus('loading');
+    setStatus("loading");
     setError(null);
     setSaveMessage(null);
     setRowErrors({});
@@ -137,11 +152,11 @@ const TrainingLogBulkEditor: React.FC = () => {
 
       const data = (await response.json()) as TrainingLogSection;
       setSection(data);
-      setStatus('loaded');
+      setStatus("loaded");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
-      setStatus('error');
+      setStatus("error");
     }
   }, []);
 
@@ -192,7 +207,8 @@ const TrainingLogBulkEditor: React.FC = () => {
 
   const selectedDirtyEntries = useMemo(() => {
     return sortedEntries.filter(
-      (entry) => selectedSk[entry.sk] && hasDraftChanges(entry, drafts[entry.sk]),
+      (entry) =>
+        selectedSk[entry.sk] && hasDraftChanges(entry, drafts[entry.sk]),
     );
   }, [sortedEntries, selectedSk, drafts]);
 
@@ -213,7 +229,11 @@ const TrainingLogBulkEditor: React.FC = () => {
   const onDescriptionChange = (entry: TrainingLogEntry, value: string) => {
     setDrafts((current) => ({
       ...current,
-      [entry.sk]: { ...initialDraft(entry), ...current[entry.sk], description: value },
+      [entry.sk]: {
+        ...initialDraft(entry),
+        ...current[entry.sk],
+        description: value,
+      },
     }));
   };
 
@@ -251,33 +271,38 @@ const TrainingLogBulkEditor: React.FC = () => {
     setSaveMessage(null);
     setRowErrors({});
 
-    const updates: TrainingLogBatchUpdateItem[] = selectedDirtyEntries.map((entry) => {
-      const draft = drafts[entry.sk] ?? {};
-      const next: TrainingLogBatchUpdateItem = { sk: entry.sk };
+    const updates: TrainingLogBatchUpdateItem[] = selectedDirtyEntries.map(
+      (entry) => {
+        const draft = drafts[entry.sk] ?? {};
+        const next: TrainingLogBatchUpdateItem = { sk: entry.sk };
 
-      if (draft.description !== undefined && draft.description !== entry.description) {
-        next.description = draft.description;
-      }
-
-      if (isDaily(entry)) {
-        if (draft.miles !== undefined && draft.miles !== entry.miles) {
-          next.miles = draft.miles;
-        }
         if (
-          draft.highlight !== undefined &&
-          draft.highlight !== Boolean(entry.highlight)
+          draft.description !== undefined &&
+          draft.description !== entry.description
         ) {
-          next.highlight = draft.highlight;
+          next.description = draft.description;
         }
-      }
 
-      return next;
-    });
+        if (isDaily(entry)) {
+          if (draft.miles !== undefined && draft.miles !== entry.miles) {
+            next.miles = draft.miles;
+          }
+          if (
+            draft.highlight !== undefined &&
+            draft.highlight !== Boolean(entry.highlight)
+          ) {
+            next.highlight = draft.highlight;
+          }
+        }
+
+        return next;
+      },
+    );
 
     try {
-      const response = await fetch('/api/training-log', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/training-log", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ logId: section.id, updates }),
       });
 
@@ -299,7 +324,10 @@ const TrainingLogBulkEditor: React.FC = () => {
           ...current,
           entries: current.entries.map((entry) => {
             if (!succeeded.has(entry.sk)) return entry;
-            return nextEntry(entry, updateBySk.get(entry.sk) ?? { sk: entry.sk });
+            return nextEntry(
+              entry,
+              updateBySk.get(entry.sk) ?? { sk: entry.sk },
+            );
           }),
         };
       });
@@ -326,11 +354,11 @@ const TrainingLogBulkEditor: React.FC = () => {
         `Saved ${result.successCount} updates.${
           result.failureCount > 0
             ? ` ${result.failureCount} failed rows need attention.`
-            : ''
+            : ""
         }`,
       );
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown save error';
+      const message = err instanceof Error ? err.message : "Unknown save error";
       setSaveMessage(`Save failed: ${message}`);
     } finally {
       setIsSaving(false);
@@ -342,15 +370,15 @@ const TrainingLogBulkEditor: React.FC = () => {
 
     setCreateMessage(null);
     if (!newDate) {
-      setCreateMessage('Date is required.');
+      setCreateMessage("Date is required.");
       return;
     }
     if (!newDescription.trim()) {
-      setCreateMessage('Description is required.');
+      setCreateMessage("Description is required.");
       return;
     }
-    if (newEntryType === 'daily' && !Number.isFinite(Number(newMiles))) {
-      setCreateMessage('Miles must be a valid number for daily entries.');
+    if (newEntryType === "daily" && !Number.isFinite(Number(newMiles))) {
+      setCreateMessage("Miles must be a valid number for daily entries.");
       return;
     }
 
@@ -359,7 +387,7 @@ const TrainingLogBulkEditor: React.FC = () => {
       entryType: newEntryType,
       date: newDate,
       description: newDescription.trim(),
-      ...(newEntryType === 'daily'
+      ...(newEntryType === "daily"
         ? {
             slot: newSlot,
             miles: Number(newMiles),
@@ -370,15 +398,17 @@ const TrainingLogBulkEditor: React.FC = () => {
 
     setIsCreating(true);
     try {
-      const response = await fetch('/api/training-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/training-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const body = await response.json();
       if (!response.ok) {
-        throw new Error(body?.error || `Create failed with status ${response.status}`);
+        throw new Error(
+          body?.error || `Create failed with status ${response.status}`,
+        );
       }
 
       const result = body as TrainingLogCreateResponse;
@@ -389,12 +419,13 @@ const TrainingLogBulkEditor: React.FC = () => {
           entries: [result.entry, ...current.entries],
         };
       });
-      setCreateMessage('Entry created.');
-      setNewDescription('');
-      setNewMiles('');
+      setCreateMessage("Entry created.");
+      setNewDescription("");
+      setNewMiles("");
       setNewHighlight(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown create error';
+      const message =
+        err instanceof Error ? err.message : "Unknown create error";
       setCreateMessage(`Create failed: ${message}`);
     } finally {
       setIsCreating(false);
@@ -412,7 +443,10 @@ const TrainingLogBulkEditor: React.FC = () => {
           variant="h2"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button onClick={() => void loadSection(activeLogId)} disabled={status === 'loading'}>
+              <Button
+                onClick={() => void loadSection(activeLogId)}
+                disabled={status === "loading"}
+              >
                 Refresh
               </Button>
               <Button
@@ -434,21 +468,24 @@ const TrainingLogBulkEditor: React.FC = () => {
         <SegmentedControl
           selectedId={activeLogId}
           onChange={({ detail }) => setActiveLogId(detail.selectedId)}
-          options={logConfigs.map((config) => ({ id: config.id, text: config.name }))}
+          options={logConfigs.map((config) => ({
+            id: config.id,
+            text: config.name,
+          }))}
         />
 
-        <Container
-          header={<Header variant="h3">New Entry</Header>}
-        >
+        <Container header={<Header variant="h3">New Entry</Header>}>
           <SpaceBetween size="m">
             <SpaceBetween direction="horizontal" size="l">
               <FormField label="Entry type">
                 <SegmentedControl
                   selectedId={newEntryType}
-                  onChange={({ detail }) => setNewEntryType(detail.selectedId as 'daily' | 'week')}
+                  onChange={({ detail }) =>
+                    setNewEntryType(detail.selectedId as "daily" | "week")
+                  }
                   options={[
-                    { id: 'daily', text: 'Daily workout' },
-                    { id: 'week', text: 'Weekly summary' },
+                    { id: "daily", text: "Daily workout" },
+                    { id: "week", text: "Weekly summary" },
                   ]}
                 />
               </FormField>
@@ -459,19 +496,21 @@ const TrainingLogBulkEditor: React.FC = () => {
                   onChange={(event) => setNewDate(event.target.value)}
                 />
               </FormField>
-              {newEntryType === 'daily' && (
+              {newEntryType === "daily" && (
                 <FormField label="Slot">
                   <SegmentedControl
                     selectedId={newSlot}
-                    onChange={({ detail }) => setNewSlot(detail.selectedId as 'workout1' | 'workout2')}
+                    onChange={({ detail }) =>
+                      setNewSlot(detail.selectedId as "workout1" | "workout2")
+                    }
                     options={[
-                      { id: 'workout1', text: 'Workout 1' },
-                      { id: 'workout2', text: 'Workout 2' },
+                      { id: "workout1", text: "Workout 1" },
+                      { id: "workout2", text: "Workout 2" },
                     ]}
                   />
                 </FormField>
               )}
-              {newEntryType === 'daily' && (
+              {newEntryType === "daily" && (
                 <FormField label="Miles">
                   <Input
                     type="number"
@@ -482,7 +521,7 @@ const TrainingLogBulkEditor: React.FC = () => {
                   />
                 </FormField>
               )}
-              {newEntryType === 'daily' && (
+              {newEntryType === "daily" && (
                 <FormField label="Highlight">
                   <Checkbox
                     checked={newHighlight}
@@ -495,10 +534,14 @@ const TrainingLogBulkEditor: React.FC = () => {
             </SpaceBetween>
 
             <FormField
-              label={newEntryType === 'daily' ? 'Workout description' : 'Weekly summary'}
+              label={
+                newEntryType === "daily"
+                  ? "Workout description"
+                  : "Weekly summary"
+              }
               description={
-                newEntryType === 'week'
-                  ? 'Weekly summaries must use a Sunday date.'
+                newEntryType === "week"
+                  ? "Weekly summaries must use a Sunday date."
                   : undefined
               }
             >
@@ -518,7 +561,13 @@ const TrainingLogBulkEditor: React.FC = () => {
                 Add entry
               </Button>
               {createMessage && (
-                <StatusIndicator type={createMessage.startsWith('Create failed') ? 'error' : 'success'}>
+                <StatusIndicator
+                  type={
+                    createMessage.startsWith("Create failed")
+                      ? "error"
+                      : "success"
+                  }
+                >
                   {createMessage}
                 </StatusIndicator>
               )}
@@ -553,44 +602,111 @@ const TrainingLogBulkEditor: React.FC = () => {
         </SpaceBetween>
 
         <Box color="text-body-secondary">
-          {filteredEntries.length} rows visible, {selectedCount} selected, {dirtyCount} dirty
+          {filteredEntries.length} rows visible, {selectedCount} selected,{" "}
+          {dirtyCount} dirty
         </Box>
 
         {saveMessage && (
-          <StatusIndicator type={saveMessage.includes('failed') ? 'warning' : 'success'}>
+          <StatusIndicator
+            type={saveMessage.includes("failed") ? "warning" : "success"}
+          >
             {saveMessage}
           </StatusIndicator>
         )}
 
-        {status === 'loading' && (
-          <Box textAlign="center" padding={{ vertical: 'l' }}>
+        {status === "loading" && (
+          <Box textAlign="center" padding={{ vertical: "l" }}>
             <Spinner size="large" />
           </Box>
         )}
 
-        {status === 'error' && error && (
+        {status === "error" && error && (
           <StatusIndicator type="error">{error}</StatusIndicator>
         )}
 
-        {status === 'loaded' && section && (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1100 }}>
+        {status === "loaded" && section && (
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: 1100,
+              }}
+            >
               <thead>
                 <tr>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8 }}>
+                  <th style={{ borderBottom: "1px solid #d5dbdb", padding: 8 }}>
                     <Checkbox
                       checked={allVisibleSelected}
-                      onChange={({ detail }) => onToggleSelectAllVisible(detail.checked)}
+                      onChange={({ detail }) =>
+                        onToggleSelectAllVisible(detail.checked)
+                      }
                       ariaLabel="Select all visible rows"
                     />
                   </th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Date</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Type</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Slot</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Description</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Miles</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>Highlight</th>
-                  <th style={{ borderBottom: '1px solid #d5dbdb', padding: 8, textAlign: 'left' }}>State</th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Date
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Type
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Slot
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Miles
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Highlight
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    State
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -601,66 +717,128 @@ const TrainingLogBulkEditor: React.FC = () => {
                   const description = draft?.description ?? entry.description;
                   const miles = isDaily(entry)
                     ? String(draft?.miles ?? entry.miles)
-                    : 'n/a';
+                    : "n/a";
                   const highlight = isDaily(entry)
                     ? Boolean(draft?.highlight ?? entry.highlight)
                     : false;
 
                   return (
-                    <tr key={entry.sk} style={isDirty ? { background: '#f3fbff' } : undefined}>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8 }}>
+                    <tr
+                      key={entry.sk}
+                      style={isDirty ? { background: "#f3fbff" } : undefined}
+                    >
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
                         <Checkbox
                           checked={Boolean(selectedSk[entry.sk])}
-                          onChange={({ detail }) => onRowSelect(entry.sk, detail.checked)}
+                          onChange={({ detail }) =>
+                            onRowSelect(entry.sk, detail.checked)
+                          }
                           ariaLabel={`Select ${entry.sk}`}
                         />
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, whiteSpace: 'nowrap' }}>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {entry.date}
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8 }}>{entry.entryType}</td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8 }}>
-                        {entry.entryType === 'daily' ? entry.slot : '—'}
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
+                        {entry.entryType}
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, minWidth: 480 }}>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
+                        {entry.entryType === "daily" ? entry.slot : "—"}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          minWidth: 480,
+                        }}
+                      >
                         <Textarea
                           value={description}
                           rows={3}
-                          onChange={({ detail }) => onDescriptionChange(entry, detail.value)}
+                          onChange={({ detail }) =>
+                            onDescriptionChange(entry, detail.value)
+                          }
                           ariaLabel={`Description ${entry.sk}`}
                         />
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, width: 120 }}>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          width: 120,
+                        }}
+                      >
                         {isDaily(entry) ? (
                           <Input
                             value={miles}
                             type="number"
                             step={0.1}
-                            onChange={({ detail }) => onMilesChange(entry, detail.value)}
+                            onChange={({ detail }) =>
+                              onMilesChange(entry, detail.value)
+                            }
                             ariaLabel={`Miles ${entry.sk}`}
                           />
                         ) : (
                           <Box color="text-body-secondary">n/a</Box>
                         )}
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, width: 120 }}>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          width: 120,
+                        }}
+                      >
                         {isDaily(entry) ? (
                           <Checkbox
                             checked={highlight}
-                            onChange={({ detail }) => onHighlightChange(entry, detail.checked)}
+                            onChange={({ detail }) =>
+                              onHighlightChange(entry, detail.checked)
+                            }
                             ariaLabel={`Highlight ${entry.sk}`}
                           />
                         ) : (
                           <Box color="text-body-secondary">n/a</Box>
                         )}
                       </td>
-                      <td style={{ borderBottom: '1px solid #eaeded', padding: 8, minWidth: 220 }}>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          minWidth: 220,
+                        }}
+                      >
                         {rowError ? (
-                          <StatusIndicator type="error">{rowError}</StatusIndicator>
+                          <StatusIndicator type="error">
+                            {rowError}
+                          </StatusIndicator>
                         ) : isDirty ? (
                           <StatusIndicator type="info">Dirty</StatusIndicator>
                         ) : (
-                          <StatusIndicator type="success">Clean</StatusIndicator>
+                          <StatusIndicator type="success">
+                            Clean
+                          </StatusIndicator>
                         )}
                       </td>
                     </tr>

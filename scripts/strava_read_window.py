@@ -32,7 +32,14 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List
+from typing import cast
+
+from strava_pipeline.models import (
+    JsonObject,
+    ResponseHeaders,
+    StravaActivity,
+    TokenResponse,
+)
 
 TOKEN_URL = "https://www.strava.com/oauth/token"
 ACTIVITIES_URL = "https://www.strava.com/api/v3/athlete/activities"
@@ -45,7 +52,34 @@ def require_env(name: str) -> str:
     return value
 
 
-def post_form(url: str, data: Dict[str, str]) -> Dict[str, Any]:
+def _load_json_object(body: str, *, context: str) -> JsonObject:
+    parsed = json.loads(body)
+    if not isinstance(parsed, dict):
+        raise SystemExit(
+            f"{context} returned {type(parsed).__name__}, expected JSON object"
+        )
+    return {str(key): value for key, value in parsed.items()}
+
+
+def _require_activity_list(payload: object) -> list[StravaActivity]:
+    if not isinstance(payload, list):
+        raise SystemExit(
+            f"Unexpected activities response type: {type(payload).__name__}"
+        )
+
+    activities: list[StravaActivity] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            raise SystemExit(
+                f"Unexpected activity payload entry: {type(item).__name__}"
+            )
+        activities.append(
+            cast(StravaActivity, {str(key): value for key, value in item.items()})
+        )
+    return activities
+
+
+def post_form(url: str, data: dict[str, str]) -> TokenResponse:
     encoded = urllib.parse.urlencode(data).encode("utf-8")
     req = urllib.request.Request(url, data=encoded, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
@@ -53,31 +87,38 @@ def post_form(url: str, data: Dict[str, str]) -> Dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             body = resp.read().decode("utf-8")
-            return json.loads(body)
+            return cast(
+                TokenResponse, _load_json_object(body, context="Token exchange")
+            )
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
         raise SystemExit(f"Token exchange failed ({exc.code}): {body}") from exc
 
 
-def get_json(url: str, access_token: str) -> tuple[List[Dict[str, Any]], Dict[str, str]]:
+def get_json(url: str, access_token: str) -> tuple[object, ResponseHeaders]:
     req = urllib.request.Request(url, method="GET")
     req.add_header("Authorization", f"Bearer {access_token}")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             body = resp.read().decode("utf-8")
-            headers = {k.lower(): v for k, v in resp.headers.items()}
+            headers: ResponseHeaders = {k.lower(): v for k, v in resp.headers.items()}
             return json.loads(body), headers
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
         raise SystemExit(f"Activities request failed ({exc.code}): {body}") from exc
 
 
-def exchange_token(client_id: str, client_secret: str, code: str | None, refresh_token: str | None) -> Dict[str, Any]:
+def exchange_token(
+    client_id: str,
+    client_secret: str,
+    code: str | None,
+    refresh_token: str | None,
+) -> TokenResponse:
     if bool(code) == bool(refresh_token):
         raise SystemExit("Provide exactly one of --code or --refresh-token")
 
-    payload: Dict[str, str] = {
+    payload: dict[str, str] = {
         "client_id": client_id,
         "client_secret": client_secret,
     }
@@ -99,16 +140,23 @@ def window_to_epochs(end_date: str, weeks: int) -> tuple[int, int]:
     end = dt.date.fromisoformat(end_date)
     start = end - dt.timedelta(weeks=weeks)
 
-    # Strava uses [after, before) semantics. Use end + 1 day midnight for inclusive end date.
-    start_dt = dt.datetime.combine(start, dt.time(0, 0, 0), tzinfo=dt.timezone.utc)
-    before_dt = dt.datetime.combine(end + dt.timedelta(days=1), dt.time(0, 0, 0), tzinfo=dt.timezone.utc)
+    # Strava uses [after, before) semantics, so end date becomes next-day midnight.
+    start_dt = dt.datetime.combine(start, dt.time(0, 0, 0), tzinfo=dt.UTC)
+    before_dt = dt.datetime.combine(
+        end + dt.timedelta(days=1), dt.time(0, 0, 0), tzinfo=dt.UTC
+    )
 
     return int(start_dt.timestamp()), int(before_dt.timestamp())
 
 
-def fetch_all_activities(access_token: str, after_epoch: int, before_epoch: int, per_page: int) -> tuple[List[Dict[str, Any]], Dict[str, str]]:
-    activities: List[Dict[str, Any]] = []
-    last_headers: Dict[str, str] = {}
+def fetch_all_activities(
+    access_token: str,
+    after_epoch: int,
+    before_epoch: int,
+    per_page: int,
+) -> tuple[list[StravaActivity], ResponseHeaders]:
+    activities: list[StravaActivity] = []
+    last_headers: ResponseHeaders = {}
     page = 1
 
     while True:
@@ -121,11 +169,9 @@ def fetch_all_activities(access_token: str, after_epoch: int, before_epoch: int,
             }
         )
         url = f"{ACTIVITIES_URL}?{query}"
-        batch, headers = get_json(url, access_token)
+        batch_value, headers = get_json(url, access_token)
+        batch = _require_activity_list(batch_value)
         last_headers = headers
-
-        if not isinstance(batch, list):
-            raise SystemExit(f"Unexpected activities response type: {type(batch).__name__}")
 
         activities.extend(batch)
 
@@ -143,10 +189,16 @@ def miles(distance_meters: float | int | None) -> float:
     return float(distance_meters) / 1609.344
 
 
-def build_summary(activities: List[Dict[str, Any]], scope: str, headers: Dict[str, str], end_date: str, weeks: int) -> Dict[str, Any]:
+def build_summary(
+    activities: list[StravaActivity],
+    scope: str,
+    headers: ResponseHeaders,
+    end_date: str,
+    weeks: int,
+) -> JsonObject:
     total_miles = sum(miles(a.get("distance")) for a in activities)
 
-    sample = []
+    sample: list[JsonObject] = []
     for a in activities[:12]:
         sample.append(
             {
@@ -170,13 +222,21 @@ def build_summary(activities: List[Dict[str, Any]], scope: str, headers: Dict[st
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fetch Strava activities for a date window")
+    parser = argparse.ArgumentParser(
+        description="Fetch Strava activities for a date window"
+    )
     parser.add_argument("--code", help="One-time Strava OAuth authorization code")
     parser.add_argument("--refresh-token", help="Strava refresh token")
-    parser.add_argument("--end-date", required=True, help="Window end date in YYYY-MM-DD (inclusive)")
-    parser.add_argument("--weeks", type=int, default=15, help="How many weeks back from end-date")
+    parser.add_argument(
+        "--end-date", required=True, help="Window end date in YYYY-MM-DD (inclusive)"
+    )
+    parser.add_argument(
+        "--weeks", type=int, default=15, help="How many weeks back from end-date"
+    )
     parser.add_argument("--per-page", type=int, default=200, help="Strava page size")
-    parser.add_argument("--out", required=True, help="Path to write full activities JSON array")
+    parser.add_argument(
+        "--out", required=True, help="Path to write full activities JSON array"
+    )
     parser.add_argument("--summary-out", help="Path to write summary JSON")
     parser.add_argument("--token-out", help="Optional path to write full token JSON")
     return parser.parse_args()
@@ -194,11 +254,17 @@ def main() -> None:
         with open(args.token_out, "w", encoding="utf-8") as f:
             json.dump(token, f, indent=2)
 
-    access_token = token["access_token"]
-    scope = token.get("scope", "")
+    access_token = token.get("access_token")
+    if not isinstance(access_token, str) or access_token == "":
+        raise SystemExit("No access_token returned from Strava")
+
+    scope_value = token.get("scope", "")
+    scope = scope_value if isinstance(scope_value, str) else ""
 
     after_epoch, before_epoch = window_to_epochs(args.end_date, args.weeks)
-    activities, headers = fetch_all_activities(access_token, after_epoch, before_epoch, args.per_page)
+    activities, headers = fetch_all_activities(
+        access_token, after_epoch, before_epoch, args.per_page
+    )
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:

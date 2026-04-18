@@ -26,6 +26,18 @@ NEXT_PUBLIC_IMAGES_BASE_URL=https://<test-cloudfront-domain>.cloudfront.net
 
 See the [root README setup steps](../README.md#setup) for how to deploy the test data tier and get the CloudFront domain.
 
+## Quality checks
+
+```bash
+npm run format
+npm run format:check
+npm run lint
+npm run test
+npm run build
+```
+
+Vitest is configured for unit tests around pure helpers. Keep these tests focused on deterministic library code rather than environment-dependent integrations.
+
 ## Docker
 
 ```bash

@@ -71,18 +71,20 @@ Parameters:
 };
 
 export const RACE_ARG_DESCRIPTIONS = {
-  yearOptional: 'Four-digit year (e.g. 2026). Omit to list all years.',
+  yearOptional: "Four-digit year (e.g. 2026). Omit to list all years.",
   date: 'Race date, e.g. "Feb 8, 2026" or "2026-02-08".',
   distance: 'Race distance, e.g. "5K", "10K", "Half Marathon", "Marathon".',
   time: 'Finish time as a string, e.g. "3:12:45" or "18:30".',
-  vdot: 'VDOT score, e.g. 67.0.',
+  vdot: "VDOT score, e.g. 67.0.",
   commentsOptional:
-    'Optional multi-line comments about the race. Use newline characters (\\n) to separate lines.',
-  yearKeyDelete: 'The yearKey (partition key) of the entry to delete.',
-  skDelete: 'The exact sk (sort key) of the entry to delete. Get this from listRaces.',
-  yearKeyUpdate: 'The yearKey (partition key) of the entry.',
-  skUpdate: 'The exact sk (sort key) of the entry. Get this from listRaces.',
-  timeUpdate: 'New finish time string.',
-  vdotUpdate: 'New VDOT score.',
-  commentsUpdate: 'New comments text (supports multi-line with \\n). Pass empty string to clear.',
+    "Optional multi-line comments about the race. Use newline characters (\\n) to separate lines.",
+  yearKeyDelete: "The yearKey (partition key) of the entry to delete.",
+  skDelete:
+    "The exact sk (sort key) of the entry to delete. Get this from listRaces.",
+  yearKeyUpdate: "The yearKey (partition key) of the entry.",
+  skUpdate: "The exact sk (sort key) of the entry. Get this from listRaces.",
+  timeUpdate: "New finish time string.",
+  vdotUpdate: "New VDOT score.",
+  commentsUpdate:
+    "New comments text (supports multi-line with \\n). Pass empty string to clear.",
 };

@@ -2,8 +2,8 @@ export type DailyEntry = {
   logId: string;
   sk: string;
   date: string;
-  entryType: 'daily';
-  slot: 'workout1' | 'workout2';
+  entryType: "daily";
+  slot: "workout1" | "workout2";
   description: string;
   miles: number;
   highlight?: boolean;
@@ -13,7 +13,7 @@ export type WeeklyEntry = {
   logId: string;
   sk: string;
   date: string;
-  entryType: 'week';
+  entryType: "week";
   description: string;
 };
 
@@ -52,10 +52,10 @@ export type TrainingLogBatchUpdateResponse = {
 
 export type TrainingLogCreateRequest = {
   logId: string;
-  entryType: 'daily' | 'week';
+  entryType: "daily" | "week";
   date: string;
   description: string;
-  slot?: 'workout1' | 'workout2';
+  slot?: "workout1" | "workout2";
   miles?: number;
   highlight?: boolean;
 };

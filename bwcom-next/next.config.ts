@@ -1,16 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  output: "standalone",
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 's3.us-west-2.amazonaws.com',
+        protocol: "https",
+        hostname: "s3.us-west-2.amazonaws.com",
       },
       {
-        protocol: 'https',
-        hostname: '**.cloudfront.net',
+        protocol: "https",
+        hostname: "**.cloudfront.net",
       },
     ],
   },

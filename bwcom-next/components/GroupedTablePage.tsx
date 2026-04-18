@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Header,
@@ -10,7 +10,7 @@ import {
   StatusIndicator,
   Table,
   TableProps,
-} from '@cloudscape-design/components';
+} from "@cloudscape-design/components";
 
 export interface GroupedTableGroup<T> {
   key: string;
@@ -28,7 +28,7 @@ interface GroupedTablePageProps<T> {
   /** Extract the groups array from the API response JSON */
   extractGroups: (data: Record<string, unknown>) => GroupedTableGroup<T>[];
   /** Column definitions passed to every Cloudscape Table */
-  columnDefinitions: TableProps<T>['columnDefinitions'];
+  columnDefinitions: TableProps<T>["columnDefinitions"];
   /** Noun for empty states, e.g. "media entries" or "race results" */
   emptyNoun: string;
 }
@@ -46,14 +46,16 @@ function GroupedTablePage<T>({
   emptyNoun,
 }: GroupedTablePageProps<T>) {
   const [groups, setGroups] = useState<GroupedTableGroup<T>[]>([]);
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    "loading",
+  );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const baseUrl = new URL(apiUrl, window.location.origin);
-        baseUrl.searchParams.set('limit', '1000');
+        baseUrl.searchParams.set("limit", "1000");
 
         const pages: Record<string, unknown>[] = [];
         let cursor: string | null = null;
@@ -61,7 +63,7 @@ function GroupedTablePage<T>({
         for (let page = 0; page < 20; page += 1) {
           const url = new URL(baseUrl.toString());
           if (cursor) {
-            url.searchParams.set('cursor', cursor);
+            url.searchParams.set("cursor", cursor);
           }
 
           const res = await fetch(url.toString());
@@ -71,7 +73,10 @@ function GroupedTablePage<T>({
           pages.push(data);
 
           const nextCursor = data.nextCursor;
-          cursor = typeof nextCursor === 'string' && nextCursor.length > 0 ? nextCursor : null;
+          cursor =
+            typeof nextCursor === "string" && nextCursor.length > 0
+              ? nextCursor
+              : null;
           if (!cursor) {
             break;
           }
@@ -95,24 +100,30 @@ function GroupedTablePage<T>({
         }
 
         setGroups(Array.from(mergedGroups.values()));
-        setStatus('loaded');
+        setStatus("loaded");
       } catch (err) {
         console.error(`Failed to load ${emptyNoun}:`, err);
         setErrorMsg(`Failed to load ${emptyNoun}.`);
-        setStatus('error');
+        setStatus("error");
       }
     }
     fetchData();
-  // extractGroups is stable per call-site; apiUrl and emptyNoun are static strings.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // extractGroups is stable per call-site; apiUrl and emptyNoun are static strings.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
-      <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
-        <Box textAlign="center" padding={{ vertical: 'l' }}>
+      <Container
+        header={
+          <Header variant="h1" description={headerDescription}>
+            {title}
+          </Header>
+        }
+      >
+        <Box textAlign="center" padding={{ vertical: "l" }}>
           <Spinner size="large" />
-          <Box variant="p" margin={{ top: 's' }}>
+          <Box variant="p" margin={{ top: "s" }}>
             Loading {emptyNoun}...
           </Box>
         </Box>
@@ -120,16 +131,28 @@ function GroupedTablePage<T>({
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
-      <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
+      <Container
+        header={
+          <Header variant="h1" description={headerDescription}>
+            {title}
+          </Header>
+        }
+      >
         <StatusIndicator type="error">{errorMsg}</StatusIndicator>
       </Container>
     );
   }
 
   return (
-    <Container header={<Header variant="h1" description={headerDescription}>{title}</Header>}>
+    <Container
+      header={
+        <Header variant="h1" description={headerDescription}>
+          {title}
+        </Header>
+      }
+    >
       {groups.length === 0 ? (
         <Box textAlign="center" color="text-body-secondary" padding="l">
           No {emptyNoun} yet.

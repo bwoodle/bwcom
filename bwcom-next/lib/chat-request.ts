@@ -1,4 +1,4 @@
-import { SYSTEM_PROMPT_SECTIONS } from './prompts/system-sections';
+import { SYSTEM_PROMPT_SECTIONS } from "./prompts/system-sections";
 
 /**
  * Builds the system prompt for the admin chat agent.
@@ -7,12 +7,12 @@ import { SYSTEM_PROMPT_SECTIONS } from './prompts/system-sections';
  * without touching agent wiring or route code.
  */
 export function buildSystemPrompt(): string {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'America/Chicago',
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "America/Chicago",
   });
 
   const sections = [
@@ -25,5 +25,5 @@ export function buildSystemPrompt(): string {
   return `You are a helpful family-admin assistant on brentwoodle.com.
 Today's date is ${today}.
 
-${sections.join('\n\n')}`;
+${sections.join("\n\n")}`;
 }

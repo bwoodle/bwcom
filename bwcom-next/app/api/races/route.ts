@@ -1,19 +1,19 @@
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { docClient, RACES_TABLE_NAME as TABLE_NAME } from '@/lib/dynamodb';
+import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { docClient, RACES_TABLE_NAME as TABLE_NAME } from "@/lib/dynamodb";
 import {
   decodeCursor,
   encodeCursor,
   parseLimit,
   PUBLIC_CACHE_HEADERS,
   rateLimitPublicRequest,
-} from '@/lib/public-api-guards';
+} from "@/lib/public-api-guards";
 
 export interface RaceItem {
-  yearKey: string;    // e.g. "2026"
-  sk: string;         // e.g. "2026-02-08#5K"
-  date: string;       // display date, e.g. "Feb 8, 2026"
+  yearKey: string; // e.g. "2026"
+  sk: string; // e.g. "2026-02-08#5K"
+  date: string; // display date, e.g. "Feb 8, 2026"
   distance: string;
-  time: string;       // e.g. "3:12:45" or "18:30"
+  time: string; // e.g. "3:12:45" or "18:30"
   vdot: number;
   comments?: string;
   createdAt: string;
@@ -24,14 +24,14 @@ export interface RaceItem {
  * Public endpoint (no auth required).
  */
 export async function GET(request: Request) {
-  const limited = rateLimitPublicRequest(request, 'races-get', 60);
+  const limited = rateLimitPublicRequest(request, "races-get", 60);
   if (limited) {
     return limited;
   }
 
   const { searchParams } = new URL(request.url);
-  const limit = parseLimit(searchParams.get('limit'), 500, 1000);
-  const cursor = decodeCursor(searchParams.get('cursor'));
+  const limit = parseLimit(searchParams.get("limit"), 500, 1000);
+  const cursor = decodeCursor(searchParams.get("cursor"));
 
   try {
     const result = await docClient.send(
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         TableName: TABLE_NAME,
         Limit: limit,
         ExclusiveStartKey: cursor,
-      })
+      }),
     );
 
     const allItems: RaceItem[] = (result.Items ?? []).map((item) => ({
@@ -59,15 +59,17 @@ export async function GET(request: Request) {
     return Response.json(
       {
         races: allItems,
-        nextCursor: encodeCursor(result.LastEvaluatedKey as Record<string, unknown> | undefined),
+        nextCursor: encodeCursor(
+          result.LastEvaluatedKey as Record<string, unknown> | undefined,
+        ),
       },
-      { headers: PUBLIC_CACHE_HEADERS }
+      { headers: PUBLIC_CACHE_HEADERS },
     );
   } catch (err) {
-    console.error('Failed to fetch race data:', err);
+    console.error("Failed to fetch race data:", err);
     return Response.json(
-      { error: 'Failed to fetch race data' },
-      { status: 500 }
+      { error: "Failed to fetch race data" },
+      { status: 500 },
     );
   }
 }

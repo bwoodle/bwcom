@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Header,
@@ -9,7 +9,7 @@ import {
   StatusIndicator,
   Table,
   TableProps,
-} from '@cloudscape-design/components';
+} from "@cloudscape-design/components";
 
 export interface SortableColumnDefinition<T> {
   id: string;
@@ -44,20 +44,28 @@ function SortableTablePage<T>({
   emptyNoun,
 }: SortableTablePageProps<T>) {
   const [items, setItems] = useState<T[]>([]);
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    "loading",
+  );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const defaultCol = columnDefinitions.find((c) => c.id === defaultSortingColumnId) ?? columnDefinitions[0];
-  const [sortingColumn, setSortingColumn] = useState<TableProps.SortingColumn<T>>({
+  const defaultCol =
+    columnDefinitions.find((c) => c.id === defaultSortingColumnId) ??
+    columnDefinitions[0];
+  const [sortingColumn, setSortingColumn] = useState<
+    TableProps.SortingColumn<T>
+  >({
     sortingField: defaultCol.id,
   });
-  const [sortingDescending, setSortingDescending] = useState(defaultSortingDescending);
+  const [sortingDescending, setSortingDescending] = useState(
+    defaultSortingDescending,
+  );
 
   useEffect(() => {
     async function fetchData() {
       try {
         const baseUrl = new URL(apiUrl, window.location.origin);
-        baseUrl.searchParams.set('limit', '1000');
+        baseUrl.searchParams.set("limit", "1000");
 
         const pages: Record<string, unknown>[] = [];
         let cursor: string | null = null;
@@ -65,7 +73,7 @@ function SortableTablePage<T>({
         for (let page = 0; page < 20; page += 1) {
           const url = new URL(baseUrl.toString());
           if (cursor) {
-            url.searchParams.set('cursor', cursor);
+            url.searchParams.set("cursor", cursor);
           }
 
           const res = await fetch(url.toString());
@@ -75,7 +83,10 @@ function SortableTablePage<T>({
           pages.push(data);
 
           const nextCursor = data.nextCursor;
-          cursor = typeof nextCursor === 'string' && nextCursor.length > 0 ? nextCursor : null;
+          cursor =
+            typeof nextCursor === "string" && nextCursor.length > 0
+              ? nextCursor
+              : null;
           if (!cursor) {
             break;
           }
@@ -83,11 +94,11 @@ function SortableTablePage<T>({
 
         const allItems = pages.flatMap((page) => extractItems(page));
         setItems(allItems);
-        setStatus('loaded');
+        setStatus("loaded");
       } catch (err) {
         console.error(`Failed to load ${emptyNoun}:`, err);
         setErrorMsg(`Failed to load ${emptyNoun}.`);
-        setStatus('error');
+        setStatus("error");
       }
     }
     fetchData();
@@ -96,7 +107,9 @@ function SortableTablePage<T>({
 
   // Build sorted items
   const sortedItems = React.useMemo(() => {
-    const colDef = columnDefinitions.find((c) => c.id === sortingColumn.sortingField);
+    const colDef = columnDefinitions.find(
+      (c) => c.id === sortingColumn.sortingField,
+    );
     if (!colDef) return items;
 
     const sorted = [...items].sort((a, b) => {
@@ -113,10 +126,10 @@ function SortableTablePage<T>({
         aVal = colDef.cell(a);
         bVal = colDef.cell(b);
       }
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
+      if (typeof aVal === "number" && typeof bVal === "number") {
         return aVal - bVal;
       }
-      return String(aVal ?? '').localeCompare(String(bVal ?? ''));
+      return String(aVal ?? "").localeCompare(String(bVal ?? ""));
     });
 
     if (sortingDescending) sorted.reverse();
@@ -124,25 +137,26 @@ function SortableTablePage<T>({
   }, [items, sortingColumn, sortingDescending, columnDefinitions]);
 
   // Build Cloudscape-compatible column defs
-  const cloudscapeColumns: TableProps.ColumnDefinition<T>[] = columnDefinitions.map((col) => ({
-    id: col.id,
-    header: col.header,
-    cell: col.cell,
-    sortingField: col.id,
-    width: col.width,
-  }));
+  const cloudscapeColumns: TableProps.ColumnDefinition<T>[] =
+    columnDefinitions.map((col) => ({
+      id: col.id,
+      header: col.header,
+      cell: col.cell,
+      sortingField: col.id,
+      width: col.width,
+    }));
 
-  const handleSortingChange: TableProps['onSortingChange'] = (event) => {
+  const handleSortingChange: TableProps["onSortingChange"] = (event) => {
     setSortingColumn(event.detail.sortingColumn);
     setSortingDescending(event.detail.isDescending ?? false);
   };
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <Container header={<Header variant="h1">{title}</Header>}>
-        <Box textAlign="center" padding={{ vertical: 'l' }}>
+        <Box textAlign="center" padding={{ vertical: "l" }}>
           <Spinner size="large" />
-          <Box variant="p" margin={{ top: 's' }}>
+          <Box variant="p" margin={{ top: "s" }}>
             Loading {emptyNoun}...
           </Box>
         </Box>
@@ -150,7 +164,7 @@ function SortableTablePage<T>({
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <Container header={<Header variant="h1">{title}</Header>}>
         <StatusIndicator type="error">{errorMsg}</StatusIndicator>

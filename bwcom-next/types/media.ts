@@ -1,10 +1,10 @@
 export type MediaFormat =
-  | 'book'
-  | 'audiobook'
-  | 'kindle'
-  | 'movie'
-  | 'tv'
-  | 'podcast';
+  | "book"
+  | "audiobook"
+  | "kindle"
+  | "movie"
+  | "tv"
+  | "podcast";
 
 export type MediaItem = {
   monthKey: string;

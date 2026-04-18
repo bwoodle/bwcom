@@ -1,22 +1,26 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { agent, checkpointer } from '@/lib/agent';
-import { createChatStream } from '@/lib/chat-stream';
-import { HumanMessage, AIMessage, BaseMessage } from '@langchain/core/messages';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { agent, checkpointer } from "@/lib/agent";
+import { createChatStream } from "@/lib/chat-stream";
+import { HumanMessage, AIMessage, BaseMessage } from "@langchain/core/messages";
 
 function serializeMessage(msg: BaseMessage): { role: string; content: string } {
-  if (msg instanceof HumanMessage || msg.type === 'human') {
-    return { role: 'user', content: String(msg.content) };
+  if (msg instanceof HumanMessage || msg.type === "human") {
+    return { role: "user", content: String(msg.content) };
   }
-  if (msg instanceof AIMessage || msg.type === 'ai') {
-    return { role: 'assistant', content: String(msg.content) };
+  if (msg instanceof AIMessage || msg.type === "ai") {
+    return { role: "assistant", content: String(msg.content) };
   }
   return { role: msg.type, content: String(msg.content) };
 }
 
 async function getAdminEmail(): Promise<string | null> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.role || session.user.role !== 'admin' || !session.user.email) {
+  if (
+    !session?.user?.role ||
+    session.user.role !== "admin" ||
+    !session.user.email
+  ) {
     return null;
   }
   return session.user.email;
@@ -28,7 +32,7 @@ async function getAdminEmail(): Promise<string | null> {
 export async function GET() {
   const email = await getAdminEmail();
   if (!email) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -36,7 +40,8 @@ export async function GET() {
       configurable: { thread_id: email },
     });
 
-    const messages = (state?.values?.messages as BaseMessage[] | undefined) ?? [];
+    const messages =
+      (state?.values?.messages as BaseMessage[] | undefined) ?? [];
     return Response.json({
       messages: messages.map(serializeMessage),
     });
@@ -53,14 +58,14 @@ export async function GET() {
 export async function POST(request: Request) {
   const email = await getAdminEmail();
   if (!email) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
   const userMessage = body.message;
 
-  if (!userMessage || typeof userMessage !== 'string') {
-    return Response.json({ error: 'Missing message' }, { status: 400 });
+  if (!userMessage || typeof userMessage !== "string") {
+    return Response.json({ error: "Missing message" }, { status: 400 });
   }
 
   const stream = createChatStream({
@@ -70,9 +75,9 @@ export async function POST(request: Request) {
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     },
   });
 }
@@ -83,7 +88,7 @@ export async function POST(request: Request) {
 export async function DELETE() {
   const email = await getAdminEmail();
   if (!email) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   await checkpointer.deleteThread(email);

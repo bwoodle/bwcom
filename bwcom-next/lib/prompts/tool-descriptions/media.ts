@@ -68,20 +68,21 @@ Parameters:
 };
 
 export const MEDIA_ARG_DESCRIPTIONS = {
-  monthOptional: 'Month name (e.g. "February" or "Feb"). Omit to list all months.',
-  yearOptional: 'Four-digit year (e.g. 2026). Required if month is provided.',
+  monthOptional:
+    'Month name (e.g. "February" or "Feb"). Omit to list all months.',
+  yearOptional: "Four-digit year (e.g. 2026). Required if month is provided.",
   monthRequired: 'Month name (e.g. "February", "Feb").',
-  yearRequired: 'Four-digit year (e.g. 2026).',
-  title: 'Title of the media (book, movie, show, etc.).',
-  authorOptional: 'Optional author/creator/host name.',
+  yearRequired: "Four-digit year (e.g. 2026).",
+  title: "Title of the media (book, movie, show, etc.).",
+  authorOptional: "Optional author/creator/host name.",
   format:
     'Format / medium. Allowed values only: "book", "audiobook", "kindle", "movie", "tv", "podcast".',
   commentsOptional:
-    'Optional multi-line comments or review. Use newline characters (\\n) to separate lines.',
-  monthKey: 'The monthKey (partition key) of the entry to delete.',
+    "Optional multi-line comments or review. Use newline characters (\\n) to separate lines.",
+  monthKey: "The monthKey (partition key) of the entry to delete.",
   skToDelete:
-    'The exact sk (sort key) of the entry to delete. Get this from listMedia. For correcting bad title/month/format values, delete the incorrect entry then add a new corrected one.',
-  skToUpdate: 'The exact sk (sort key) of the entry. Get this from listMedia.',
+    "The exact sk (sort key) of the entry to delete. Get this from listMedia. For correcting bad title/month/format values, delete the incorrect entry then add a new corrected one.",
+  skToUpdate: "The exact sk (sort key) of the entry. Get this from listMedia.",
   commentsUpdate:
-    'New comments text (supports multi-line with \\n). Omit or pass empty string to clear.',
+    "New comments text (supports multi-line with \\n). Omit or pass empty string to clear.",
 };

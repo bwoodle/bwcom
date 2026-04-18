@@ -43,6 +43,7 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
 ### Prerequisites
 
 - Node.js 22+
+- Python 3.12+
 - AWS CLI configured with credentials that can access DynamoDB and S3 in `us-west-2`
 - Terraform (for data tier changes)
 
@@ -107,6 +108,42 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
    ```
 
    The app runs at `http://localhost:3000`, hitting test DynamoDB tables and images served via CloudFront.
+
+### Code quality guardrails
+
+Set up local guardrails once per development environment:
+
+```bash
+# From repo root
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+
+cd bwcom-next
+npm install
+cd ..
+
+python -m pre_commit install
+```
+
+Canonical local commands:
+
+```bash
+# Python
+python -m ruff format scripts
+python -m ruff check scripts
+python -m mypy scripts/strava_pipeline scripts/strava_to_training_log.py scripts/strava_read_window.py
+python -m pytest scripts/tests -q
+
+# Next.js
+cd bwcom-next
+npm run format:check
+npm run lint
+npm run test
+npm run build
+```
+
+To verify the hook wiring in a new environment, run `python -m pre_commit run --all-files` after installation. Pull requests run the same Python and Next.js checks in CI.
 
 ### Syncing images
 

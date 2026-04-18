@@ -1,5 +1,5 @@
 export const TRAINING_LOG_TOOL_DESCRIPTIONS = {
-    listTrainingLog: `List training log entries from the training log table.
+  listTrainingLog: `List training log entries from the training log table.
 
 If logId is provided (e.g. "paris-2026"), returns only entries for that training
 cycle. Otherwise returns all entries.
@@ -17,7 +17,7 @@ The table contains two kinds of entries, distinguished by the sort key prefix:
 Always call this before attempting to remove or update an entry so you have
 the exact logId and sk values.`,
 
-    addDailyWorkout: `Add a single daily workout entry to the training log.
+  addDailyWorkout: `Add a single daily workout entry to the training log.
 
 Each day can have up to 2 workouts: "workout1" (morning) and "workout2" (afternoon/evening).
 If you are unsure whether a workout should be "workout1" or "workout2", ask a clarifying question to find out when the workout took place during the day.
@@ -52,7 +52,7 @@ Optional:
 
 `,
 
-    addWeeklySummary: `Add a weekly summary entry to the training log.
+  addWeeklySummary: `Add a weekly summary entry to the training log.
 
 A weekly summary adds an optional description/note to a training week. The
 date should be the Sunday that ends the week. Weekly summaries are NOT
@@ -67,7 +67,7 @@ Parameters:
   date        – the Sunday ending the week, YYYY-MM-DD format
   description – brief summary/note about the week (supports multi-line with \\n)`,
 
-    removeTrainingLogEntry: `Remove a training log entry (daily workout or weekly summary).
+  removeTrainingLogEntry: `Remove a training log entry (daily workout or weekly summary).
 
 **IMPORTANT: Always ask the user for confirmation before calling this tool.**
 
@@ -80,7 +80,7 @@ Parameters:
 
 The entry is permanently deleted. This cannot be undone.`,
 
-    updateTrainingLogEntry: `Update fields on an existing training log entry (daily or weekly).
+  updateTrainingLogEntry: `Update fields on an existing training log entry (daily or weekly).
 
 Before calling this tool you MUST first call listTrainingLog to discover the
 exact logId and sk of the entry the user wants to update.
@@ -96,20 +96,23 @@ Parameters:
 };
 
 export const TRAINING_LOG_ARG_DESCRIPTIONS = {
-    logIdOptional: 'Training log ID (e.g. "paris-2026"). Omit to list all.',
-    logId: 'Training log/cycle ID, e.g. "paris-2026".',
-    date: 'Date in YYYY-MM-DD format, e.g. "2026-02-08".',
-    slot: '"workout1" for morning, "workout2" for afternoon/evening.',
-    description: 'Workout description. Supports multi-line with \\n.',
-    miles: 'Distance in miles.',
-    highlightOptional: 'True for key workouts (long runs, races, breakthroughs).',
-    weeklyDate: 'The Sunday ending the week, YYYY-MM-DD format.',
-    weeklyDescription: 'Brief summary/note about the training week. Supports multi-line with \\n.',
-    deleteLogId: 'The logId (partition key) of the entry to delete.',
-    deleteSk: 'The exact sk (sort key) of the entry to delete. Get this from listTrainingLog.',
-    updateLogId: 'The logId (partition key) of the entry.',
-    updateSk: 'The exact sk (sort key) of the entry. Get this from listTrainingLog.',
-    updateDescription: 'New description text. Supports multi-line with \\n.',
-    updateMiles: 'New mileage.',
-    updateHighlight: 'True to mark as key workout, false to remove highlight.',
+  logIdOptional: 'Training log ID (e.g. "paris-2026"). Omit to list all.',
+  logId: 'Training log/cycle ID, e.g. "paris-2026".',
+  date: 'Date in YYYY-MM-DD format, e.g. "2026-02-08".',
+  slot: '"workout1" for morning, "workout2" for afternoon/evening.',
+  description: "Workout description. Supports multi-line with \\n.",
+  miles: "Distance in miles.",
+  highlightOptional: "True for key workouts (long runs, races, breakthroughs).",
+  weeklyDate: "The Sunday ending the week, YYYY-MM-DD format.",
+  weeklyDescription:
+    "Brief summary/note about the training week. Supports multi-line with \\n.",
+  deleteLogId: "The logId (partition key) of the entry to delete.",
+  deleteSk:
+    "The exact sk (sort key) of the entry to delete. Get this from listTrainingLog.",
+  updateLogId: "The logId (partition key) of the entry.",
+  updateSk:
+    "The exact sk (sort key) of the entry. Get this from listTrainingLog.",
+  updateDescription: "New description text. Supports multi-line with \\n.",
+  updateMiles: "New mileage.",
+  updateHighlight: "True to mark as key workout, false to remove highlight.",
 };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Header, SpaceBetween } from '@cloudscape-design/components';
+import React from "react";
+import { Container, Header, SpaceBetween } from "@cloudscape-design/components";
 
 const Main: React.FC = () => {
   return (
