@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -89,7 +89,7 @@ function nextItem(item: MediaItem, update: MediaBatchUpdateItem): MediaItem {
 }
 
 const MediaBulkEditor: React.FC = () => {
-  const [status, setStatus] = useState<EditorStatus>("idle");
+  const [status, setStatus] = useState<EditorStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<MediaItem[]>([]);
   const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
@@ -108,14 +108,16 @@ const MediaBulkEditor: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
 
-  const loadItems = useCallback(async () => {
+  const resetEditorState = useCallback(() => {
     setStatus("loading");
     setError(null);
     setDrafts({});
     setSelectedRow({});
     setRowErrors({});
     setSaveMessage(null);
+  }, []);
 
+  const loadItems = useCallback(async () => {
     try {
       const pages: MediaApiResponse[] = [];
       let cursor: string | null = null;
@@ -162,7 +164,14 @@ const MediaBulkEditor: React.FC = () => {
     }
   }, []);
 
-  React.useEffect(() => {
+  const refreshItems = useCallback(() => {
+    resetEditorState();
+    void loadItems();
+  }, [loadItems, resetEditorState]);
+
+  useEffect(() => {
+    // The effect triggers an async fetch; state updates happen from the response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadItems();
   }, [loadItems]);
 
@@ -449,10 +458,7 @@ const MediaBulkEditor: React.FC = () => {
           variant="h2"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                onClick={() => void loadItems()}
-                disabled={status === "loading"}
-              >
+              <Button onClick={refreshItems} disabled={status === "loading"}>
                 Refresh
               </Button>
               <Button
