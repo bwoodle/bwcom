@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -116,7 +116,7 @@ function nextEntry(
 
 const TrainingLogBulkEditor: React.FC = () => {
   const [activeLogId, setActiveLogId] = useState<string>(logConfigs[0].id);
-  const [status, setStatus] = useState<EditorStatus>("idle");
+  const [status, setStatus] = useState<EditorStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [section, setSection] = useState<TrainingLogSection | null>(null);
   const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
@@ -136,14 +136,16 @@ const TrainingLogBulkEditor: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
 
-  const loadSection = useCallback(async (logId: string) => {
+  const resetSectionState = useCallback(() => {
     setStatus("loading");
     setError(null);
     setSaveMessage(null);
     setRowErrors({});
     setDrafts({});
     setSelectedSk({});
+  }, []);
 
+  const loadSection = useCallback(async (logId: string) => {
     try {
       const response = await fetch(`/api/training-log?sectionId=${logId}`);
       if (!response.ok) {
@@ -160,7 +162,14 @@ const TrainingLogBulkEditor: React.FC = () => {
     }
   }, []);
 
-  React.useEffect(() => {
+  const refreshSection = useCallback(() => {
+    resetSectionState();
+    void loadSection(activeLogId);
+  }, [activeLogId, loadSection, resetSectionState]);
+
+  useEffect(() => {
+    // The effect triggers an async fetch; state updates happen from the response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadSection(activeLogId);
   }, [activeLogId, loadSection]);
 
@@ -443,10 +452,7 @@ const TrainingLogBulkEditor: React.FC = () => {
           variant="h2"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                onClick={() => void loadSection(activeLogId)}
-                disabled={status === "loading"}
-              >
+              <Button onClick={refreshSection} disabled={status === "loading"}>
                 Refresh
               </Button>
               <Button
@@ -467,7 +473,10 @@ const TrainingLogBulkEditor: React.FC = () => {
       <SpaceBetween size="m">
         <SegmentedControl
           selectedId={activeLogId}
-          onChange={({ detail }) => setActiveLogId(detail.selectedId)}
+          onChange={({ detail }) => {
+            resetSectionState();
+            setActiveLogId(detail.selectedId);
+          }}
           options={logConfigs.map((config) => ({
             id: config.id,
             text: config.name,
