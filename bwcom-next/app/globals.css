@@ -41,6 +41,45 @@ main {
   flex: 1;
 }
 
+.navbar-desktop {
+  display: block;
+}
+
+.navbar-mobile {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.navbar-mobile__link {
+  min-width: 0;
+  color: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-mobile__link:hover,
+.navbar-mobile__link:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  .navbar-desktop {
+    display: none;
+  }
+
+  .navbar-mobile {
+    display: grid;
+  }
+}
+
 /* Markdown inside chat bubbles */
 .chat-markdown {
   line-height: 1.6;
