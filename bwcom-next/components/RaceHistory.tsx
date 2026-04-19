@@ -3,17 +3,7 @@
 import React from "react";
 import { Box } from "@cloudscape-design/components";
 import SortableTablePage from "./SortableTablePage";
-
-interface RaceItem {
-  yearKey: string;
-  sk: string;
-  date: string;
-  distance: string;
-  time: string;
-  vdot: number;
-  comments?: string;
-  createdAt: string;
-}
+import type { RaceItem } from "@/types/races";
 
 /** Map distance labels to a numeric rank for sorting */
 const DISTANCE_ORDER: Record<string, number> = {
@@ -47,6 +37,11 @@ const RaceHistory: React.FC = () => (
         width: 140,
       },
       {
+        id: "name",
+        header: "Name",
+        cell: (item) => item.name ?? <Box color="text-body-secondary">—</Box>,
+      },
+      {
         id: "distance",
         header: "Distance",
         cell: (item) => item.distance,
@@ -69,7 +64,7 @@ const RaceHistory: React.FC = () => (
       },
       {
         id: "comments",
-        header: "Comments",
+        header: "Notes",
         cell: (item) =>
           item.comments ? (
             <span style={{ whiteSpace: "pre-line" }}>{item.comments}</span>

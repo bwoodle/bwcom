@@ -11,7 +11,8 @@ Each item contains:
   distance  – e.g. "5K", "Half Marathon", "Marathon"
   time      – finish time as a string, e.g. "3:12:45" or "18:30"
   vdot      – VDOT score, e.g. 67.0
-  comments  – optional multi-line comments (may be null)
+  name      – optional race name (may be null)
+  comments  – optional notes/comments (may be null)
 
 Always call this before attempting to remove or update an entry so you have
 the exact yearKey and sk values.`,
@@ -34,6 +35,7 @@ Parameters:
   distance – e.g. "5K", "10K", "Half Marathon", "Marathon"
   time     – finish time as a string, e.g. "3:12:45" or "18:30"
   vdot     – VDOT score as a number, e.g. 67.0
+  name     – optional race name
   comments – optional multi-line comments about the race`,
 
   removeRace: `Remove a race result from the race history table.
@@ -57,6 +59,7 @@ yearKey and sk of the entry the user wants to update.
 You can update any combination of:
   time     – new finish time string
   vdot     – new VDOT score
+  name     – new race name, or empty string to clear
   comments – new comments text (supports multi-line with \\n), or empty string to clear
 
 **To change a race's date or distance**, use removeRace followed by addRace instead,
@@ -67,6 +70,7 @@ Parameters:
   sk       – the exact sort key (e.g. "2026-02-08#5K")
   time     – optional new finish time
   vdot     – optional new VDOT score
+  name     – optional new race name, or empty string to clear
   comments – optional new comments text, or empty string to clear`,
 };
 
@@ -76,6 +80,7 @@ export const RACE_ARG_DESCRIPTIONS = {
   distance: 'Race distance, e.g. "5K", "10K", "Half Marathon", "Marathon".',
   time: 'Finish time as a string, e.g. "3:12:45" or "18:30".',
   vdot: "VDOT score, e.g. 67.0.",
+  nameOptional: "Optional race name.",
   commentsOptional:
     "Optional multi-line comments about the race. Use newline characters (\\n) to separate lines.",
   yearKeyDelete: "The yearKey (partition key) of the entry to delete.",
@@ -85,6 +90,7 @@ export const RACE_ARG_DESCRIPTIONS = {
   skUpdate: "The exact sk (sort key) of the entry. Get this from listRaces.",
   timeUpdate: "New finish time string.",
   vdotUpdate: "New VDOT score.",
+  nameUpdate: "New race name. Pass empty string to clear.",
   commentsUpdate:
     "New comments text (supports multi-line with \\n). Pass empty string to clear.",
 };

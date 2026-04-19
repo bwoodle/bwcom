@@ -1,5 +1,12 @@
-import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { docClient, RACES_TABLE_NAME as TABLE_NAME } from "@/lib/dynamodb";
+import { createRace, fetchRacePage, updateRaces } from "@/lib/race-repository";
+import {
+  isAdminSession,
+  validateRaceBatchUpdateRequest,
+  validateRaceCreateRequest,
+} from "@/lib/races";
 import {
   decodeCursor,
   encodeCursor,
@@ -7,17 +14,10 @@ import {
   PUBLIC_CACHE_HEADERS,
   rateLimitPublicRequest,
 } from "@/lib/public-api-guards";
-
-export interface RaceItem {
-  yearKey: string; // e.g. "2026"
-  sk: string; // e.g. "2026-02-08#5K"
-  date: string; // display date, e.g. "Feb 8, 2026"
-  distance: string;
-  time: string; // e.g. "3:12:45" or "18:30"
-  vdot: number;
-  comments?: string;
-  createdAt: string;
-}
+import type {
+  RaceBatchUpdateResponse,
+  RaceCreateResponse,
+} from "@/types/races";
 
 /**
  * GET /api/races — Return all race results as a flat list, newest first.
@@ -34,34 +34,17 @@ export async function GET(request: Request) {
   const cursor = decodeCursor(searchParams.get("cursor"));
 
   try {
-    const result = await docClient.send(
-      new ScanCommand({
-        TableName: TABLE_NAME,
-        Limit: limit,
-        ExclusiveStartKey: cursor,
-      }),
-    );
-
-    const allItems: RaceItem[] = (result.Items ?? []).map((item) => ({
-      yearKey: item.yearKey as string,
-      sk: item.sk as string,
-      date: item.date as string,
-      distance: item.distance as string,
-      time: item.time as string,
-      vdot: item.vdot as number,
-      comments: item.comments as string | undefined,
-      createdAt: item.createdAt as string,
-    }));
-
-    // Sort newest first by sort key (which starts with YYYY-MM-DD)
-    allItems.sort((a, b) => b.sk.localeCompare(a.sk));
+    const result = await fetchRacePage({
+      client: docClient,
+      tableName: TABLE_NAME,
+      limit,
+      cursor,
+    });
 
     return Response.json(
       {
-        races: allItems,
-        nextCursor: encodeCursor(
-          result.LastEvaluatedKey as Record<string, unknown> | undefined,
-        ),
+        races: result.races,
+        nextCursor: encodeCursor(result.lastEvaluatedKey),
       },
       { headers: PUBLIC_CACHE_HEADERS },
     );
@@ -72,4 +55,66 @@ export async function GET(request: Request) {
       { status: 500 },
     );
   }
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!isAdminSession(session)) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const validation = validateRaceCreateRequest(body);
+  if (!validation.ok) {
+    return Response.json({ error: validation.error }, { status: 400 });
+  }
+
+  try {
+    const entry = await createRace({
+      client: docClient,
+      tableName: TABLE_NAME,
+      request: validation.value,
+    });
+
+    return Response.json({
+      success: true,
+      entry,
+    } satisfies RaceCreateResponse);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create race";
+    return Response.json({ error: message }, { status: 400 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!isAdminSession(session)) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const validation = validateRaceBatchUpdateRequest(body);
+  if (!validation.ok) {
+    return Response.json({ error: validation.error }, { status: 400 });
+  }
+
+  const result = await updateRaces({
+    client: docClient,
+    tableName: TABLE_NAME,
+    updates: validation.value.updates,
+  });
+  return Response.json(result satisfies RaceBatchUpdateResponse);
 }

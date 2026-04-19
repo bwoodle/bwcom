@@ -26,7 +26,7 @@ jobs:
       - name: Lint Python
         run: python -m ruff check scripts
       - name: Type-check Python
-        run: python -m mypy scripts/strava_pipeline scripts/strava_to_training_log.py scripts/strava_read_window.py
+        run: python -m mypy scripts/legacy_races_pipeline scripts/legacy_races_import.py scripts/strava_pipeline scripts/strava_to_training_log.py scripts/strava_read_window.py
       - name: Run Python unit tests
         run: python -m pytest scripts/tests -q
 

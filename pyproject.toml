@@ -9,6 +9,7 @@ description = "Python tooling for the bwcom Strava scripts."
 requires-python = ">=3.12"
 dependencies = [
   "boto3>=1.40,<2",
+  "openpyxl>=3.1,<4",
 ]
 
 [project.optional-dependencies]
@@ -21,7 +22,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["scripts"]
-include = ["strava_pipeline*"]
+include = ["strava_pipeline*", "legacy_races_pipeline*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["scripts"]
@@ -40,6 +41,8 @@ python_version = "3.12"
 strict = true
 mypy_path = ["scripts"]
 files = [
+  "scripts/legacy_races_pipeline",
+  "scripts/legacy_races_import.py",
   "scripts/strava_pipeline",
   "scripts/strava_to_training_log.py",
   "scripts/strava_read_window.py",
@@ -48,4 +51,8 @@ exclude = ["scripts/.pytest_cache", "scripts/.*/__pycache__"]
 
 [[tool.mypy.overrides]]
 module = ["botocore.*", "boto3.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["openpyxl.*"]
 ignore_missing_imports = true

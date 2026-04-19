@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import TrainingLogBulkEditor from "@/components/TrainingLogBulkEditor";
 import MediaBulkEditor from "@/components/MediaBulkEditor";
+import RaceBulkEditor from "@/components/RaceBulkEditor";
 
 interface Message {
   role: "user" | "assistant";
@@ -25,7 +26,7 @@ interface Message {
 }
 
 const AdminPage: React.FC = () => {
-  const [mode, setMode] = useState<"chat" | "training-log" | "media">(
+  const [mode, setMode] = useState<"chat" | "training-log" | "media" | "races">(
     "training-log",
   );
   const [messages, setMessages] = useState<Message[]>([]);
@@ -286,10 +287,17 @@ const AdminPage: React.FC = () => {
           <SegmentedControl
             selectedId={mode}
             onChange={({ detail }) =>
-              setMode(detail.selectedId as "chat" | "training-log" | "media")
+              setMode(
+                detail.selectedId as
+                  | "chat"
+                  | "training-log"
+                  | "media"
+                  | "races",
+              )
             }
             options={[
               { id: "training-log", text: "Training log bulk edit" },
+              { id: "races", text: "Race history bulk edit" },
               { id: "media", text: "Media bulk edit" },
               { id: "chat", text: "Assistant chat" },
             ]}
@@ -297,6 +305,7 @@ const AdminPage: React.FC = () => {
         </Container>
 
         {mode === "training-log" ? <TrainingLogBulkEditor /> : null}
+        {mode === "races" ? <RaceBulkEditor /> : null}
         {mode === "media" ? <MediaBulkEditor /> : null}
         {mode === "chat" ? renderChat() : null}
       </SpaceBetween>
