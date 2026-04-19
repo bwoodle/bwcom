@@ -123,32 +123,39 @@ const AboutMe: React.FC = () => {
           <SpaceBetween direction="vertical" size="s">
             <Header variant="h2">Masters Runner</Header>
             <p>
-              I trained for my first marathon in 2011 and ran the Omaha Marathon
-              in 3:09. I had a plan to run under three hours, but not the
-              fitness to match. The last 10K was a grind, but I pushed through.
-              Not long after, I ran the Athens Classic Marathon in Greece and my
-              first Dallas Marathon, and somewhere along the way I fell in love
-              with the process as much as the results. One year later, I
-              qualified for Boston by running 2:56 at the Chicago Marathon,
-              which opened the door to chasing faster times and bigger goals.
+              I began training in 2011 and ran the Omaha Marathon in 3:09. I
+              really wanted to run under three hours, but it was clear that I
+              wasn&apos;t ready. The last 10K was a grind, but I pushed through
+              with a 1:29 first half and 1:40 second half. Not long after, I ran
+              the Athens Classic Marathon in Greece and my first Dallas
+              Marathon. One year later, I qualified for Boston by running 2:56
+              at the Chicago Marathon, which opened the door to chasing faster
+              times and bigger goals.
             </p>
             <p>
-              In 2013, things took a serious leap forward: I ran 2:40 at Boston
-              and then 2:33 at the California International Marathon. Since
-              then, I’ve run more than 40 marathons, and I’ve learned that it’s
-              the event best suited to my strengths as an athlete. My key
-              milestones include running 2:28 four times—Berlin 2016, Chicago
-              2018 (2:28:00 PR), Lincoln 2024 at age 39, and Indianapolis 2025
-              at age 40. I’ve become very comfortable with high-volume training
-              and focused 10–16 week training cycles a couple of times per year.
+              Somewhere along the way I fell in love with training, improving,
+              and competing. In 2013, things took a serious leap forward: I ran
+              2:40 at Boston and then 2:33 at the California International
+              Marathon. Since then, I’ve run more than 40 marathons, and I’ve
+              learned that it’s the event best suited to my strengths as an
+              athlete.
             </p>
             <p>
-              I completed the 6-star Abbott World Marathon Majors medal at the
-              Tokyo Marathon in 2018, and across the World Marathon Majors my
-              average finish time is 2:32. These days, I race as a masters
-              runner, still chasing improvement, still loving the grind, and
-              still finding something deeply satisfying about seeing what
-              long-term discipline can produce.
+              My key milestones include running 2:28 four times—Berlin 2016,
+              Chicago 2018, Lincoln 2024 at age 39, and Indianapolis 2025 at age
+              40. As a masters runner, I have focused more on high-volume
+              threshold training and lifestyle discipline to maintain and even
+              improve my fitness. I’ve also completed the 6-star Abbott World
+              Marathon Majors medal at the Tokyo Marathon in 2018, and across
+              the World Marathon Majors my average finish time is 2:32.
+            </p>
+            <p>
+              In 2026, I had a surprisingly strong performance at the Paris
+              Marathon, where I ran my first marathon PB since 2018, finishing
+              in 2:27:50 at age 41. I was 72nd overall, 2nd in the men’s 40–44
+              age group, and 7th in the open division out of 60,000 runners.
+              That result was a major confidence boost and reinforced that I can
+              still improve in my 40s with the right training and execution.
             </p>
           </SpaceBetween>
         </section>
@@ -182,7 +189,7 @@ const AboutMe: React.FC = () => {
             <p>
               More recently, I’ve returned to a Principal Software Engineer role
               building Axon, the LLM-backed intelligence layer for Rhapsody’s
-              chatbots and agentic features. Our stack includes LangGraph,
+              LLM chat and agentic features. Our stack includes LangGraph,
               FastAPI, Next.js, and Langfuse, all hosted on AWS. This is a team
               that genuinely embraces the DevOps mindset—focusing on delivering
               value quickly and safely. This is the first time in my career
