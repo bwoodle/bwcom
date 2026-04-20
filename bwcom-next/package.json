@@ -46,7 +46,7 @@
     "prettier": "^3.6.2",
     "sharp-cli": "^5.2.0",
     "tailwindcss": "^4",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.0.4"
   }
 }
