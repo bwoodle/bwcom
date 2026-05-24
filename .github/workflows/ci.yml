@@ -31,11 +31,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y just
-      - name: Install Python dependencies
-        run: python -m pip install -e '.[dev]'
-      - name: Install dependencies
-        run: npm ci
-        working-directory: bwcom-next
+      - name: Bootstrap repo tooling
+        run: just bootstrap
       - name: Run repo lint
         run: just lint
       - name: Run unit tests
