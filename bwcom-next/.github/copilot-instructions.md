@@ -55,6 +55,24 @@ The execute agent follows these principles and may refactor existing code to ali
 - **Testability** — every module independently testable; mock boundaries via DI
 - **TDD** — tests first, implementation second, refactor third
 
+## Required Change Workflow
+
+Any agent making code changes in this repository must follow TDD:
+
+1. Write or update the automated test first.
+2. Run the targeted test and confirm it fails for the expected reason.
+3. Implement the change.
+4. Run `just lint` and `just test` before considering the work complete.
+
+## Worktree-First Development
+
+Do not edit code from the primary checkout at `/home/brent/code/bwcom`. Start from a gtr-managed worktree instead.
+
+1. From the primary checkout, run `git gtr trust` after `.gtrconfig` is added or whenever its hook/default command entries change.
+2. Create a worktree with `git gtr new <branch> --from-current`; new worktrees live under `../bwcom-worktrees`.
+3. The trusted `postCreate` hook runs `just bootstrap`, creates `.venv`, and copies `bwcom-next/.env.local` so the worktree is ready for lint, test, and build commands.
+4. If you need to inspect an older branch that predates the worktree tooling, create it with `--no-hooks` and bootstrap it manually.
+
 ## Environments
 
 There are two environments: **test** and **prod**.
@@ -133,11 +151,14 @@ For Docker builds (test and prod), the URL is passed as a `--build-arg` since `N
 ## Build, Lint, and Test
 
 ```bash
+just bootstrap   # create .venv, install Python dev dependencies, and install bwcom-next node_modules
+just lint        # repo-wide format checks, linting, type checks, terraform fmt check, shell syntax check
+just test        # repo-wide Python pytest and Next.js Vitest suites
+
 cd bwcom-next
 npm run build    # Next.js production build
-npm run lint     # ESLint
-# No test runner is currently configured — the execute agent should set up
-# a test framework (e.g., vitest) when first implementing TDD for an issue
+npm run lint     # ESLint + Prettier check
+npm run test     # Vitest unit tests
 ```
 
 ## Updating the Test Data Layer

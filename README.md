@@ -1,6 +1,6 @@
 # brentwoodle.com
 
-Personal website built with Next.js 15, deployed on AWS ECS Fargate (ARM64) behind an ALB. Uses DynamoDB for data, CloudFront+S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
+Personal website built with Next.js 16, deployed on AWS ECS Fargate (ARM64) behind an ALB. Uses DynamoDB for data, CloudFront+S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
 
 ## Architecture overview
 
@@ -44,8 +44,42 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
 
 - Node.js 22+
 - Python 3.12+
+- `virtualenv` available as `python3 -m virtualenv`
 - AWS CLI configured with credentials that can access DynamoDB and S3 in `us-west-2`
 - Terraform (for data tier changes)
+- [`just`](https://github.com/casey/just)
+- [`git-gtr`](https://github.com/coderabbitai/git-worktree-runner)
+
+### Worktree-first workflow
+
+Treat the primary checkout (`/home/brent/code/bwcom`) as a control plane only. Do not implement changes there; create a dedicated worktree first.
+
+Install gtr on Linux/macOS:
+
+```bash
+git clone https://github.com/coderabbitai/git-worktree-runner.git ~/.local/share/git-worktree-runner
+cd ~/.local/share/git-worktree-runner
+./install.sh
+```
+
+After pulling this repository's `.gtrconfig`, trust it once:
+
+```bash
+cd /home/brent/code/bwcom
+git gtr trust
+```
+
+Then create a worktree for each task:
+
+```bash
+cd /home/brent/code/bwcom
+git gtr new feat/my-change --from-current
+cd "$(git gtr go feat/my-change)"
+```
+
+This repository's gtr config places worktrees under `../bwcom-worktrees`, copies `bwcom-next/.env.local`, and runs `just bootstrap` after creation.
+
+For legacy branches that predate this tooling and do not yet contain the `justfile`, use `--no-hooks` and bootstrap manually after checkout.
 
 ### Setup
 
@@ -114,33 +148,17 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
 Set up local guardrails once per development environment:
 
 ```bash
-# From repo root
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-
-cd bwcom-next
-npm install
-cd ..
-
-python -m pre_commit install
+# From a task worktree root
+just bootstrap
+.venv/bin/python -m pre_commit install
 ```
 
 Canonical local commands:
 
 ```bash
-# Python
-python -m ruff format scripts
-python -m ruff check scripts
-python -m mypy scripts/strava_pipeline scripts/strava_to_training_log.py scripts/strava_read_window.py
-python -m pytest scripts/tests -q
-
-# Next.js
-cd bwcom-next
-npm run format:check
-npm run lint
-npm run test
-npm run build
+just lint
+just test
+just _next-build
 ```
 
 To verify the hook wiring in a new environment, run `python -m pre_commit run --all-files` after installation. Pull requests run the same Python and Next.js checks in CI.

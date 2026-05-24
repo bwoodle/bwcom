@@ -12,13 +12,13 @@ provider "aws" {
 }
 
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
-  name    = "bwcom-next-${var.env}-vpc"
-  cidr    = "10.0.0.0/16"
-  azs     = ["${var.region}a", "${var.region}b"]
-  public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
-  private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
+  source             = "terraform-aws-modules/vpc/aws"
+  version            = "~> 5.0"
+  name               = "bwcom-next-${var.env}-vpc"
+  cidr               = "10.0.0.0/16"
+  azs                = ["${var.region}a", "${var.region}b"]
+  public_subnets     = ["10.0.1.0/24", "10.0.2.0/24"]
+  private_subnets    = ["10.0.3.0/24", "10.0.4.0/24"]
   enable_nat_gateway = false
 }
 
@@ -177,8 +177,8 @@ resource "aws_lb_listener_rule" "redirect_www_https" {
 }
 
 module "ecs" {
-  source  = "terraform-aws-modules/ecs/aws"
-  version = "~> 5.0"
+  source       = "terraform-aws-modules/ecs/aws"
+  version      = "~> 5.0"
   cluster_name = "bwcom-next-${var.env}-cluster"
 }
 
@@ -279,8 +279,8 @@ resource "aws_ecs_task_definition" "next" {
     cpu_architecture        = "ARM64"
     operating_system_family = "LINUX"
   }
-  execution_role_arn       = aws_iam_role.ecs_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn = aws_iam_role.ecs_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
     name  = "next-app"
     image = "${var.ecr_repository_url}:${var.image_tag}"
@@ -336,8 +336,8 @@ resource "aws_ecs_service" "next" {
   desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
-    subnets         = module.vpc.public_subnets
-    security_groups = [aws_security_group.ecs.id]
+    subnets          = module.vpc.public_subnets
+    security_groups  = [aws_security_group.ecs.id]
     assign_public_ip = true
   }
   load_balancer {

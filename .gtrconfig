@@ -1,0 +1,11 @@
+[worktrees]
+    dir = ../bwcom-worktrees
+
+[copy]
+    include = **/.env.local
+
+[hooks]
+    postCreate = just bootstrap
+
+[defaults]
+    ai = copilot

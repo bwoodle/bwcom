@@ -55,6 +55,7 @@ typings/
 
 # Local Python virtual environments
 .venv/
+scripts/*.egg-info/
 
 # Optional eslint cache
 .eslintcache

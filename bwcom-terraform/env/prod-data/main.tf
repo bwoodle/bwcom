@@ -46,7 +46,7 @@ output "races_table_arn" {
 module "images_bucket" {
   source = "../../modules/s3-images"
 
-  bucket_name                 = "brentwoodle.com"
+  bucket_name                  = "brentwoodle.com"
   cloudfront_distribution_arns = var.images_cloudfront_distribution_arns
 }
 
