@@ -49,7 +49,7 @@ Agents must not implement changes in the primary checkout at `/home/brent/code/b
 
 1. From the primary checkout, run `git gtr trust` once after `.gtrconfig` is first added and again whenever its hook or default-command entries change.
 2. Create a dedicated worktree with `git gtr new <branch> --from-current` so the worktree lives under `../bwcom-worktrees`.
-3. Let the trusted `postCreate` hook run `just bootstrap`, which creates `.venv`, installs Python and Next.js dependencies, and copies `bwcom-next/.env.local` into the new worktree.
+3. Let the trusted `postCreate` hook run `just bootstrap`, which creates `.venv` with `python3 -m venv` when available (falling back to `python3 -m virtualenv`), installs Python and Next.js dependencies, and copies `bwcom-next/.env.local` into the new worktree.
 4. Run all edits, tests, commits, and agent sessions from the worktree checkout, not from `/home/brent/code/bwcom`.
 5. For older branches that predate `justfile` or `.gtrconfig` (for example historical dependency branches), create the worktree with `--no-hooks` and bootstrap manually.
 

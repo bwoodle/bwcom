@@ -4,10 +4,21 @@ venv_python := "./.venv/bin/python"
 default:
   @just --list
 
-bootstrap:
-  python3 -m virtualenv .venv
+bootstrap: _ensure-venv
   {{venv_python}} -m pip install -e '.[dev]'
   cd bwcom-next && npm ci
+
+_ensure-venv:
+  if [ ! -x .venv/bin/python ]; then \
+    if python3 -m venv .venv; then \
+      :; \
+    elif python3 -m virtualenv .venv; then \
+      :; \
+    else \
+      echo "Unable to create .venv; install Python venv support or virtualenv." >&2; \
+      exit 1; \
+    fi; \
+  fi
 
 lint: _python-lint _next-lint _terraform-lint _shell-lint
 

@@ -44,7 +44,6 @@ Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environ
 
 - Node.js 22+
 - Python 3.12+
-- `virtualenv` available as `python3 -m virtualenv`
 - AWS CLI configured with credentials that can access DynamoDB and S3 in `us-west-2`
 - Terraform (for data tier changes)
 - [`just`](https://github.com/casey/just)
@@ -77,7 +76,7 @@ git gtr new feat/my-change --from-current
 cd "$(git gtr go feat/my-change)"
 ```
 
-This repository's gtr config places worktrees under `../bwcom-worktrees`, copies `bwcom-next/.env.local`, and runs `just bootstrap` after creation.
+This repository's gtr config places worktrees under `../bwcom-worktrees`, copies `bwcom-next/.env.local`, and runs `just bootstrap` after creation. `just bootstrap` creates `.venv` with `python3 -m venv` when available and falls back to `python3 -m virtualenv` when needed.
 
 For legacy branches that predate this tooling and do not yet contain the `justfile`, use `--no-hooks` and bootstrap manually after checkout.
 

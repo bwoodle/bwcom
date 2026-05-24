@@ -70,7 +70,7 @@ Do not edit code from the primary checkout at `/home/brent/code/bwcom`. Start fr
 
 1. From the primary checkout, run `git gtr trust` after `.gtrconfig` is added or whenever its hook/default command entries change.
 2. Create a worktree with `git gtr new <branch> --from-current`; new worktrees live under `../bwcom-worktrees`.
-3. The trusted `postCreate` hook runs `just bootstrap`, creates `.venv`, and copies `bwcom-next/.env.local` so the worktree is ready for lint, test, and build commands.
+3. The trusted `postCreate` hook runs `just bootstrap`, creates `.venv` with `python3 -m venv` when available (falling back to `python3 -m virtualenv`), and copies `bwcom-next/.env.local` so the worktree is ready for lint, test, and build commands.
 4. If you need to inspect an older branch that predates the worktree tooling, create it with `--no-hooks` and bootstrap it manually.
 
 ## Environments
