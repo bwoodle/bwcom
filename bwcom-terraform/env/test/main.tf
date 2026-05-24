@@ -9,17 +9,17 @@ terraform {
 module "ecs_next" {
   source = "../../modules/ecs-next"
 
-  env             = "test"
-  domain          = "test-next.brentwoodle.com"
-  certificate_arn = "arn:aws:acm:us-west-2:685339315795:certificate/efe79294-4420-4646-9809-adde5cf255da"
-  nextauth_secret = var.nextauth_secret
-  nextauth_url    = var.nextauth_url
-  google_client_id = var.google_client_id
-  google_client_secret = var.google_client_secret
-  ecr_repository_url = "685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next"
-  media_table_name         = var.media_table_name
-  races_table_name         = var.races_table_name
-  training_log_table_name  = var.training_log_table_name
+  env                     = "test"
+  domain                  = "test-next.brentwoodle.com"
+  certificate_arn         = "arn:aws:acm:us-west-2:685339315795:certificate/efe79294-4420-4646-9809-adde5cf255da"
+  nextauth_secret         = var.nextauth_secret
+  nextauth_url            = var.nextauth_url
+  google_client_id        = var.google_client_id
+  google_client_secret    = var.google_client_secret
+  ecr_repository_url      = "685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next"
+  media_table_name        = var.media_table_name
+  races_table_name        = var.races_table_name
+  training_log_table_name = var.training_log_table_name
 }
 
 variable "nextauth_secret" {

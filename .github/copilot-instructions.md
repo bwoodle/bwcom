@@ -4,7 +4,7 @@
 
 This is a monorepo with the following top-level directories:
 
-- `bwcom-next/` — Next.js 15 application (App Router, Tailwind CSS, DynamoDB)
+- `bwcom-next/` — Next.js 16 application (App Router, Tailwind CSS, DynamoDB)
 - `bwcom-terraform/` — Terraform infrastructure (modules, env tiers)
 - `photos/` — Source images (synced to S3)
 - `cfn/` — CloudFormation templates (image CDN stacks)
@@ -33,6 +33,25 @@ The execute agent (and plan agent) follow these principles:
 - Modularity — small, focused, composable units
 - Testability — every module independently testable; mock via DI
 - TDD — tests first, implementation second, refactor third
+
+## Required Change Workflow
+
+Any agent that writes or modifies code in this repository must use test-driven development:
+
+1. Add or update the relevant automated test first.
+2. Run the targeted test and observe the failure.
+3. Implement the code change.
+4. Run `just lint` and `just test` before considering the work complete.
+
+## Worktree-First Development
+
+Agents must not implement changes in the primary checkout at `/home/brent/code/bwcom`. Use that checkout only to create or manage worktrees.
+
+1. From the primary checkout, run `git gtr trust` once after `.gtrconfig` is first added and again whenever its hook or default-command entries change.
+2. Create a dedicated worktree with `git gtr new <branch> --from-current` so the worktree lives under `../bwcom-worktrees`.
+3. Let the trusted `postCreate` hook run `just bootstrap`, which creates `.venv` with `python3 -m venv` when available (falling back to `python3 -m virtualenv`), installs Python and Next.js dependencies, and copies `bwcom-next/.env.local` into the new worktree.
+4. Run all edits, tests, commits, and agent sessions from the worktree checkout, not from `/home/brent/code/bwcom`.
+5. For older branches that predate `justfile` or `.gtrconfig` (for example historical dependency branches), create the worktree with `--no-hooks` and bootstrap manually.
 
 ## Local Development
 
@@ -125,11 +144,14 @@ If the test ECS environment needs the new table name, update `scripts/deploy-tes
 ## Build, Lint, and Test
 
 ```bash
+just bootstrap   # create .venv, install Python dev dependencies, and install bwcom-next node_modules
+just lint        # repo-wide format checks, linting, type checks, terraform fmt check, shell syntax check
+just test        # repo-wide Python pytest and Next.js Vitest suites
+
 cd bwcom-next
 npm run build    # Next.js production build
-npm run lint     # ESLint
-# No test runner is currently configured — the execute agent should set up
-# a test framework (e.g., vitest) when first implementing TDD for an issue
+npm run lint     # ESLint + Prettier check
+npm run test     # Vitest unit tests
 ```
 
 ## Deploying the Test Environment
