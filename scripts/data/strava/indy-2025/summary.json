@@ -1,0 +1,83 @@
+{
+  "end_date": "2025-11-08",
+  "weeks": 15,
+  "scope": "activity:read_all read",
+  "activity_count": 290,
+  "total_miles": 1710.286,
+  "rate_limit": "200,2000",
+  "rate_usage": "3,3",
+  "sample": [
+    {
+      "start_date_local": "2025-11-08T08:00:04Z",
+      "type": "Run",
+      "name": "Indy Monumental Marathon",
+      "miles": 26.329
+    },
+    {
+      "start_date_local": "2025-11-08T07:22:24Z",
+      "type": "Run",
+      "name": "Morning Run",
+      "miles": 0.53
+    },
+    {
+      "start_date_local": "2025-11-07T05:32:52Z",
+      "type": "Walk",
+      "name": "Morning Walk",
+      "miles": 1.302
+    },
+    {
+      "start_date_local": "2025-11-06T11:54:39Z",
+      "type": "Run",
+      "name": "Treadmill yog",
+      "miles": 4.1
+    },
+    {
+      "start_date_local": "2025-11-06T06:57:11Z",
+      "type": "Walk",
+      "name": "Morning Walk",
+      "miles": 3.121
+    },
+    {
+      "start_date_local": "2025-11-05T12:09:59Z",
+      "type": "Walk",
+      "name": "Lunch Walk",
+      "miles": 1.495
+    },
+    {
+      "start_date_local": "2025-11-05T06:47:31Z",
+      "type": "Run",
+      "name": "Very light 8x1:00 fartlek & shoe test",
+      "miles": 5.321
+    },
+    {
+      "start_date_local": "2025-11-05T06:06:59Z",
+      "type": "Walk",
+      "name": "Morning Walk",
+      "miles": 3.323
+    },
+    {
+      "start_date_local": "2025-11-04T18:07:36Z",
+      "type": "Run",
+      "name": "Treadmill double yog",
+      "miles": 3.1
+    },
+    {
+      "start_date_local": "2025-11-04T06:53:58Z",
+      "type": "Run",
+      "name": "Treadmill medium",
+      "miles": 4.5
+    },
+    {
+      "start_date_local": "2025-11-04T06:13:32Z",
+      "type": "Walk",
+      "name": "Morning Walk",
+      "miles": 3.213
+    },
+    {
+      "start_date_local": "2025-11-03T06:54:16Z",
+      "type": "Run",
+      "name": "Morning Run",
+      "miles": 4.522
+    }
+  ]
+}

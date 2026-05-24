@@ -1,0 +1,2046 @@
+[
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-26#workout1",
+    "date": "2025-07-26",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n14.4 miles - 20x400 in oppressive heat. Max heart rate achieved",
+    "miles": 17.0,
+    "createdAt": "2026-05-10T03:14:05.733942+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-26#workout2",
+    "date": "2025-07-26",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.733967+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-27#workout1",
+    "date": "2025-07-27",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n7.6 mile steady run",
+    "miles": 10.4,
+    "createdAt": "2026-05-10T03:14:05.733976+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-27#workout2",
+    "date": "2025-07-27",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.733983+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-28#workout1",
+    "date": "2025-07-28",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.5 mile walk\n6.8 mile easy run",
+    "miles": 9.3,
+    "createdAt": "2026-05-10T03:14:05.733992+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-28#workout2",
+    "date": "2025-07-28",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.733999+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-29#workout1",
+    "date": "2025-07-29",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.1 mile walk\n6.5 mile easy run (treadmill)",
+    "miles": 8.6,
+    "createdAt": "2026-05-10T03:14:05.734005+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-29#workout2",
+    "date": "2025-07-29",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.2 mile easy run (treadmill)",
+    "miles": 5.2,
+    "createdAt": "2026-05-10T03:14:05.734009+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-30#workout1",
+    "date": "2025-07-30",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.0 mile walk\n10.3 miles - 12x800 (50s yog) fartlek",
+    "miles": 12.3,
+    "createdAt": "2026-05-10T03:14:05.734014+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-30#workout2",
+    "date": "2025-07-30",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734021+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-31#workout1",
+    "date": "2025-07-31",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n8.7 mile easy run",
+    "miles": 11.4,
+    "createdAt": "2026-05-10T03:14:05.734025+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-07-31#workout2",
+    "date": "2025-07-31",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.734029+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-01#workout1",
+    "date": "2025-08-01",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n8.3 mile easy run",
+    "miles": 10.9,
+    "createdAt": "2026-05-10T03:14:05.734034+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-01#workout2",
+    "date": "2025-08-01",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734037+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-02#workout1",
+    "date": "2025-08-02",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "5.9 mile warmup\n9.6 miles - 13' & 15' split tempo",
+    "miles": 15.5,
+    "createdAt": "2026-05-10T03:14:05.734045+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-02#workout2",
+    "date": "2025-08-02",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "8.4 miles - double easy (treadmill)",
+    "miles": 8.4,
+    "createdAt": "2026-05-10T03:14:05.734050+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-03#workout1",
+    "date": "2025-08-03",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n10.3 mile easy run",
+    "miles": 12.7,
+    "createdAt": "2026-05-10T03:14:05.734055+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-03#workout2",
+    "date": "2025-08-03",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.4 mile easy run (treadmill)",
+    "miles": 5.4,
+    "createdAt": "2026-05-10T03:14:05.734059+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-04#workout1",
+    "date": "2025-08-04",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.5 mile walk\n7.3 miles - Early taste of fall",
+    "miles": 9.8,
+    "createdAt": "2026-05-10T03:14:05.734064+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-04#workout2",
+    "date": "2025-08-04",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.0 mile easy run (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734068+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-05#workout1",
+    "date": "2025-08-05",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.0 mile walk\n9.1 miles - 11x3:00 tempo (1:00 jog)",
+    "miles": 11.1,
+    "createdAt": "2026-05-10T03:14:05.734072+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-05#workout2",
+    "date": "2025-08-05",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.7 mile easy run (treadmill)",
+    "miles": 5.7,
+    "createdAt": "2026-05-10T03:14:05.734076+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-06#workout1",
+    "date": "2025-08-06",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n8.9 mile easy run",
+    "miles": 11.1,
+    "createdAt": "2026-05-10T03:14:05.734081+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-06#workout2",
+    "date": "2025-08-06",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.7 mile easy run (treadmill)",
+    "miles": 4.7,
+    "createdAt": "2026-05-10T03:14:05.734084+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-07#workout1",
+    "date": "2025-08-07",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n7.3 miles - 12x1:00/1:00 fartlek",
+    "miles": 9.9,
+    "createdAt": "2026-05-10T03:14:05.734092+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-08#workout1",
+    "date": "2025-08-08",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n12.1 miles - Making up for yesterday\u2019s missed double",
+    "miles": 14.8,
+    "createdAt": "2026-05-10T03:14:05.734102+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-08#workout2",
+    "date": "2025-08-08",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 mile easy run (treadmill)",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734107+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-09#workout1",
+    "date": "2025-08-09",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n9.1 miles - LR tomorrow",
+    "miles": 11.3,
+    "createdAt": "2026-05-10T03:14:05.734112+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-09#workout2",
+    "date": "2025-08-09",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734116+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-10#workout1",
+    "date": "2025-08-10",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n22.1 miles - HR-based progression",
+    "miles": 24.3,
+    "createdAt": "2026-05-10T03:14:05.734120+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-10#workout2",
+    "date": "2025-08-10",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.5 mile easy run (treadmill)",
+    "miles": 4.5,
+    "createdAt": "2026-05-10T03:14:05.734124+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-11#workout1",
+    "date": "2025-08-11",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n7.5 miles - Easy w 4x30s",
+    "miles": 9.9,
+    "createdAt": "2026-05-10T03:14:05.734131+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-11#workout2",
+    "date": "2025-08-11",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734135+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-12#workout1",
+    "date": "2025-08-12",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.1 mile walk\n8.4 mile easy run (treadmill)",
+    "miles": 10.5,
+    "createdAt": "2026-05-10T03:14:05.734140+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-12#workout2",
+    "date": "2025-08-12",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.5 mile easy run (treadmill)",
+    "miles": 4.5,
+    "createdAt": "2026-05-10T03:14:05.734144+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-13#workout1",
+    "date": "2025-08-13",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n7.5 miles - 2x1:00, 4xMile, 1x600",
+    "miles": 9.9,
+    "createdAt": "2026-05-10T03:14:05.734148+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-13#workout2",
+    "date": "2025-08-13",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "6.4 miles - double easy (treadmill)",
+    "miles": 6.4,
+    "createdAt": "2026-05-10T03:14:05.734152+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-14#workout1",
+    "date": "2025-08-14",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n7.0 miles - Smedium",
+    "miles": 9.4,
+    "createdAt": "2026-05-10T03:14:05.734157+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-14#workout2",
+    "date": "2025-08-14",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "6.2 mile easy run (treadmill)",
+    "miles": 6.2,
+    "createdAt": "2026-05-10T03:14:05.734161+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-15#workout1",
+    "date": "2025-08-15",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.5 mile walk\n8.6 miles - Tired\n4.5 mile easy run (treadmill)",
+    "miles": 15.6,
+    "createdAt": "2026-05-10T03:14:05.734169+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-16#workout1",
+    "date": "2025-08-16",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.4 mile walk\n13.8 miles - Executive decision",
+    "miles": 15.2,
+    "createdAt": "2026-05-10T03:14:05.734174+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-17#workout1",
+    "date": "2025-08-17",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.9 mile walk\n12.3 mile easy run (treadmill)",
+    "miles": 15.2,
+    "createdAt": "2026-05-10T03:14:05.734180+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-17#workout2",
+    "date": "2025-08-17",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.7 mile easy run (treadmill)",
+    "miles": 5.7,
+    "createdAt": "2026-05-10T03:14:05.734183+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-18#workout1",
+    "date": "2025-08-18",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.1 mile walk\n6.4 mile easy run (treadmill)",
+    "miles": 8.5,
+    "createdAt": "2026-05-10T03:14:05.734196+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-18#workout2",
+    "date": "2025-08-18",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.8 miles - double easy (treadmill)",
+    "miles": 5.8,
+    "createdAt": "2026-05-10T03:14:05.734200+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-19#workout1",
+    "date": "2025-08-19",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n9.1 miles - 12x1:00/1:00 not too fast",
+    "miles": 11.8,
+    "createdAt": "2026-05-10T03:14:05.734204+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-19#workout2",
+    "date": "2025-08-19",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 miles - double easy (treadmill)",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734208+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-20#workout1",
+    "date": "2025-08-20",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.5 mile walk\n7.5 mile easy run",
+    "miles": 10.0,
+    "createdAt": "2026-05-10T03:14:05.734213+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-20#workout2",
+    "date": "2025-08-20",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.0 miles - double easy (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734217+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-21#workout1",
+    "date": "2025-08-21",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n9.1 miles - Wasp battle",
+    "miles": 11.3,
+    "createdAt": "2026-05-10T03:14:05.734222+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-21#workout2",
+    "date": "2025-08-21",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734226+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-22#workout1",
+    "date": "2025-08-22",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.3 mile walk\n9.2 miles - 20x1:00 fartlek",
+    "miles": 11.5,
+    "createdAt": "2026-05-10T03:14:05.734230+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-22#workout2",
+    "date": "2025-08-22",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.8 mile easy run (treadmill)",
+    "miles": 4.8,
+    "createdAt": "2026-05-10T03:14:05.734234+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-23#workout1",
+    "date": "2025-08-23",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n9.4 mile easy run",
+    "miles": 12.2,
+    "createdAt": "2026-05-10T03:14:05.734239+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-23#workout2",
+    "date": "2025-08-23",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.734243+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-24#workout1",
+    "date": "2025-08-24",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n24.1 miles - 4 weeks down, 11 to go",
+    "miles": 26.3,
+    "createdAt": "2026-05-10T03:14:05.734247+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-25#workout1",
+    "date": "2025-08-25",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n4.5 miles - super easy (treadmill)",
+    "miles": 7.6,
+    "createdAt": "2026-05-10T03:14:05.734252+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-25#workout2",
+    "date": "2025-08-25",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.7 mile easy run (treadmill)",
+    "miles": 4.7,
+    "createdAt": "2026-05-10T03:14:05.734256+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-26#workout1",
+    "date": "2025-08-26",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.0 mile walk\n7.3 miles - Nice day",
+    "miles": 9.3,
+    "createdAt": "2026-05-10T03:14:05.734261+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-26#workout2",
+    "date": "2025-08-26",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.0 mile easy run (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734264+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-27#workout1",
+    "date": "2025-08-27",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.3 mile walk\n13.2 miles - 30x1:00 (0:45 jog) fartlek",
+    "miles": 14.5,
+    "createdAt": "2026-05-10T03:14:05.734268+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-27#workout2",
+    "date": "2025-08-27",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.4 mile easy run (treadmill)",
+    "miles": 5.4,
+    "createdAt": "2026-05-10T03:14:05.734272+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-28#workout1",
+    "date": "2025-08-28",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n10.0 miles - Medium ish",
+    "miles": 12.6,
+    "createdAt": "2026-05-10T03:14:05.734280+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-28#workout2",
+    "date": "2025-08-28",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.5 mile easy run (treadmill)",
+    "miles": 4.5,
+    "createdAt": "2026-05-10T03:14:05.734290+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-29#workout1",
+    "date": "2025-08-29",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n5.4 mile easy run (treadmill)",
+    "miles": 8.0,
+    "createdAt": "2026-05-10T03:14:05.734295+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-29#workout2",
+    "date": "2025-08-29",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.4 mile easy run (treadmill)",
+    "miles": 5.4,
+    "createdAt": "2026-05-10T03:14:05.734299+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-30#workout1",
+    "date": "2025-08-30",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n16.7 miles - 10x1000, 600, 2x200 (200 jog)",
+    "miles": 19.4,
+    "createdAt": "2026-05-10T03:14:05.734304+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-30#workout2",
+    "date": "2025-08-30",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "7.4 mile easy run (treadmill)",
+    "miles": 7.4,
+    "createdAt": "2026-05-10T03:14:05.734308+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-31#workout1",
+    "date": "2025-08-31",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n9.0 miles - 69 days to go",
+    "miles": 11.7,
+    "createdAt": "2026-05-10T03:14:05.734312+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-08-31#workout2",
+    "date": "2025-08-31",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.734316+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-01#workout1",
+    "date": "2025-09-01",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n17.1 miles - 73 dew point MLR",
+    "miles": 19.3,
+    "createdAt": "2026-05-10T03:14:05.734321+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-01#workout2",
+    "date": "2025-09-01",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734324+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-02#workout1",
+    "date": "2025-09-02",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n6.4 miles - Chill w/ 8x100m",
+    "miles": 9.1,
+    "createdAt": "2026-05-10T03:14:05.734329+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-02#workout2",
+    "date": "2025-09-02",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.1 mile easy run (treadmill)",
+    "miles": 5.1,
+    "createdAt": "2026-05-10T03:14:05.734333+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-03#workout1",
+    "date": "2025-09-03",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.5 mile walk\n15.1 miles - 10x3:00 (40-50s jog) + GA MLR",
+    "miles": 16.6,
+    "createdAt": "2026-05-10T03:14:05.734337+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-03#workout2",
+    "date": "2025-09-03",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.3 mile easy run (treadmill)",
+    "miles": 5.3,
+    "createdAt": "2026-05-10T03:14:05.734340+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-04#workout1",
+    "date": "2025-09-04",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n7.4 miles - Chill w/ 5x133m strides",
+    "miles": 9.6,
+    "createdAt": "2026-05-10T03:14:05.734345+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-04#workout2",
+    "date": "2025-09-04",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.3 mile easy run (treadmill)",
+    "miles": 5.3,
+    "createdAt": "2026-05-10T03:14:05.734349+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-05#workout1",
+    "date": "2025-09-05",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n7.1 miles - Easy w/ 7x100m",
+    "miles": 9.7,
+    "createdAt": "2026-05-10T03:14:05.734354+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-05#workout2",
+    "date": "2025-09-05",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.8 mile easy run (treadmill)",
+    "miles": 4.8,
+    "createdAt": "2026-05-10T03:14:05.734357+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-06#workout1",
+    "date": "2025-09-06",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.6 mile walk\n20.1 miles - 20-15-10-5 starting at GMP and ramping",
+    "miles": 21.7,
+    "createdAt": "2026-05-10T03:14:05.734361+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-06#workout2",
+    "date": "2025-09-06",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734368+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-07#workout1",
+    "date": "2025-09-07",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n9.2 mile easy run",
+    "miles": 11.8,
+    "createdAt": "2026-05-10T03:14:05.734377+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-07#workout2",
+    "date": "2025-09-07",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.4 mile easy run (treadmill)",
+    "miles": 4.4,
+    "createdAt": "2026-05-10T03:14:05.734381+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-08#workout1",
+    "date": "2025-09-08",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.6 mile walk\n8.1 mile easy run",
+    "miles": 10.7,
+    "createdAt": "2026-05-10T03:14:05.734385+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-09#workout1",
+    "date": "2025-09-09",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.3 mile walk\n13.2 miles - Boston GA + 12x quarter mile fartlek",
+    "miles": 15.5,
+    "createdAt": "2026-05-10T03:14:05.734389+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-10#workout1",
+    "date": "2025-09-10",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n10.5 miles - No idea where the hell I'm going",
+    "miles": 12.7,
+    "createdAt": "2026-05-10T03:14:05.734394+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-11#workout1",
+    "date": "2025-09-11",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n12.1 miles - GA MLR",
+    "miles": 14.5,
+    "createdAt": "2026-05-10T03:14:05.734399+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-13#workout1",
+    "date": "2025-09-13",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "5.0 mile easy run (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734403+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-14#workout1",
+    "date": "2025-09-14",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "7.4 mile easy run (treadmill)",
+    "miles": 7.4,
+    "createdAt": "2026-05-10T03:14:05.734407+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-15#workout2",
+    "date": "2025-09-15",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.2 mile easy run (treadmill)",
+    "miles": 5.2,
+    "createdAt": "2026-05-10T03:14:05.734410+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-16#workout1",
+    "date": "2025-09-16",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n3.3 miles - 8x100m",
+    "miles": 6.0,
+    "createdAt": "2026-05-10T03:14:05.734415+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-16#workout2",
+    "date": "2025-09-16",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734419+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-17#workout1",
+    "date": "2025-09-17",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n4.9 miles - 7x133 strides",
+    "miles": 8.0,
+    "createdAt": "2026-05-10T03:14:05.734424+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-17#workout2",
+    "date": "2025-09-17",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "6.0 miles - double (treadmill)",
+    "miles": 6.0,
+    "createdAt": "2026-05-10T03:14:05.734428+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-18#workout1",
+    "date": "2025-09-18",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n8.3 mile easy run",
+    "miles": 11.1,
+    "createdAt": "2026-05-10T03:14:05.734432+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-18#workout2",
+    "date": "2025-09-18",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.0 mile easy run (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734436+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-19#workout1",
+    "date": "2025-09-19",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n7.7 miles - Easy w 8x100",
+    "miles": 10.8,
+    "createdAt": "2026-05-10T03:14:05.734440+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-19#workout2",
+    "date": "2025-09-19",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734444+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-20#workout1",
+    "date": "2025-09-20",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "22.1 miles - Slothy 4-3-2-1. MP but not ME",
+    "miles": 22.1,
+    "createdAt": "2026-05-10T03:14:05.734447+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-21#workout1",
+    "date": "2025-09-21",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n9.1 miles - Ez w 6x100",
+    "miles": 11.8,
+    "createdAt": "2026-05-10T03:14:05.734454+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-21#workout2",
+    "date": "2025-09-21",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "6.8 miles - dbl yog (treadmill)",
+    "miles": 6.8,
+    "createdAt": "2026-05-10T03:14:05.734458+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-22#workout1",
+    "date": "2025-09-22",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n2.7 mile easy run",
+    "miles": 5.1,
+    "createdAt": "2026-05-10T03:14:05.734466+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-22#workout2",
+    "date": "2025-09-22",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "8.8 mile easy run (treadmill)",
+    "miles": 8.8,
+    "createdAt": "2026-05-10T03:14:05.734470+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-23#workout1",
+    "date": "2025-09-23",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.5 mile walk\n11.5 miles - 15x300 speed maintenance 55-52, 2:00 jog between",
+    "miles": 14.0,
+    "createdAt": "2026-05-10T03:14:05.734476+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-23#workout2",
+    "date": "2025-09-23",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run (treadmill)",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.734480+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-24#workout1",
+    "date": "2025-09-24",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n8.1 mile easy run",
+    "miles": 11.2,
+    "createdAt": "2026-05-10T03:14:05.734484+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-24#workout2",
+    "date": "2025-09-24",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.734488+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-25#workout1",
+    "date": "2025-09-25",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.8 mile walk\n13.7 miles - 12x3:00 LT1 -> LT2 progression (30-60s jog recovery)",
+    "miles": 15.5,
+    "createdAt": "2026-05-10T03:14:05.734492+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-25#workout2",
+    "date": "2025-09-25",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.7 mile easy run (treadmill)",
+    "miles": 5.7,
+    "createdAt": "2026-05-10T03:14:05.734496+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-26#workout1",
+    "date": "2025-09-26",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n5.9 miles - I know the weather is getting better when my optical hrm stops working",
+    "miles": 9.0,
+    "createdAt": "2026-05-10T03:14:05.734500+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-26#workout2",
+    "date": "2025-09-26",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 mile easy run (treadmill)",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734504+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-27#workout1",
+    "date": "2025-09-27",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n20.3 miles - Hilly long progression",
+    "miles": 23.1,
+    "createdAt": "2026-05-10T03:14:05.734509+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-27#workout2",
+    "date": "2025-09-27",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.8 miles - late double yog (treadmill)",
+    "miles": 4.8,
+    "createdAt": "2026-05-10T03:14:05.734513+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-28#workout1",
+    "date": "2025-09-28",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n9.6 miles - Transitioning to the next mesocycle",
+    "miles": 12.3,
+    "createdAt": "2026-05-10T03:14:05.734518+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-28#workout2",
+    "date": "2025-09-28",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734522+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-29#workout1",
+    "date": "2025-09-29",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n7.2 miles - Easy w/ 8x100",
+    "miles": 9.9,
+    "createdAt": "2026-05-10T03:14:05.734527+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-29#workout2",
+    "date": "2025-09-29",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.2 mile easy run (treadmill)",
+    "miles": 5.2,
+    "createdAt": "2026-05-10T03:14:05.734530+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-30#workout1",
+    "date": "2025-09-30",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.1 mile walk\n11.0 miles - Tune up 5x3:00 ish at gHMP",
+    "miles": 13.1,
+    "createdAt": "2026-05-10T03:14:05.734534+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-09-30#workout2",
+    "date": "2025-09-30",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "6.1 mile easy run (treadmill)",
+    "miles": 6.1,
+    "createdAt": "2026-05-10T03:14:05.734541+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-01#workout1",
+    "date": "2025-10-01",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.0 mile walk\n9.2 mile easy run",
+    "miles": 12.2,
+    "createdAt": "2026-05-10T03:14:05.734546+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-01#workout2",
+    "date": "2025-10-01",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run (treadmill)",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.734552+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-02#workout1",
+    "date": "2025-10-02",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.4 mile walk\n8.5 miles - Quick & easy R/W",
+    "miles": 9.9,
+    "createdAt": "2026-05-10T03:14:05.734557+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-02#workout2",
+    "date": "2025-10-02",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 miles - Vitamin D",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734561+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-03#workout1",
+    "date": "2025-10-03",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n6.2 mile easy run",
+    "miles": 8.9,
+    "createdAt": "2026-05-10T03:14:05.734565+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-04#workout1",
+    "date": "2025-10-04",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.6 mile walk\n2.8 mile warmup\nIrving Oktoberfest half TT (1:13:26)\n5.7 mile cooldown / awards waiting",
+    "miles": 23.2,
+    "createdAt": "2026-05-10T03:14:05.734575+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-05#workout1",
+    "date": "2025-10-05",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.0 mile walk\n7.0 mile easy run",
+    "miles": 10.0,
+    "createdAt": "2026-05-10T03:14:05.734579+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-05#workout2",
+    "date": "2025-10-05",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 mile easy run (treadmill)",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734583+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-06#workout1",
+    "date": "2025-10-06",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.0 mile walk\n8.5 mile easy run",
+    "miles": 11.5,
+    "createdAt": "2026-05-10T03:14:05.734587+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-06#workout2",
+    "date": "2025-10-06",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run (treadmill)",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.734590+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-07#workout1",
+    "date": "2025-10-07",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n7.9 mile easy run",
+    "miles": 10.1,
+    "createdAt": "2026-05-10T03:14:05.734595+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-07#workout2",
+    "date": "2025-10-07",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.3 mile easy run (treadmill)",
+    "miles": 5.3,
+    "createdAt": "2026-05-10T03:14:05.734598+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-08#workout1",
+    "date": "2025-10-08",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.1 mile walk\n12.8 miles - 6x1600 LT2 (5:25->5:17), 1:00/200m yog between",
+    "miles": 14.9,
+    "createdAt": "2026-05-10T03:14:05.734602+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-08#workout2",
+    "date": "2025-10-08",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.4 mile easy run (treadmill)",
+    "miles": 5.4,
+    "createdAt": "2026-05-10T03:14:05.734606+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-09#workout1",
+    "date": "2025-10-09",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.3 mile walk\n7.5 mile easy run",
+    "miles": 9.8,
+    "createdAt": "2026-05-10T03:14:05.734611+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-09#workout2",
+    "date": "2025-10-09",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.5 mile easy run (treadmill)",
+    "miles": 5.5,
+    "createdAt": "2026-05-10T03:14:05.734614+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-10#workout1",
+    "date": "2025-10-10",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.3 mile walk\n7.3 mile easy run",
+    "miles": 9.6,
+    "createdAt": "2026-05-10T03:14:05.734618+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-10#workout2",
+    "date": "2025-10-10",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.1 mile easy run (treadmill)",
+    "miles": 5.1,
+    "createdAt": "2026-05-10T03:14:05.734624+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-11#workout1",
+    "date": "2025-10-11",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n22.5 miles - Bog standard long run",
+    "miles": 24.9,
+    "createdAt": "2026-05-10T03:14:05.734629+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-11#workout2",
+    "date": "2025-10-11",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734633+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-12#workout1",
+    "date": "2025-10-12",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n9.3 mile easy run",
+    "miles": 12.4,
+    "createdAt": "2026-05-10T03:14:05.734637+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-12#workout2",
+    "date": "2025-10-12",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.2 mile easy run (treadmill)",
+    "miles": 4.2,
+    "createdAt": "2026-05-10T03:14:05.734643+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-13#workout1",
+    "date": "2025-10-13",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n14.0 miles - Aborted workout",
+    "miles": 16.7,
+    "createdAt": "2026-05-10T03:14:05.734648+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-13#workout2",
+    "date": "2025-10-13",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734654+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-14#workout1",
+    "date": "2025-10-14",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n8.6 miles - Learning about Astrophage",
+    "miles": 11.3,
+    "createdAt": "2026-05-10T03:14:05.734659+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-14#workout2",
+    "date": "2025-10-14",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.4 mile easy run (treadmill)",
+    "miles": 4.4,
+    "createdAt": "2026-05-10T03:14:05.734662+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-15#workout1",
+    "date": "2025-10-15",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.9 mile walk\n9.0 miles - Chill w/ 4x133",
+    "miles": 11.9,
+    "createdAt": "2026-05-10T03:14:05.734667+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-15#workout2",
+    "date": "2025-10-15",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.0 mile easy run (treadmill)",
+    "miles": 4.0,
+    "createdAt": "2026-05-10T03:14:05.734670+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-16#workout1",
+    "date": "2025-10-16",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.0 mile walk\n11.4 miles - 13x600 @ 5k pace",
+    "miles": 13.4,
+    "createdAt": "2026-05-10T03:14:05.734674+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-16#workout2",
+    "date": "2025-10-16",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run (treadmill)",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.734678+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-17#workout1",
+    "date": "2025-10-17",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n10.7 miles - Easyish with 10x133ish",
+    "miles": 13.4,
+    "createdAt": "2026-05-10T03:14:05.734682+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-17#workout2",
+    "date": "2025-10-17",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.2 mile easy run (treadmill)",
+    "miles": 5.2,
+    "createdAt": "2026-05-10T03:14:05.734686+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-18#workout1",
+    "date": "2025-10-18",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n9.0 miles - Dress rehearsal tomorrow",
+    "miles": 12.1,
+    "createdAt": "2026-05-10T03:14:05.734691+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-19#workout1",
+    "date": "2025-10-19",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.2 mile walk\n21.0 miles - Mar-a-thon routine dry run. 4x1:00, 4x5km",
+    "miles": 23.2,
+    "createdAt": "2026-05-10T03:14:05.734695+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-19#workout2",
+    "date": "2025-10-19",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "3.6 mile easy run (treadmill)",
+    "miles": 3.6,
+    "createdAt": "2026-05-10T03:14:05.734698+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-20#workout1",
+    "date": "2025-10-20",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n7.6 mile easy run",
+    "miles": 10.4,
+    "createdAt": "2026-05-10T03:14:05.734703+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-20#workout2",
+    "date": "2025-10-20",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.1 mile easy run (treadmill)",
+    "miles": 5.1,
+    "createdAt": "2026-05-10T03:14:05.734706+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-21#workout1",
+    "date": "2025-10-21",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n6.4 mile easy run",
+    "miles": 9.2,
+    "createdAt": "2026-05-10T03:14:05.734714+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-21#workout2",
+    "date": "2025-10-21",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734717+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-22#workout1",
+    "date": "2025-10-22",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n7.9 miles - Chill w/ 6x133",
+    "miles": 10.6,
+    "createdAt": "2026-05-10T03:14:05.734725+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-22#workout2",
+    "date": "2025-10-22",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.0 mile easy run (treadmill)",
+    "miles": 5.0,
+    "createdAt": "2026-05-10T03:14:05.734883+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-23#workout1",
+    "date": "2025-10-23",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.0 mile walk\n12.0 miles - 4x30s, 16x600m fartlek (30-45s jog between)",
+    "miles": 13.0,
+    "createdAt": "2026-05-10T03:14:05.734900+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-23#workout2",
+    "date": "2025-10-23",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.6 mile easy run (treadmill)",
+    "miles": 4.6,
+    "createdAt": "2026-05-10T03:14:05.734909+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-24#workout1",
+    "date": "2025-10-24",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n6.5 miles - Chill with 3x133m",
+    "miles": 9.6,
+    "createdAt": "2026-05-10T03:14:05.734917+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-24#workout2",
+    "date": "2025-10-24",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.734922+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-25#workout1",
+    "date": "2025-10-25",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.2 mile walk\n9.6 mile easy run",
+    "miles": 12.8,
+    "createdAt": "2026-05-10T03:14:05.734927+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-26#workout1",
+    "date": "2025-10-26",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.4 mile walk\n18.5 miles - 12 prog to MP (6:14->5:33) - break - 3T w/ run to the barn (5:22, 5:26, 5:13)",
+    "miles": 20.9,
+    "createdAt": "2026-05-10T03:14:05.734932+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-26#workout2",
+    "date": "2025-10-26",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "4.3 mile easy run (treadmill)",
+    "miles": 4.3,
+    "createdAt": "2026-05-10T03:14:05.734936+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-27#workout1",
+    "date": "2025-10-27",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "7.5 miles - Javier's last run \ud83d\ude2d",
+    "miles": 7.5,
+    "createdAt": "2026-05-10T03:14:05.734962+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-27#workout2",
+    "date": "2025-10-27",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.3 mile easy run (treadmill)",
+    "miles": 5.3,
+    "createdAt": "2026-05-10T03:14:05.734985+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-28#workout1",
+    "date": "2025-10-28",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.2 mile walk\n5.0 mile easy run",
+    "miles": 8.2,
+    "createdAt": "2026-05-10T03:14:05.734996+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-28#workout2",
+    "date": "2025-10-28",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.6 mile easy run (treadmill)",
+    "miles": 5.6,
+    "createdAt": "2026-05-10T03:14:05.735003+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-29#workout1",
+    "date": "2025-10-29",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n6.4 mile easy run (treadmill)",
+    "miles": 9.5,
+    "createdAt": "2026-05-10T03:14:05.735014+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-29#workout2",
+    "date": "2025-10-29",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "3.8 miles - double easy (treadmill)",
+    "miles": 3.8,
+    "createdAt": "2026-05-10T03:14:05.735028+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-30#workout1",
+    "date": "2025-10-30",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.7 mile walk\n9.6 miles - 9 days out: 5k @ M (17:15), 3x1 @ T (5:22-5:14)",
+    "miles": 12.3,
+    "createdAt": "2026-05-10T03:14:05.735039+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-31#workout1",
+    "date": "2025-10-31",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n6.0 mile easy run",
+    "miles": 9.1,
+    "createdAt": "2026-05-10T03:14:05.735049+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-10-31#workout2",
+    "date": "2025-10-31",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.7 mile easy run (treadmill)",
+    "miles": 5.7,
+    "createdAt": "2026-05-10T03:14:05.735067+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-01#workout1",
+    "date": "2025-11-01",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.3 mile walk\n8.5 miles - taper HR zone test (treadmill)",
+    "miles": 11.8,
+    "createdAt": "2026-05-10T03:14:05.735099+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-01#workout2",
+    "date": "2025-11-01",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "5.4 mile easy run (treadmill)",
+    "miles": 5.4,
+    "createdAt": "2026-05-10T03:14:05.735114+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-02#workout1",
+    "date": "2025-11-02",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.3 mile walk\n9.7 miles - 12x1:00 fartlek unpaced",
+    "miles": 13.0,
+    "createdAt": "2026-05-10T03:14:05.735129+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-03#workout1",
+    "date": "2025-11-03",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "2.8 mile walk\n4.5 mile easy run",
+    "miles": 7.3,
+    "createdAt": "2026-05-10T03:14:05.735150+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-04#workout1",
+    "date": "2025-11-04",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.2 mile walk\n4.5 miles - medium (treadmill)",
+    "miles": 7.7,
+    "createdAt": "2026-05-10T03:14:05.735169+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-04#workout2",
+    "date": "2025-11-04",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "3.1 mile easy run (treadmill)",
+    "miles": 3.1,
+    "createdAt": "2026-05-10T03:14:05.735182+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-05#workout1",
+    "date": "2025-11-05",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.3 mile walk\n5.3 miles - Very light 8x1:00 fartlek & shoe test",
+    "miles": 8.6,
+    "createdAt": "2026-05-10T03:14:05.735194+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-05#workout2",
+    "date": "2025-11-05",
+    "entryType": "daily",
+    "slot": "workout2",
+    "description": "1.5 mile walk",
+    "miles": 1.5,
+    "createdAt": "2026-05-10T03:14:05.735200+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-06#workout1",
+    "date": "2025-11-06",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "3.1 mile walk\n4.1 mile easy run (treadmill)",
+    "miles": 7.2,
+    "createdAt": "2026-05-10T03:14:05.735217+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-07#workout1",
+    "date": "2025-11-07",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "1.3 mile walk",
+    "miles": 1.3,
+    "createdAt": "2026-05-10T03:14:05.735226+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "daily#2025-11-08#workout1",
+    "date": "2025-11-08",
+    "entryType": "daily",
+    "slot": "workout1",
+    "description": "0.5 mile warmup\nIndy Monumental Marathon (2:28:27)",
+    "miles": 26.8,
+    "createdAt": "2026-05-10T03:14:05.735246+00:00",
+    "highlight": true
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-07-27",
+    "date": "2025-07-27",
+    "entryType": "week",
+    "description": "Opening weekend of the Indy build.\n20x400 in oppressive heat on Saturday.\n35.9 miles across the first two days.",
+    "createdAt": "2026-05-10T03:14:05.735348+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-08-03",
+    "date": "2025-08-03",
+    "entryType": "week",
+    "description": "First full week of the Indy block.\n117.4 miles total.\n12x800 (50s yog) fartlek.\n13' & 15' split tempo.",
+    "createdAt": "2026-05-10T03:14:05.735378+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-08-10",
+    "date": "2025-08-10",
+    "entryType": "week",
+    "description": "Big aerobic week with 122.0 miles total.\n11x3:00 tempo (1:00 jog).\n12x1:00/1:00 fartlek.\n22.1 mile HR-based progression long run.",
+    "createdAt": "2026-05-10T03:14:05.735400+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-08-17",
+    "date": "2025-08-17",
+    "entryType": "week",
+    "description": "113.1 miles during a steadier week.\n2x1:00, 4xMile, 1x600 on Wednesday.\nThe rest of the week was mostly volume and doubles.",
+    "createdAt": "2026-05-10T03:14:05.735415+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-08-24",
+    "date": "2025-08-24",
+    "entryType": "week",
+    "description": "High-volume week with 121.5 miles total.\n12x1:00/1:00 not too fast.\n20x1:00 fartlek.\n24.1 mile long run: 4 weeks down, 11 to go.",
+    "createdAt": "2026-05-10T03:14:05.735429+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-08-31",
+    "date": "2025-08-31",
+    "entryType": "week",
+    "description": "119.7 miles total.\n30x1:00 (0:45 jog) fartlek was the key midweek workout.\nLong Saturday volume plus steady doubles kept the week big.",
+    "createdAt": "2026-05-10T03:14:05.735443+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-09-07",
+    "date": "2025-09-07",
+    "entryType": "week",
+    "description": "131.6 miles and one of the biggest weeks of the block.\n73 dew point MLR on Monday.\n10x3:00 (40-50s jog) + GA MLR on Wednesday.\n20-15-10-5 starting at GMP and ramping on Saturday.",
+    "createdAt": "2026-05-10T03:14:05.735455+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-09-14",
+    "date": "2025-09-14",
+    "entryType": "week",
+    "description": "Down week at 65.8 miles total.\nBoston GA + 12x quarter mile fartlek on Tuesday.\nGA MLR on Thursday.\nA lighter weekend reset the block.",
+    "createdAt": "2026-05-10T03:14:05.735467+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-09-21",
+    "date": "2025-09-21",
+    "entryType": "week",
+    "description": "101.7 miles total.\nMostly a rebuild week after the down stretch.\nSlothy 4-3-2-1. MP but not ME on Saturday.",
+    "createdAt": "2026-05-10T03:14:05.735479+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-09-28",
+    "date": "2025-09-28",
+    "entryType": "week",
+    "description": "Strong week with 129.4 miles total.\n15x300 speed maintenance 55-52, 2:00 jog between.\n12x3:00 LT1 -> LT2 progression.\nHilly long progression on Saturday.",
+    "createdAt": "2026-05-10T03:14:05.735492+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-10-05",
+    "date": "2025-10-05",
+    "entryType": "week",
+    "description": "115.1 miles total.\nTune up 5x3:00 ish at gHMP on Tuesday.\nIrving Oktoberfest half TT on Saturday.\nA good bridge week toward the final marathon-specific block.",
+    "createdAt": "2026-05-10T03:14:05.735505+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-10-12",
+    "date": "2025-10-12",
+    "entryType": "week",
+    "description": "128.6 miles total.\n6x1600 LT2 (5:25->5:17), 1:00/200m yog between on Wednesday.\nThe rest of the week stayed high-volume with steady doubles.",
+    "createdAt": "2026-05-10T03:14:05.735519+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-10-19",
+    "date": "2025-10-19",
+    "entryType": "week",
+    "description": "129.1 miles total.\nAborted workout on Monday.\n13x600 @ 5k pace on Thursday.\nMar-a-thon routine dry run. 4x1:00, 4x5km on Sunday.",
+    "createdAt": "2026-05-10T03:14:05.735541+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-10-26",
+    "date": "2025-10-26",
+    "entryType": "week",
+    "description": "115.7 miles total.\n4x30s, 16x600m fartlek (30-45s jog between) on Thursday.\n12 prog to MP (6:14->5:33) - break - 3T w/ run to the barn (5:22, 5:26, 5:13) on Sunday.",
+    "createdAt": "2026-05-10T03:14:05.735554+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-11-02",
+    "date": "2025-11-02",
+    "entryType": "week",
+    "description": "97.2 miles total.\n9 days out: 5k @ M (17:15), 3x1 @ T (5:22-5:14).\nTreadmill taper HR zone test.\n12x1:00 fartlek unpaced.\nThe last serious work before Indy.",
+    "createdAt": "2026-05-10T03:14:05.735567+00:00"
+  },
+  {
+    "logId": "indy-2025",
+    "sk": "week#2025-11-09",
+    "date": "2025-11-09",
+    "entryType": "week",
+    "description": "Race week.\nVery light 8x1:00 fartlek & shoe test on Wednesday.\nIndy Monumental Marathon on Saturday (2:28:27).\n63.5 miles total for the partial taper / race week.",
+    "createdAt": "2026-05-10T03:14:05.735580+00:00"
+  }
+]

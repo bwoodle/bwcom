@@ -1,0 +1,68 @@
+{
+  "daily#2025-08-02#workout1": {
+    "description": "5.9 mile warmup\n9.6 miles - 13' & 15' split tempo",
+    "highlight": true
+  },
+  "daily#2025-08-30#workout1": {
+    "highlight": true
+  },
+  "daily#2025-07-27#workout1": {
+    "description": "2.8 mile walk\n7.6 mile steady run"
+  },
+  "daily#2025-10-04#workout1": {
+    "description": "1.6 mile walk\n2.8 mile warmup\nIrving Oktoberfest half TT (1:13:26)\n5.7 mile cooldown / awards waiting",
+    "highlight": true
+  },
+  "daily#2025-11-08#workout1": {
+    "description": "0.5 mile warmup\nIndy Monumental Marathon (2:28:27)",
+    "highlight": true
+  },
+  "week#2025-07-27": {
+    "description": "Opening weekend of the Indy build.\n20x400 in oppressive heat on Saturday.\n35.9 miles across the first two days."
+  },
+  "week#2025-08-03": {
+    "description": "First full week of the Indy block.\n117.4 miles total.\n12x800 (50s yog) fartlek.\n13' & 15' split tempo."
+  },
+  "week#2025-08-10": {
+    "description": "Big aerobic week with 122.0 miles total.\n11x3:00 tempo (1:00 jog).\n12x1:00/1:00 fartlek.\n22.1 mile HR-based progression long run."
+  },
+  "week#2025-08-17": {
+    "description": "113.1 miles during a steadier week.\n2x1:00, 4xMile, 1x600 on Wednesday.\nThe rest of the week was mostly volume and doubles."
+  },
+  "week#2025-08-24": {
+    "description": "High-volume week with 121.5 miles total.\n12x1:00/1:00 not too fast.\n20x1:00 fartlek.\n24.1 mile long run: 4 weeks down, 11 to go."
+  },
+  "week#2025-08-31": {
+    "description": "119.7 miles total.\n30x1:00 (0:45 jog) fartlek was the key midweek workout.\nLong Saturday volume plus steady doubles kept the week big."
+  },
+  "week#2025-09-07": {
+    "description": "131.6 miles and one of the biggest weeks of the block.\n73 dew point MLR on Monday.\n10x3:00 (40-50s jog) + GA MLR on Wednesday.\n20-15-10-5 starting at GMP and ramping on Saturday."
+  },
+  "week#2025-09-14": {
+    "description": "Down week at 65.8 miles total.\nBoston GA + 12x quarter mile fartlek on Tuesday.\nGA MLR on Thursday.\nA lighter weekend reset the block."
+  },
+  "week#2025-09-21": {
+    "description": "101.7 miles total.\nMostly a rebuild week after the down stretch.\nSlothy 4-3-2-1. MP but not ME on Saturday."
+  },
+  "week#2025-09-28": {
+    "description": "Strong week with 129.4 miles total.\n15x300 speed maintenance 55-52, 2:00 jog between.\n12x3:00 LT1 -> LT2 progression.\nHilly long progression on Saturday."
+  },
+  "week#2025-10-05": {
+    "description": "115.1 miles total.\nTune up 5x3:00 ish at gHMP on Tuesday.\nIrving Oktoberfest half TT on Saturday.\nA good bridge week toward the final marathon-specific block."
+  },
+  "week#2025-10-12": {
+    "description": "128.6 miles total.\n6x1600 LT2 (5:25->5:17), 1:00/200m yog between on Wednesday.\nThe rest of the week stayed high-volume with steady doubles."
+  },
+  "week#2025-10-19": {
+    "description": "129.1 miles total.\nAborted workout on Monday.\n13x600 @ 5k pace on Thursday.\nMar-a-thon routine dry run. 4x1:00, 4x5km on Sunday."
+  },
+  "week#2025-10-26": {
+    "description": "115.7 miles total.\n4x30s, 16x600m fartlek (30-45s jog between) on Thursday.\n12 prog to MP (6:14->5:33) - break - 3T w/ run to the barn (5:22, 5:26, 5:13) on Sunday."
+  },
+  "week#2025-11-02": {
+    "description": "97.2 miles total.\n9 days out: 5k @ M (17:15), 3x1 @ T (5:22-5:14).\nTreadmill taper HR zone test.\n12x1:00 fartlek unpaced.\nThe last serious work before Indy."
+  },
+  "week#2025-11-09": {
+    "description": "Race week.\nVery light 8x1:00 fartlek & shoe test on Wednesday.\nIndy Monumental Marathon on Saturday (2:28:27).\n63.5 miles total for the partial taper / race week."
+  }
+}

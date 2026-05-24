@@ -91,7 +91,7 @@ class TestBuildDailyEntries:
         assert entry["date"] == "2026-04-01"
         assert entry["entryType"] == "daily"
         assert entry["slot"] == "workout1"
-        assert entry["description"] == "5.0 mile run"
+        assert entry["description"] == "5.0 mile easy run"
         assert entry["miles"] == 5.0
         assert "highlight" not in entry
 
@@ -125,7 +125,7 @@ class TestBuildDailyEntries:
         entry = entries[0]
         assert entry["slot"] == "workout1"
         # Walk should be listed first
-        assert entry["description"] == "2.3 mile walk\n5.5 mile run"
+        assert entry["description"] == "2.3 mile walk\n5.5 mile easy run"
         assert entry["miles"] == 7.8
 
     def test_afternoon_workout2(self):
@@ -189,6 +189,45 @@ class TestBuildDailyEntries:
         entries = build_daily_entries(activities, "paris-2026")
         assert "highlight" not in entries[0]
 
+    def test_workout_name_is_preserved_for_highlighted_runs(self):
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=12874.8,
+                start_date_local="2026-04-03T07:00:00Z",
+                workout_type=3,
+                name="Tempo Run",
+            )
+        ]
+        entries = build_daily_entries(activities, "paris-2026")
+        assert entries[0]["description"] == "8.0 miles - Tempo Run"
+
+    def test_race_name_uses_elapsed_time(self):
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=42195.0,
+                start_date_local="2026-04-12T07:00:00Z",
+                workout_type=1,
+                name="Paris Marathon",
+                moving_time=8907,
+            )
+        ]
+        entries = build_daily_entries(activities, "paris-2026")
+        assert entries[0]["description"] == "Paris Marathon (2:28:27)"
+
+    def test_named_race_like_runs_can_trigger_highlight_without_workout_type(self):
+        activities = [
+            make_activity(
+                activity_type="Run",
+                distance=21097.5,
+                start_date_local="2026-04-05T07:00:00Z",
+                name="Oktoberfest half TT",
+            )
+        ]
+        entries = build_daily_entries(activities, "paris-2026")
+        assert entries[0]["highlight"] is True
+
     def test_no_activities_no_entries(self):
         entries = build_daily_entries([], "paris-2026")
         assert entries == []
@@ -199,11 +238,11 @@ class TestBuildDailyEntries:
                 activity_type="Run",
                 distance=8046.72,
                 start_date_local="2026-04-06T17:00:00Z",
+                manual=True,
             )
         ]
-        activities[0]["manual"] = True
         entries = build_daily_entries(activities, "paris-2026")
-        assert entries[0]["description"] == "5.0 mile treadmill run"
+        assert entries[0]["description"] == "5.0 mile easy run (treadmill)"
 
     def test_manual_walk_stays_walk(self):
         activities = [
@@ -211,9 +250,9 @@ class TestBuildDailyEntries:
                 activity_type="Walk",
                 distance=3218.69,
                 start_date_local="2026-04-06T06:00:00Z",
+                manual=True,
             )
         ]
-        activities[0]["manual"] = True
         entries = build_daily_entries(activities, "paris-2026")
         assert entries[0]["description"] == "2.0 mile walk"
 

@@ -22,6 +22,33 @@ METERS_PER_MILE = 1609.344
 
 # Strava workout_type values that trigger highlight
 HIGHLIGHT_WORKOUT_TYPES = {1, 2, 3}  # Race, Long Run, Workout
+GENERIC_RUN_NAMES = {
+    "morning run",
+    "afternoon run",
+    "evening run",
+    "lunch run",
+    "run",
+}
+GENERIC_TREADMILL_NAMES = {
+    "yog": "easy run (treadmill)",
+    "double yog": "easy run (treadmill)",
+    "easy": "easy run (treadmill)",
+}
+HIGHLIGHT_NAME_TOKENS = (
+    "marathon",
+    "half",
+    "tt",
+    "time trial",
+    "tempo",
+    "fartlek",
+    "progression",
+    "threshold",
+    "mile",
+    "shoe test",
+    "zone test",
+    "mlr",
+    "pace",
+)
 
 
 def meters_to_miles(distance_meters: float) -> float:
@@ -48,12 +75,52 @@ def classify_slot(start_date_local: str) -> TrainingLogSlot:
     return "workout1" if local_dt.hour < 12 else "workout2"
 
 
-def _describe_activity_type(activity: StravaActivity) -> str:
-    """Human-readable activity type: lowercase, 'treadmill run' for manual runs."""
-    activity_type = activity.get("type", "Run").lower()
-    if activity_type == "run" and activity.get("manual", False):
-        return "treadmill run"
-    return activity_type
+def _normalize_run_name(activity: StravaActivity) -> str | None:
+    name = str(activity.get("name", "")).strip()
+    if not name:
+        return None
+
+    lowered_name = name.lower()
+    if activity.get("manual", False):
+        if lowered_name.startswith("treadmill "):
+            detail = name[len("Treadmill ") :].strip()
+            mapped = GENERIC_TREADMILL_NAMES.get(detail.lower())
+            if mapped is not None:
+                return mapped
+            return f"{detail} (treadmill)"
+        return "easy run (treadmill)"
+
+    if lowered_name in GENERIC_RUN_NAMES:
+        return "easy run"
+
+    return name
+
+
+def _format_elapsed_seconds(value: object) -> str | None:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+
+    total_seconds = int(value)
+    if total_seconds <= 0:
+        return None
+
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours > 0:
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes}:{seconds:02d}"
+
+
+def _is_highlight_activity(activity: StravaActivity) -> bool:
+    workout_type = activity.get("workout_type")
+    if workout_type in HIGHLIGHT_WORKOUT_TYPES:
+        return True
+
+    if activity.get("type") != "Run":
+        return False
+
+    name = str(activity.get("name", "")).lower()
+    return any(token in name for token in HIGHLIGHT_NAME_TOKENS)
 
 
 def _activity_sort_key(activity: StravaActivity) -> tuple[int, str]:
@@ -65,6 +132,32 @@ def _activity_sort_key(activity: StravaActivity) -> tuple[int, str]:
 def _activity_distance_meters(activity: StravaActivity) -> float:
     distance = activity.get("distance", 0.0)
     return float(distance)
+
+
+def _format_activity_description(activity: StravaActivity) -> str:
+    dist_miles = meters_to_miles(_activity_distance_meters(activity))
+    if activity.get("type") == "Walk":
+        return f"{dist_miles} mile walk"
+
+    run_name = _normalize_run_name(activity)
+    if run_name is None:
+        if activity.get("manual", False):
+            return f"{dist_miles} mile treadmill run"
+        return f"{dist_miles} mile run"
+
+    if activity.get("workout_type") == 1:
+        elapsed = _format_elapsed_seconds(activity.get("moving_time"))
+        if elapsed is not None:
+            return f"{run_name} ({elapsed})"
+        return run_name
+
+    if run_name == "easy run":
+        return f"{dist_miles} mile easy run"
+
+    if run_name == "easy run (treadmill)":
+        return f"{dist_miles} mile easy run (treadmill)"
+
+    return f"{dist_miles} miles - {run_name}"
 
 
 def build_daily_entries(
@@ -94,10 +187,9 @@ def build_daily_entries(
 
         for a in group:
             dist_miles = meters_to_miles(_activity_distance_meters(a))
-            activity_type = _describe_activity_type(a)
-            descriptions.append(f"{dist_miles} mile {activity_type}")
+            descriptions.append(_format_activity_description(a))
             total_miles += dist_miles
-            if a.get("workout_type") in HIGHLIGHT_WORKOUT_TYPES:
+            if _is_highlight_activity(a):
                 has_highlight = True
 
         entry: DailyEntry = {

@@ -11,6 +11,7 @@ type TrainingLogSlot = Literal["workout1", "workout2"]
 
 
 class StravaActivity(TypedDict, total=False):
+    id: int
     type: str
     distance: float
     start_date: str
@@ -18,6 +19,7 @@ class StravaActivity(TypedDict, total=False):
     name: str
     manual: bool
     workout_type: int
+    moving_time: int
 
 
 class TokenResponse(TypedDict, total=False):

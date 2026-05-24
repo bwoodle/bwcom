@@ -13,6 +13,7 @@ import {
   PUBLIC_CACHE_HEADERS,
   rateLimitPublicRequest,
 } from "@/lib/public-api-guards";
+import { TRAINING_LOG_NAMES } from "@/lib/training-log-config";
 import type {
   TrainingLogEntry,
   TrainingLogSection,
@@ -22,11 +23,6 @@ import type {
   TrainingLogCreateRequest,
   TrainingLogCreateResponse,
 } from "@/types/training-log";
-
-/** Map logId → display name. Add new cycles here. */
-const LOG_NAMES: Record<string, string> = {
-  "paris-2026": "Paris 2026",
-};
 
 function toEntry(item: Record<string, unknown>): TrainingLogEntry {
   const base = {
@@ -163,7 +159,7 @@ export async function GET(request: Request) {
 
     const section: TrainingLogSection = {
       id: sectionId,
-      name: LOG_NAMES[sectionId] ?? sectionId,
+      name: TRAINING_LOG_NAMES[sectionId] ?? sectionId,
       entries,
     };
 

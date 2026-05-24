@@ -23,6 +23,7 @@ import type {
   TrainingLogEntry,
   TrainingLogSection,
 } from "@/types/training-log";
+import { TRAINING_LOG_SECTIONS } from "@/lib/training-log-config";
 
 type RowDraft = {
   description?: string;
@@ -34,9 +35,7 @@ type RowErrorMap = Record<string, string>;
 
 type EditorStatus = "idle" | "loading" | "loaded" | "error";
 
-type LogConfig = { id: string; name: string };
-
-const logConfigs: LogConfig[] = [{ id: "paris-2026", name: "Paris 2026" }];
+const logConfigs = TRAINING_LOG_SECTIONS;
 
 function parseDate(date: string): number {
   return new Date(`${date}T00:00:00`).getTime();

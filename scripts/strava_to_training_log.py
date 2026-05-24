@@ -23,6 +23,12 @@ from __future__ import annotations
 import argparse
 import sys
 
+from strava_pipeline.drafts import (
+    apply_entry_overrides,
+    load_activities_json,
+    load_entry_overrides,
+    write_entries_json,
+)
 from strava_pipeline.dynamo_writer import write_entries
 from strava_pipeline.strava_client import (
     DEFAULT_CREDENTIALS_PATH,
@@ -68,6 +74,18 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_CREDENTIALS_PATH,
         help=f"Path to credentials file (default: {DEFAULT_CREDENTIALS_PATH})",
     )
+    parser.add_argument(
+        "--activities-json",
+        help="Optional path to a saved Strava activities JSON array. Skips live fetch.",
+    )
+    parser.add_argument(
+        "--output-json",
+        help="Optional path to write generated training-log entries for local review.",
+    )
+    parser.add_argument(
+        "--overrides",
+        help="Optional path to per-entry overrides JSON keyed by training-log sk.",
+    )
     return parser.parse_args()
 
 
@@ -75,20 +93,27 @@ def main() -> None:
     args = parse_args()
     table_name = f"training-log-{args.env}-v1"
 
-    # Load and validate credentials
-    creds = load_credentials(args.credentials)
-    creds = ensure_access_token(creds, code=args.code)
-    save_credentials(args.credentials, creds)
+    if args.activities_json:
+        activities = load_activities_json(args.activities_json)
+        print(
+            f"Loaded {len(activities)} activities from {args.activities_json}",
+            file=sys.stderr,
+        )
+    else:
+        # Load and validate credentials
+        creds = load_credentials(args.credentials)
+        creds = ensure_access_token(creds, code=args.code)
+        save_credentials(args.credentials, creds)
 
-    # Fetch activities from Strava
-    after_epoch, before_epoch = date_range_to_epochs(args.start_date, args.end_date)
-    print(
-        f"Fetching activities from {args.start_date} to {args.end_date}...",
-        file=sys.stderr,
-    )
-    activities, _ = fetch_activities(
-        creds["STRAVA_ACCESS_TOKEN"], after_epoch, before_epoch
-    )
+        # Fetch activities from Strava
+        after_epoch, before_epoch = date_range_to_epochs(args.start_date, args.end_date)
+        print(
+            f"Fetching activities from {args.start_date} to {args.end_date}...",
+            file=sys.stderr,
+        )
+        activities, _ = fetch_activities(
+            creds["STRAVA_ACCESS_TOKEN"], after_epoch, before_epoch
+        )
 
     # Filter and transform
     filtered = filter_activities(activities)
@@ -100,6 +125,17 @@ def main() -> None:
     daily = build_daily_entries(filtered, args.log_id)
     weekly = build_weekly_entries(daily, args.log_id, args.start_date, args.end_date)
     all_entries = daily + weekly
+    if args.overrides:
+        overrides = load_entry_overrides(args.overrides)
+        all_entries = apply_entry_overrides(all_entries, overrides)
+        print(
+            f"Applied {len(overrides)} entry overrides from {args.overrides}",
+            file=sys.stderr,
+        )
+
+    if args.output_json:
+        write_entries_json(args.output_json, all_entries)
+        print(f"Wrote draft entries to {args.output_json}", file=sys.stderr)
 
     # Preview
     print("\n" + format_entries_preview(all_entries))

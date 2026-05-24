@@ -14,6 +14,8 @@ def make_activity(
     start_date_local: str = "2026-04-01T07:30:00Z",
     workout_type: int | None = None,
     name: str = "Morning Run",
+    manual: bool = False,
+    moving_time: int | None = None,
 ) -> StravaActivity:
     """Build a minimal Strava activity dict for testing."""
     activity = {
@@ -22,8 +24,12 @@ def make_activity(
         "start_date_local": start_date_local,
         "name": name,
     }
+    if manual:
+        activity["manual"] = True
     if workout_type is not None:
         activity["workout_type"] = workout_type
+    if moving_time is not None:
+        activity["moving_time"] = moving_time
     return activity
 
 

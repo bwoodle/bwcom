@@ -50,6 +50,9 @@ typings/
 # Optional npm cache directory
 .npm
 
+# Repo-local working data
+.local/
+
 # Local Python virtual environments
 .venv/
 

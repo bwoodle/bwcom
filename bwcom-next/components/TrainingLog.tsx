@@ -10,6 +10,7 @@ import {
   Spinner,
   StatusIndicator,
 } from "@cloudscape-design/components";
+import { TRAINING_LOG_SECTIONS } from "@/lib/training-log-config";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -70,7 +71,7 @@ type SortMode = "newest" | "oldest";
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 
-const sectionConfigs = [{ id: "paris-2026", name: "Paris 2026" }];
+const sectionConfigs = TRAINING_LOG_SECTIONS;
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
