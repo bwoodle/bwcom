@@ -41,7 +41,8 @@ jobs:
         run: just _next-build
 
   terraform-prod-data-plan:
-    if: github.event_name == 'pull_request'
+    # Dependabot PRs do not receive repository secrets, so skip AWS-backed plans.
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
     defaults:
       run:
@@ -79,7 +80,8 @@ jobs:
         run: terraform plan -input=false -lock=false -no-color
 
   terraform-prod-plan:
-    if: github.event_name == 'pull_request'
+    # Dependabot PRs do not receive repository secrets, so skip AWS-backed plans.
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
     defaults:
       run:
