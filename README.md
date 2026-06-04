@@ -132,6 +132,8 @@ For legacy branches that predate this tooling and do not yet contain the `justfi
    NEXT_PUBLIC_IMAGES_BASE_URL=https://<IMAGE_CDN_DOMAIN from step 1>
    ```
 
+   If you only need to get the dev server running, `cd bwcom-next && npm run dev` will bootstrap `bwcom-next/.env.local` from `bwcom-next/.env.local.example`.
+
 1. Install dependencies and start the dev server:
 
    ```bash

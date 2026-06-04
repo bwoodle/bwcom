@@ -14,13 +14,20 @@ import {
   StatusIndicator,
   Textarea,
 } from "@cloudscape-design/components";
+import {
+  applyMediaBatchUpdateItem,
+  buildMediaBatchUpdateItem,
+  formatMediaRating,
+  hasMediaDraftChanges,
+  type MediaEditorDraft,
+} from "@/lib/media";
 import type {
-  MediaBatchUpdateItem,
   MediaBatchUpdateResponse,
   MediaCreateRequest,
   MediaCreateResponse,
   MediaFormat,
   MediaItem,
+  MediaRating,
 } from "@/types/media";
 
 type MediaApiResponse = {
@@ -29,13 +36,6 @@ type MediaApiResponse = {
     label: string;
     items: MediaItem[];
   }>;
-};
-
-type RowDraft = {
-  title?: string;
-  author?: string;
-  format?: MediaFormat;
-  comments?: string;
 };
 
 type EditorStatus = "idle" | "loading" | "loaded" | "error";
@@ -49,50 +49,11 @@ const formatOptions: MediaFormat[] = [
   "podcast",
 ];
 
-function hasChanges(item: MediaItem, draft: RowDraft | undefined): boolean {
-  if (!draft) return false;
-  if (draft.title !== undefined && draft.title !== item.title) return true;
-  if (draft.author !== undefined && draft.author !== (item.author ?? ""))
-    return true;
-  if (draft.format !== undefined && draft.format !== item.format) return true;
-
-  const originalComments = item.comments ?? "";
-  if (draft.comments !== undefined && draft.comments !== originalComments)
-    return true;
-
-  return false;
-}
-
-function nextItem(item: MediaItem, update: MediaBatchUpdateItem): MediaItem {
-  const next: MediaItem = {
-    ...item,
-    ...(update.title !== undefined ? { title: update.title } : {}),
-    ...(update.author !== undefined && update.author !== null
-      ? { author: update.author }
-      : {}),
-    ...(update.format !== undefined ? { format: update.format } : {}),
-  };
-
-  if (update.author === null) {
-    delete next.author;
-  }
-
-  if (update.comments !== undefined) {
-    if (update.comments === null) {
-      delete next.comments;
-    } else {
-      next.comments = update.comments;
-    }
-  }
-
-  return next;
-}
-
 const MediaBulkEditor: React.FC = () => {
   const [status, setStatus] = useState<EditorStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
+  const [drafts, setDrafts] = useState<Record<string, MediaEditorDraft>>({});
   const [selectedRow, setSelectedRow] = useState<Record<string, boolean>>({});
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -105,6 +66,7 @@ const MediaBulkEditor: React.FC = () => {
   const [newAuthor, setNewAuthor] = useState("");
   const [newFormat, setNewFormat] = useState<MediaFormat>("book");
   const [newComments, setNewComments] = useState("");
+  const [newRating, setNewRating] = useState<"" | `${MediaRating}`>("");
   const [isCreating, setIsCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
 
@@ -212,7 +174,9 @@ const MediaBulkEditor: React.FC = () => {
       items.reduce(
         (count, item) =>
           count +
-          (hasChanges(item, drafts[`${item.monthKey}|${item.sk}`]) ? 1 : 0),
+          (hasMediaDraftChanges(item, drafts[`${item.monthKey}|${item.sk}`])
+            ? 1
+            : 0),
         0,
       ),
     [items, drafts],
@@ -222,7 +186,9 @@ const MediaBulkEditor: React.FC = () => {
     () =>
       items.filter((item) => {
         const rowKey = `${item.monthKey}|${item.sk}`;
-        return selectedRow[rowKey] && hasChanges(item, drafts[rowKey]);
+        return (
+          selectedRow[rowKey] && hasMediaDraftChanges(item, drafts[rowKey])
+        );
       }),
     [items, selectedRow, drafts],
   );
@@ -286,6 +252,28 @@ const MediaBulkEditor: React.FC = () => {
     }));
   };
 
+  const onRatingChange = (item: MediaItem, value: string) => {
+    const rowKey = `${item.monthKey}|${item.sk}`;
+    setDrafts((current) => {
+      const nextDraft = { ...(current[rowKey] ?? {}) };
+
+      if (value.length === 0) {
+        if (item.rating === undefined) {
+          delete nextDraft.rating;
+        } else {
+          nextDraft.rating = null;
+        }
+      } else {
+        nextDraft.rating = Number(value) as MediaRating;
+      }
+
+      return {
+        ...current,
+        [rowKey]: nextDraft,
+      };
+    });
+  };
+
   const onSaveSelected = async () => {
     if (selectedDirtyItems.length === 0) return;
 
@@ -293,37 +281,9 @@ const MediaBulkEditor: React.FC = () => {
     setSaveMessage(null);
     setRowErrors({});
 
-    const updates: MediaBatchUpdateItem[] = selectedDirtyItems.map((item) => {
-      const rowKey = `${item.monthKey}|${item.sk}`;
-      const draft = drafts[rowKey] ?? {};
-      const next: MediaBatchUpdateItem = {
-        monthKey: item.monthKey,
-        sk: item.sk,
-      };
-
-      if (draft.title !== undefined && draft.title !== item.title) {
-        next.title = draft.title;
-      }
-      if (draft.author !== undefined) {
-        const normalized = draft.author.trim();
-        const original = (item.author ?? "").trim();
-        if (normalized !== original) {
-          next.author = normalized.length === 0 ? null : draft.author;
-        }
-      }
-      if (draft.format !== undefined && draft.format !== item.format) {
-        next.format = draft.format;
-      }
-      if (draft.comments !== undefined) {
-        const normalized = draft.comments.trim();
-        const original = (item.comments ?? "").trim();
-        if (normalized !== original) {
-          next.comments = normalized.length === 0 ? null : draft.comments;
-        }
-      }
-
-      return next;
-    });
+    const updates = selectedDirtyItems.map((item) =>
+      buildMediaBatchUpdateItem(item, drafts[`${item.monthKey}|${item.sk}`]),
+    );
 
     try {
       const response = await fetch("/api/media", {
@@ -349,7 +309,7 @@ const MediaBulkEditor: React.FC = () => {
         return current.map((item) => {
           const rowKey = `${item.monthKey}|${item.sk}`;
           if (!successKeys.has(rowKey)) return item;
-          return nextItem(
+          return applyMediaBatchUpdateItem(
             item,
             updatesByKey.get(rowKey) ?? {
               monthKey: item.monthKey,
@@ -406,6 +366,7 @@ const MediaBulkEditor: React.FC = () => {
       ...(newAuthor.trim() ? { author: newAuthor.trim() } : {}),
       format: newFormat,
       ...(newComments.trim() ? { comments: newComments.trim() } : {}),
+      ...(newRating ? { rating: Number(newRating) as MediaRating } : {}),
     };
 
     setIsCreating(true);
@@ -438,6 +399,7 @@ const MediaBulkEditor: React.FC = () => {
       setNewTitle("");
       setNewAuthor("");
       setNewComments("");
+      setNewRating("");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unknown create error";
@@ -498,6 +460,22 @@ const MediaBulkEditor: React.FC = () => {
                   {formatOptions.map((format) => (
                     <option key={format} value={format}>
                       {format}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Rating (optional)">
+                <select
+                  value={newRating}
+                  onChange={(event) =>
+                    setNewRating(event.target.value as "" | `${MediaRating}`)
+                  }
+                >
+                  <option value="">Unrated</option>
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <option key={rating} value={String(rating)}>
+                      {formatMediaRating(rating as MediaRating)}
                     </option>
                   ))}
                 </select>
@@ -602,7 +580,7 @@ const MediaBulkEditor: React.FC = () => {
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                minWidth: 1200,
+                minWidth: 900,
               }}
             >
               <thead>
@@ -632,7 +610,7 @@ const MediaBulkEditor: React.FC = () => {
                       textAlign: "left",
                     }}
                   >
-                    Title
+                    Entry
                   </th>
                   <th
                     style={{
@@ -641,25 +619,7 @@ const MediaBulkEditor: React.FC = () => {
                       textAlign: "left",
                     }}
                   >
-                    Author
-                  </th>
-                  <th
-                    style={{
-                      borderBottom: "1px solid #d5dbdb",
-                      padding: 8,
-                      textAlign: "left",
-                    }}
-                  >
-                    Format
-                  </th>
-                  <th
-                    style={{
-                      borderBottom: "1px solid #d5dbdb",
-                      padding: 8,
-                      textAlign: "left",
-                    }}
-                  >
-                    Comments
+                    Details
                   </th>
                   <th
                     style={{
@@ -676,7 +636,7 @@ const MediaBulkEditor: React.FC = () => {
                 {filteredItems.map((item) => {
                   const rowKey = `${item.monthKey}|${item.sk}`;
                   const draft = drafts[rowKey];
-                  const isDirty = hasChanges(item, draft);
+                  const isDirty = hasMediaDraftChanges(item, draft);
                   const rowError = rowErrors[rowKey];
 
                   return (
@@ -711,77 +671,97 @@ const MediaBulkEditor: React.FC = () => {
                         style={{
                           borderBottom: "1px solid #eaeded",
                           padding: 8,
-                          minWidth: 280,
+                          minWidth: 320,
                         }}
                       >
-                        <Input
-                          value={draft?.title ?? item.title}
-                          onChange={({ detail }) =>
-                            onTitleChange(item, detail.value)
-                          }
-                          ariaLabel={`Title ${item.title}`}
-                        />
+                        <SpaceBetween size="s">
+                          <FormField label="Title">
+                            <Input
+                              value={draft?.title ?? item.title}
+                              onChange={({ detail }) =>
+                                onTitleChange(item, detail.value)
+                              }
+                              ariaLabel={`Title ${item.title}`}
+                            />
+                          </FormField>
+                          <FormField label="Author">
+                            <Input
+                              value={draft?.author ?? item.author ?? ""}
+                              onChange={({ detail }) =>
+                                onAuthorChange(item, detail.value)
+                              }
+                              ariaLabel={`Author ${item.title}`}
+                            />
+                          </FormField>
+                          <FormField label="Format">
+                            <select
+                              value={draft?.format ?? item.format}
+                              onChange={(event) =>
+                                onFormatChange(
+                                  item,
+                                  event.target.value as MediaFormat,
+                                )
+                              }
+                              aria-label={`Format ${item.title}`}
+                            >
+                              {formatOptions.map((format) => (
+                                <option key={format} value={format}>
+                                  {format}
+                                </option>
+                              ))}
+                            </select>
+                          </FormField>
+                        </SpaceBetween>
                       </td>
                       <td
                         style={{
                           borderBottom: "1px solid #eaeded",
                           padding: 8,
-                          minWidth: 220,
+                          minWidth: 320,
                         }}
                       >
-                        <Input
-                          value={draft?.author ?? item.author ?? ""}
-                          onChange={({ detail }) =>
-                            onAuthorChange(item, detail.value)
-                          }
-                          ariaLabel={`Author ${item.title}`}
-                        />
+                        <SpaceBetween size="s">
+                          <FormField label="Comments">
+                            <Textarea
+                              value={draft?.comments ?? item.comments ?? ""}
+                              onChange={({ detail }) =>
+                                onCommentsChange(item, detail.value)
+                              }
+                              rows={3}
+                              ariaLabel={`Comments ${item.title}`}
+                            />
+                          </FormField>
+                          <FormField label="Rating">
+                            <select
+                              value={
+                                draft?.rating !== undefined
+                                  ? draft.rating === null
+                                    ? ""
+                                    : String(draft.rating)
+                                  : item.rating !== undefined
+                                    ? String(item.rating)
+                                    : ""
+                              }
+                              onChange={(event) =>
+                                onRatingChange(item, event.target.value)
+                              }
+                              aria-label={`Rating ${item.title}`}
+                            >
+                              <option value="">Unrated</option>
+                              {[1, 2, 3, 4, 5].map((rating) => (
+                                <option key={rating} value={String(rating)}>
+                                  {formatMediaRating(rating as MediaRating)}
+                                </option>
+                              ))}
+                            </select>
+                          </FormField>
+                        </SpaceBetween>
                       </td>
                       <td
                         style={{
                           borderBottom: "1px solid #eaeded",
                           padding: 8,
-                          minWidth: 150,
-                        }}
-                      >
-                        <select
-                          value={draft?.format ?? item.format}
-                          onChange={(event) =>
-                            onFormatChange(
-                              item,
-                              event.target.value as MediaFormat,
-                            )
-                          }
-                          aria-label={`Format ${item.title}`}
-                        >
-                          {formatOptions.map((format) => (
-                            <option key={format} value={format}>
-                              {format}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td
-                        style={{
-                          borderBottom: "1px solid #eaeded",
-                          padding: 8,
-                          minWidth: 420,
-                        }}
-                      >
-                        <Textarea
-                          value={draft?.comments ?? item.comments ?? ""}
-                          onChange={({ detail }) =>
-                            onCommentsChange(item, detail.value)
-                          }
-                          rows={2}
-                          ariaLabel={`Comments ${item.title}`}
-                        />
-                      </td>
-                      <td
-                        style={{
-                          borderBottom: "1px solid #eaeded",
-                          padding: 8,
-                          minWidth: 220,
+                          minWidth: 180,
                         }}
                       >
                         {rowError ? (

@@ -96,7 +96,7 @@ When verifying the local dev server (`npm run dev` on port 3000), check the foll
 
 - **`NEXT_PUBLIC_*` vars are inlined at build time** — after changing any `NEXT_PUBLIC_*` value, the dev server must be fully restarted (not just hot-reloaded).
 - **Ensure the file ends with a newline** — appending lines without a trailing newline corrupts the next appended line (e.g. `...cloudfront.netNEW_VAR=value`). Always verify with `cat -A bwcom-next/.env.local` (lines should end with `$`).
-- The `.env.local` file is gitignored. It must be created manually for local dev. See the root `README.md` for the full template.
+- The `.env.local` file is gitignored. `npm run dev` will bootstrap it from `.env.local.example` if needed, and you can edit it afterward for local secrets.
 
 ## Images / Static Assets
 

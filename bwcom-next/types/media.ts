@@ -6,6 +6,8 @@ export type MediaFormat =
   | "tv"
   | "podcast";
 
+export type MediaRating = 1 | 2 | 3 | 4 | 5;
+
 export type MediaItem = {
   monthKey: string;
   sk: string;
@@ -14,6 +16,7 @@ export type MediaItem = {
   format: MediaFormat;
   comments?: string;
   createdAt: string;
+  rating?: MediaRating;
 };
 
 export type MediaBatchUpdateItem = {
@@ -23,6 +26,7 @@ export type MediaBatchUpdateItem = {
   author?: string | null;
   format?: MediaFormat;
   comments?: string | null;
+  rating?: MediaRating | null;
 };
 
 export type MediaBatchUpdateRequest = {
@@ -48,6 +52,7 @@ export type MediaCreateRequest = {
   author?: string;
   format: MediaFormat;
   comments?: string;
+  rating?: MediaRating;
 };
 
 export type MediaCreateResponse = {

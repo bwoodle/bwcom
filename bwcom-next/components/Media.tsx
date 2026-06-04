@@ -2,20 +2,12 @@
 
 import React from "react";
 import { Box } from "@cloudscape-design/components";
+import { formatMediaRating } from "@/lib/media";
+import type { MediaItem } from "@/types/media";
 import GroupedTablePage from "./GroupedTablePage";
 
-interface MediaItem {
-  monthKey: string;
-  sk: string;
-  title: string;
-  author?: string;
-  format: string;
-  comments?: string;
-  createdAt: string;
-}
-
 const mediaTrackingNote = (
-  <div
+  <span
     style={{
       background: "#f4f9ff",
       borderLeft: "4px solid #0073bb",
@@ -25,12 +17,12 @@ const mediaTrackingNote = (
       padding: "8px 12px",
     }}
   >
-    <Box variant="small" fontWeight="bold">
+    <strong>
       I began tracking this data in early 2026, with the goal of tracking
       everything going forward. I&apos;ll add some past comments for media that
       I really liked.
-    </Box>
-  </div>
+    </strong>
+  </span>
 );
 
 const Media: React.FC = () => (
@@ -65,6 +57,19 @@ const Media: React.FC = () => (
         header: "Format",
         cell: (item) => item.format,
         width: 140,
+      },
+      {
+        id: "rating",
+        header: "Rating",
+        cell: (item) =>
+          item.rating ? (
+            <span aria-label={`${item.rating} out of 5 stars`}>
+              {formatMediaRating(item.rating)}
+            </span>
+          ) : (
+            <Box color="text-body-secondary">—</Box>
+          ),
+        width: 130,
       },
       {
         id: "comments",

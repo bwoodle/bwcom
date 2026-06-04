@@ -11,7 +11,9 @@ npm install
 npm run dev
 ```
 
-Requires `bwcom-next/.env.local`:
+`npm run dev` bootstraps `bwcom-next/.env.local` from `bwcom-next/.env.local.example` if it is missing or incomplete.
+
+Required env values:
 
 ```env
 NEXTAUTH_SECRET=<your-secret>

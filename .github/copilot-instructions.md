@@ -63,7 +63,7 @@ npm install    # if node_modules is stale
 npm run dev    # starts on http://localhost:3000
 ```
 
-The dev server reads from **test** DynamoDB tables and serves images via the **test** CloudFront CDN. It requires `bwcom-next/.env.local` to be configured (see below).
+The dev server reads from **test** DynamoDB tables and serves images via the **test** CloudFront CDN. `npm run dev` bootstraps `bwcom-next/.env.local` from `bwcom-next/.env.local.example` if needed (see below).
 
 ### Required Environment Variables (`bwcom-next/.env.local`)
 

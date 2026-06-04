@@ -10,6 +10,7 @@ import {
   PUBLIC_CACHE_HEADERS,
   rateLimitPublicRequest,
 } from "@/lib/public-api-guards";
+import { isValidMediaRating, toMediaItem } from "@/lib/media";
 import type {
   MediaItem,
   MediaFormat,
@@ -79,15 +80,9 @@ export async function GET(request: Request) {
       }),
     );
 
-    const allItems: MediaItem[] = (result.Items ?? []).map((item) => ({
-      monthKey: item.monthKey as string,
-      sk: item.sk as string,
-      title: item.title as string,
-      author: item.author as string | undefined,
-      format: item.format as MediaFormat,
-      comments: item.comments as string | undefined,
-      createdAt: item.createdAt as string,
-    }));
+    const allItems: MediaItem[] = (result.Items ?? []).map((item) =>
+      toMediaItem(item as Record<string, unknown>),
+    );
 
     // Group by monthKey
     const groupMap = new Map<string, MediaItem[]>();
@@ -126,7 +121,7 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/media
- * Body: { monthKey, title, format, comments? }
+ * Body: { monthKey, title, format, comments?, rating? }
  */
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -164,6 +159,18 @@ export async function POST(request: Request) {
   if (body.author !== undefined && typeof body.author !== "string") {
     return Response.json({ error: "author must be a string" }, { status: 400 });
   }
+  if (body.comments !== undefined && typeof body.comments !== "string") {
+    return Response.json(
+      { error: "comments must be a string" },
+      { status: 400 },
+    );
+  }
+  if (body.rating !== undefined && !isValidMediaRating(body.rating)) {
+    return Response.json(
+      { error: "rating must be a whole number from 1 to 5" },
+      { status: 400 },
+    );
+  }
 
   const entry: MediaItem = {
     monthKey: body.monthKey,
@@ -176,6 +183,7 @@ export async function POST(request: Request) {
     ...(body.comments && body.comments.trim().length > 0
       ? { comments: body.comments.trim() }
       : {}),
+    ...(body.rating !== undefined ? { rating: body.rating } : {}),
     createdAt: new Date().toISOString(),
   };
 
@@ -202,7 +210,7 @@ export async function POST(request: Request) {
 
 /**
  * PATCH /api/media
- * Body: { updates: [{ monthKey, sk, title?, format?, comments? }] }
+ * Body: { updates: [{ monthKey, sk, title?, format?, comments?, rating? }] }
  */
 export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
@@ -288,6 +296,32 @@ export async function PATCH(request: Request) {
       });
       continue;
     }
+    if (
+      item.comments !== undefined &&
+      item.comments !== null &&
+      typeof item.comments !== "string"
+    ) {
+      results.push({
+        monthKey: item.monthKey,
+        sk: item.sk,
+        success: false,
+        error: "comments must be a string",
+      });
+      continue;
+    }
+    if (
+      item.rating !== undefined &&
+      item.rating !== null &&
+      !isValidMediaRating(item.rating)
+    ) {
+      results.push({
+        monthKey: item.monthKey,
+        sk: item.sk,
+        success: false,
+        error: "rating must be a whole number from 1 to 5",
+      });
+      continue;
+    }
 
     const updates: string[] = [];
     const values: Record<string, unknown> = {};
@@ -330,6 +364,16 @@ export async function PATCH(request: Request) {
       } else {
         updates.push("comments = :c");
         values[":c"] = item.comments.trim();
+      }
+    }
+
+    if (item.rating !== undefined) {
+      if (item.rating === null) {
+        removes.push("rating");
+      } else {
+        updates.push("#rating = :r");
+        names["#rating"] = "rating";
+        values[":r"] = item.rating;
       }
     }
 
