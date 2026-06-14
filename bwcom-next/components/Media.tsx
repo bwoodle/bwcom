@@ -80,6 +80,7 @@ const Media: React.FC = () => (
           ) : (
             <Box color="text-body-secondary">—</Box>
           ),
+        width: "50%",
       },
     ]}
     emptyNoun="media entries"
