@@ -1,0 +1,496 @@
+"use client";
+
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  Header,
+  SegmentedControl,
+  SpaceBetween,
+  Spinner,
+  StatusIndicator,
+} from "@cloudscape-design/components";
+import { TRAINING_LOG_SECTIONS } from "../lib/training-log-config";
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+type DailyEntry = {
+  logId: string;
+  sk: string;
+  date: string;
+  entryType: "daily";
+  slot: "workout1" | "workout2";
+  description: string;
+  miles: number;
+  highlight?: boolean;
+};
+
+type WeeklyEntry = {
+  logId: string;
+  sk: string;
+  date: string;
+  entryType: "week";
+  description: string;
+};
+
+type TrainingLogEntry = DailyEntry | WeeklyEntry;
+
+type TrainingLogSection = {
+  id: string;
+  name: string;
+  entries: TrainingLogEntry[];
+};
+
+type SectionState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "loaded"; data: TrainingLogSection };
+
+type DayRow = {
+  date: string;
+  dayLabel: string;
+  workout1?: string;
+  workout1Highlight?: boolean;
+  workout2?: string;
+  workout2Highlight?: boolean;
+  totalMiles: number;
+};
+
+type WeekGroup = {
+  weekEnding: string;
+  dailyRows: DayRow[];
+  weeklySummary?: WeeklyEntry;
+};
+
+type SortMode = "newest" | "oldest";
+
+/* ------------------------------------------------------------------ */
+/*  Config                                                             */
+/* ------------------------------------------------------------------ */
+
+const sectionConfigs = TRAINING_LOG_SECTIONS;
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+const parseDate = (value: string) => new Date(`${value}T00:00:00`);
+
+const formatDayLabel = (value: string) =>
+  new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
+    parseDate(value),
+  );
+
+const formatWeekEnding = (value: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(parseDate(value));
+
+const addDays = (date: Date, days: number) => {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+};
+
+const formatMiles = (value: number) =>
+  value % 1 === 0 ? `${value}` : `${value.toFixed(1)}`;
+
+const buildWeekGroups = (
+  entries: TrainingLogEntry[],
+  sortMode: SortMode,
+): WeekGroup[] => {
+  const weeklyEntries = entries.filter(
+    (entry): entry is WeeklyEntry => entry.entryType === "week",
+  );
+
+  const dailyEntries = entries.filter(
+    (entry): entry is DailyEntry => entry.entryType === "daily",
+  );
+
+  // Build a map of weekly summaries keyed by date (the Sunday ending the week)
+  const summaryByDate = new Map<string, WeeklyEntry>();
+  for (const w of weeklyEntries) {
+    summaryByDate.set(w.date, w);
+  }
+
+  // Discover all week-ending Sundays from daily entries + weekly summaries
+  const weekEndingSet = new Set<string>();
+
+  // Add weeks from weekly summaries
+  for (const w of weeklyEntries) {
+    weekEndingSet.add(w.date);
+  }
+
+  // Add weeks from daily entries — find the Sunday ending each entry's week
+  for (const d of dailyEntries) {
+    const date = parseDate(d.date);
+    const dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
+    const daysUntilSun = (7 - dayOfWeek) % 7; // Sun(0)->0 days, Mon(1)->6, ... Sat(6)->1
+    const sunDate = addDays(date, daysUntilSun);
+    weekEndingSet.add(sunDate.toISOString().slice(0, 10));
+  }
+
+  const weekEndings = Array.from(weekEndingSet).sort((a, b) => {
+    const delta = parseDate(a).getTime() - parseDate(b).getTime();
+    return sortMode === "newest" ? -delta : delta;
+  });
+
+  return weekEndings.map((weekEnding) => {
+    const weekEnd = parseDate(weekEnding);
+    const weekStart = addDays(weekEnd, -6);
+
+    const weekDays: Date[] = Array.from({ length: 7 }).map((_, index) =>
+      addDays(weekStart, index),
+    );
+
+    const orderedWeekDays =
+      sortMode === "newest" ? [...weekDays].reverse() : weekDays;
+
+    const dailyRows: DayRow[] = orderedWeekDays.map((day) => {
+      const date = day.toISOString().slice(0, 10);
+      const entriesForDay = dailyEntries.filter((entry) => entry.date === date);
+
+      const bySlot = entriesForDay.reduce<
+        Record<"workout1" | "workout2", DailyEntry[]>
+      >(
+        (acc, entry) => {
+          acc[entry.slot].push(entry);
+          return acc;
+        },
+        { workout1: [], workout2: [] },
+      );
+
+      const formatSlotEntries = (list: DailyEntry[]) => {
+        if (!list.length) return undefined;
+        return list
+          .map((e) => `${e.description} (${formatMiles(e.miles)})`)
+          .join("\n");
+      };
+
+      const hasHighlight = (list: DailyEntry[]) =>
+        list.some((e) => e.highlight);
+
+      const totalMiles = entriesForDay.reduce(
+        (sum, entry) => sum + entry.miles,
+        0,
+      );
+
+      return {
+        date,
+        dayLabel: formatDayLabel(date),
+        workout1: formatSlotEntries(bySlot.workout1),
+        workout1Highlight: hasHighlight(bySlot.workout1),
+        workout2: formatSlotEntries(bySlot.workout2),
+        workout2Highlight: hasHighlight(bySlot.workout2),
+        totalMiles,
+      };
+    });
+
+    return {
+      weekEnding,
+      dailyRows,
+      weeklySummary: summaryByDate.get(weekEnding),
+    };
+  });
+};
+
+/* ------------------------------------------------------------------ */
+/*  Styles (CSS-in-JS kept close to the component)                     */
+/* ------------------------------------------------------------------ */
+
+const styles = {
+  weekHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "6px 8px",
+    fontWeight: 600,
+    fontSize: 13,
+    color: "#16191f",
+    borderBottom: "2px solid #e9ebed",
+  } as React.CSSProperties,
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse" as const,
+    tableLayout: "fixed" as const,
+    fontSize: 13,
+    lineHeight: 1.35,
+  } as React.CSSProperties,
+
+  th: {
+    textAlign: "left" as const,
+    padding: "4px 8px",
+    fontWeight: 600,
+    fontSize: 11,
+    textTransform: "uppercase" as const,
+    color: "#687078",
+    borderBottom: "1px solid #e9ebed",
+  } as React.CSSProperties,
+
+  td: {
+    padding: "3px 8px",
+    verticalAlign: "top" as const,
+    borderBottom: "1px solid #f2f3f3",
+    color: "#16191f",
+  } as React.CSSProperties,
+
+  dayCell: {
+    fontWeight: 600,
+    whiteSpace: "nowrap" as const,
+    width: 36,
+  } as React.CSSProperties,
+
+  milesCell: {
+    textAlign: "right" as const,
+    whiteSpace: "nowrap" as const,
+    fontWeight: 500,
+    width: 32,
+  } as React.CSSProperties,
+
+  emptyCell: {
+    color: "#aab7b8",
+  } as React.CSSProperties,
+
+  highlightCell: {
+    fontWeight: 600,
+    color: "#0972d3",
+  } as React.CSSProperties,
+
+  workoutCell: {
+    whiteSpace: "pre-line" as const,
+  } as React.CSSProperties,
+
+  summary: {
+    padding: "4px 8px 8px",
+    fontSize: 12,
+    color: "#545b64",
+    lineHeight: 1.4,
+    whiteSpace: "pre-line" as const,
+  } as React.CSSProperties,
+} as const;
+
+/* ------------------------------------------------------------------ */
+/*  Sub-components                                                     */
+/* ------------------------------------------------------------------ */
+
+const WeekCard: React.FC<{ week: WeekGroup }> = ({ week }) => {
+  const totalMiles = week.dailyRows.reduce((s, r) => s + r.totalMiles, 0);
+
+  return (
+    <div>
+      <div style={styles.weekHeader}>
+        <span>Week ending {formatWeekEnding(week.weekEnding)}</span>
+        <span>{formatMiles(totalMiles)} mi</span>
+      </div>
+
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={{ ...styles.th, width: 40 }}>Day</th>
+            <th style={{ ...styles.th, width: "42%" }}>Workout 1</th>
+            <th style={{ ...styles.th, width: "42%" }}>Workout 2</th>
+            <th style={{ ...styles.th, textAlign: "right", width: 40 }}>Mi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {week.dailyRows.map((row) => {
+            const hasActivity = row.workout1 || row.workout2;
+            return (
+              <tr
+                key={row.date}
+                style={!hasActivity ? { opacity: 0.45 } : undefined}
+              >
+                <td style={{ ...styles.td, ...styles.dayCell }}>
+                  {row.dayLabel}
+                </td>
+                <td style={{ ...styles.td, ...styles.workoutCell }}>
+                  {row.workout1 ? (
+                    <span
+                      style={
+                        row.workout1Highlight ? styles.highlightCell : undefined
+                      }
+                    >
+                      {row.workout1}
+                    </span>
+                  ) : (
+                    <span style={styles.emptyCell}>—</span>
+                  )}
+                </td>
+                <td style={{ ...styles.td, ...styles.workoutCell }}>
+                  {row.workout2 ? (
+                    <span
+                      style={
+                        row.workout2Highlight ? styles.highlightCell : undefined
+                      }
+                    >
+                      {row.workout2}
+                    </span>
+                  ) : (
+                    <span style={styles.emptyCell}>—</span>
+                  )}
+                </td>
+                <td style={{ ...styles.td, ...styles.milesCell }}>
+                  {row.totalMiles > 0 ? formatMiles(row.totalMiles) : "—"}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {week.weeklySummary && (
+        <div style={styles.summary}>{week.weeklySummary.description}</div>
+      )}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                     */
+/* ------------------------------------------------------------------ */
+
+const TrainingLog: React.FC = () => {
+  const [activeLogId, setActiveLogId] = useState(sectionConfigs[0].id);
+  const [sortMode, setSortMode] = useState<SortMode>("newest");
+  const [sectionState, setSectionState] = useState<
+    Record<string, SectionState>
+  >({});
+
+  const loadSection = useCallback(async (sectionId: string) => {
+    setSectionState((current) => {
+      if (
+        current[sectionId]?.status === "loaded" ||
+        current[sectionId]?.status === "loading"
+      ) {
+        return current;
+      }
+      return { ...current, [sectionId]: { status: "loading" } };
+    });
+
+    try {
+      const allEntries: TrainingLogEntry[] = [];
+      let cursor: string | null = null;
+      let sectionName =
+        sectionConfigs.find((section) => section.id === sectionId)?.name ??
+        sectionId;
+
+      for (let page = 0; page < 20; page += 1) {
+        const params = new URLSearchParams({ sectionId, limit: "1000" });
+        if (cursor) {
+          params.set("cursor", cursor);
+        }
+
+        const response = await fetch(`/api/training-log?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Request failed with ${response.status}`);
+        }
+
+        const data = (await response.json()) as TrainingLogSection & {
+          nextCursor?: string | null;
+        };
+        sectionName = data.name;
+        allEntries.push(...(data.entries ?? []));
+
+        cursor =
+          typeof data.nextCursor === "string" && data.nextCursor.length > 0
+            ? data.nextCursor
+            : null;
+        if (!cursor) {
+          break;
+        }
+      }
+
+      const data: TrainingLogSection = {
+        id: sectionId,
+        name: sectionName,
+        entries: allEntries,
+      };
+      setSectionState((current) => ({
+        ...current,
+        [sectionId]: { status: "loaded", data },
+      }));
+    } catch (error) {
+      setSectionState((current) => ({
+        ...current,
+        [sectionId]: {
+          status: "error",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSection(activeLogId);
+  }, [activeLogId, loadSection]);
+
+  const renderContent = () => {
+    const state = sectionState[activeLogId];
+
+    if (!state || state.status === "idle" || state.status === "loading") {
+      return (
+        <Box padding={{ vertical: "l" }} textAlign="center">
+          <Spinner size="large" />
+        </Box>
+      );
+    }
+
+    if (state.status === "error") {
+      return <StatusIndicator type="error">{state.message}</StatusIndicator>;
+    }
+
+    const weekGroups = buildWeekGroups(state.data.entries, sortMode);
+
+    return (
+      <SpaceBetween size="l">
+        {weekGroups.map((week) => (
+          <WeekCard key={week.weekEnding} week={week} />
+        ))}
+      </SpaceBetween>
+    );
+  };
+
+  const sectionName =
+    sectionConfigs.find((s) => s.id === activeLogId)?.name ?? "Training Log";
+
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <SpaceBetween size="s">
+          <SegmentedControl
+            selectedId={sortMode}
+            onChange={({ detail }) =>
+              setSortMode(detail.selectedId as SortMode)
+            }
+            options={[
+              { id: "newest", text: "Newest first" },
+              { id: "oldest", text: "Oldest first" },
+            ]}
+          />
+
+          {sectionConfigs.length > 1 && (
+            <SegmentedControl
+              selectedId={activeLogId}
+              onChange={({ detail }) => setActiveLogId(detail.selectedId)}
+              options={sectionConfigs.map((s) => ({
+                id: s.id,
+                text: s.name,
+              }))}
+            />
+          )}
+        </SpaceBetween>
+      </div>
+
+      <Container header={<Header variant="h1">{sectionName}</Header>}>
+        {renderContent()}
+      </Container>
+    </div>
+  );
+};
+
+export default TrainingLog;
