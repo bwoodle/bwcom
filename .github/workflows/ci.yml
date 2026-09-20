@@ -147,7 +147,7 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false -lock=false -no-color
         env:
-          TF_VAR_origin_secret: ${{ secrets.ORIGIN_SECRET }}
+          TF_VAR_origin_secret: ${{ secrets.ORIGIN_SECRET != '' && secrets.ORIGIN_SECRET || secrets.NEXTAUTH_SECRET }}
           TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
 
   deploy:
@@ -233,7 +233,7 @@ jobs:
       - name: Deploy serverless site + API (prod)
         run: ./scripts/deploy-serverless-spa.sh prod
         env:
-          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET != '' && secrets.ORIGIN_SECRET || secrets.NEXTAUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           IMAGES_BASE_URL: ${{ env.IMAGE_CDN_BASE_URL }}
 
@@ -292,6 +292,6 @@ jobs:
       - name: Deploy serverless site + API (selected env)
         run: ./scripts/deploy-serverless-spa.sh ${{ inputs.environment }}
         env:
-          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET != '' && secrets.ORIGIN_SECRET || secrets.NEXTAUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           IMAGES_BASE_URL: ${{ env.IMAGE_CDN_BASE_URL }}
