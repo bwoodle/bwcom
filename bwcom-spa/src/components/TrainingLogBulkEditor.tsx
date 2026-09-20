@@ -1,0 +1,865 @@
+"use client";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Container,
+  FormField,
+  Header,
+  Input,
+  SpaceBetween,
+  Spinner,
+  StatusIndicator,
+  Textarea,
+  SegmentedControl,
+} from "@cloudscape-design/components";
+import type {
+  TrainingLogBatchUpdateItem,
+  TrainingLogBatchUpdateResponse,
+  TrainingLogCreateRequest,
+  TrainingLogCreateResponse,
+  TrainingLogEntry,
+  TrainingLogSection,
+} from "../types/training-log";
+import { TRAINING_LOG_SECTIONS } from "../lib/training-log-config";
+import { buildAdminAuthHeaders } from "../lib/admin-auth";
+
+type RowDraft = {
+  description?: string;
+  miles?: number;
+  highlight?: boolean;
+};
+
+type RowErrorMap = Record<string, string>;
+
+type EditorStatus = "idle" | "loading" | "loaded" | "error";
+
+const logConfigs = TRAINING_LOG_SECTIONS;
+
+function parseDate(date: string): number {
+  return new Date(`${date}T00:00:00`).getTime();
+}
+
+function isDaily(
+  entry: TrainingLogEntry,
+): entry is Extract<TrainingLogEntry, { entryType: "daily" }> {
+  return entry.entryType === "daily";
+}
+
+function initialDraft(entry: TrainingLogEntry): RowDraft {
+  if (isDaily(entry)) {
+    return {
+      description: entry.description,
+      miles: entry.miles,
+      highlight: Boolean(entry.highlight),
+    };
+  }
+  return { description: entry.description };
+}
+
+function hasDraftChanges(
+  entry: TrainingLogEntry,
+  draft: RowDraft | undefined,
+): boolean {
+  if (!draft) return false;
+
+  if (
+    draft.description !== undefined &&
+    draft.description !== entry.description
+  ) {
+    return true;
+  }
+
+  if (isDaily(entry)) {
+    if (draft.miles !== undefined && draft.miles !== entry.miles) {
+      return true;
+    }
+    if (
+      draft.highlight !== undefined &&
+      Boolean(draft.highlight) !== Boolean(entry.highlight)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function nextEntry(
+  entry: TrainingLogEntry,
+  update: TrainingLogBatchUpdateItem,
+): TrainingLogEntry {
+  if (entry.entryType === "week") {
+    return {
+      ...entry,
+      ...(update.description !== undefined
+        ? { description: update.description }
+        : {}),
+    };
+  }
+
+  return {
+    ...entry,
+    ...(update.description !== undefined
+      ? { description: update.description }
+      : {}),
+    ...(update.miles !== undefined ? { miles: update.miles } : {}),
+    ...(update.highlight !== undefined
+      ? update.highlight
+        ? { highlight: true }
+        : { highlight: undefined }
+      : {}),
+  };
+}
+
+const TrainingLogBulkEditor: React.FC = () => {
+  const [activeLogId, setActiveLogId] = useState<string>(logConfigs[0].id);
+  const [status, setStatus] = useState<EditorStatus>("loading");
+  const [error, setError] = useState<string | null>(null);
+  const [section, setSection] = useState<TrainingLogSection | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
+  const [selectedSk, setSelectedSk] = useState<Record<string, boolean>>({});
+  const [rowErrors, setRowErrors] = useState<RowErrorMap>({});
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [newEntryType, setNewEntryType] = useState<"daily" | "week">("daily");
+  const [newDate, setNewDate] = useState("");
+  const [newSlot, setNewSlot] = useState<"workout1" | "workout2">("workout1");
+  const [newDescription, setNewDescription] = useState("");
+  const [newMiles, setNewMiles] = useState("");
+  const [newHighlight, setNewHighlight] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createMessage, setCreateMessage] = useState<string | null>(null);
+
+  const resetSectionState = useCallback(() => {
+    setStatus("loading");
+    setError(null);
+    setSaveMessage(null);
+    setRowErrors({});
+    setDrafts({});
+    setSelectedSk({});
+  }, []);
+
+  const loadSection = useCallback(async (logId: string) => {
+    try {
+      const response = await fetch(`/api/training-log?sectionId=${logId}`);
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = (await response.json()) as TrainingLogSection;
+      setSection(data);
+      setStatus("loaded");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+      setStatus("error");
+    }
+  }, []);
+
+  const refreshSection = useCallback(() => {
+    resetSectionState();
+    void loadSection(activeLogId);
+  }, [activeLogId, loadSection, resetSectionState]);
+
+  useEffect(() => {
+    // The effect triggers an async fetch; state updates happen from the response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadSection(activeLogId);
+  }, [activeLogId, loadSection]);
+
+  const sortedEntries = useMemo(() => {
+    const entries = section?.entries ?? [];
+    return [...entries].sort((a, b) => {
+      const dateDelta = parseDate(b.date) - parseDate(a.date);
+      if (dateDelta !== 0) return dateDelta;
+      return a.sk.localeCompare(b.sk);
+    });
+  }, [section]);
+
+  const filteredEntries = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return sortedEntries.filter((entry) => {
+      const inDateRange =
+        (!startDate || entry.date >= startDate) &&
+        (!endDate || entry.date <= endDate);
+
+      if (!inDateRange) return false;
+      if (!normalizedQuery) return true;
+
+      return (
+        entry.description.toLowerCase().includes(normalizedQuery) ||
+        entry.sk.toLowerCase().includes(normalizedQuery) ||
+        entry.date.includes(normalizedQuery)
+      );
+    });
+  }, [sortedEntries, query, startDate, endDate]);
+
+  const dirtyCount = useMemo(
+    () =>
+      sortedEntries.reduce((count, entry) => {
+        return count + (hasDraftChanges(entry, drafts[entry.sk]) ? 1 : 0);
+      }, 0),
+    [sortedEntries, drafts],
+  );
+
+  const selectedCount = useMemo(
+    () => Object.values(selectedSk).filter(Boolean).length,
+    [selectedSk],
+  );
+
+  const selectedDirtyEntries = useMemo(() => {
+    return sortedEntries.filter(
+      (entry) =>
+        selectedSk[entry.sk] && hasDraftChanges(entry, drafts[entry.sk]),
+    );
+  }, [sortedEntries, selectedSk, drafts]);
+
+  const onToggleSelectAllVisible = (checked: boolean) => {
+    setSelectedSk((current) => {
+      const next = { ...current };
+      for (const entry of filteredEntries) {
+        next[entry.sk] = checked;
+      }
+      return next;
+    });
+  };
+
+  const onRowSelect = (sk: string, checked: boolean) => {
+    setSelectedSk((current) => ({ ...current, [sk]: checked }));
+  };
+
+  const onDescriptionChange = (entry: TrainingLogEntry, value: string) => {
+    setDrafts((current) => ({
+      ...current,
+      [entry.sk]: {
+        ...initialDraft(entry),
+        ...current[entry.sk],
+        description: value,
+      },
+    }));
+  };
+
+  const onMilesChange = (entry: TrainingLogEntry, value: string) => {
+    if (!isDaily(entry)) return;
+
+    const parsed = Number(value);
+    setDrafts((current) => ({
+      ...current,
+      [entry.sk]: {
+        ...initialDraft(entry),
+        ...current[entry.sk],
+        ...(Number.isFinite(parsed) ? { miles: parsed } : {}),
+      },
+    }));
+  };
+
+  const onHighlightChange = (entry: TrainingLogEntry, checked: boolean) => {
+    if (!isDaily(entry)) return;
+
+    setDrafts((current) => ({
+      ...current,
+      [entry.sk]: {
+        ...initialDraft(entry),
+        ...current[entry.sk],
+        highlight: checked,
+      },
+    }));
+  };
+
+  const onSaveSelected = async () => {
+    if (!section || selectedDirtyEntries.length === 0) return;
+
+    setIsSaving(true);
+    setSaveMessage(null);
+    setRowErrors({});
+
+    const updates: TrainingLogBatchUpdateItem[] = selectedDirtyEntries.map(
+      (entry) => {
+        const draft = drafts[entry.sk] ?? {};
+        const next: TrainingLogBatchUpdateItem = { sk: entry.sk };
+
+        if (
+          draft.description !== undefined &&
+          draft.description !== entry.description
+        ) {
+          next.description = draft.description;
+        }
+
+        if (isDaily(entry)) {
+          if (draft.miles !== undefined && draft.miles !== entry.miles) {
+            next.miles = draft.miles;
+          }
+          if (
+            draft.highlight !== undefined &&
+            draft.highlight !== Boolean(entry.highlight)
+          ) {
+            next.highlight = draft.highlight;
+          }
+        }
+
+        return next;
+      },
+    );
+
+    try {
+      const response = await fetch("/api/training-log", {
+        method: "PATCH",
+        headers: buildAdminAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ logId: section.id, updates }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      const result = (await response.json()) as TrainingLogBatchUpdateResponse;
+      const updateBySk = new Map(updates.map((update) => [update.sk, update]));
+
+      setSection((current) => {
+        if (!current) return current;
+
+        const succeeded = new Set(
+          result.results.filter((row) => row.success).map((row) => row.sk),
+        );
+
+        return {
+          ...current,
+          entries: current.entries.map((entry) => {
+            if (!succeeded.has(entry.sk)) return entry;
+            return nextEntry(
+              entry,
+              updateBySk.get(entry.sk) ?? { sk: entry.sk },
+            );
+          }),
+        };
+      });
+
+      setDrafts((current) => {
+        const next = { ...current };
+        for (const row of result.results) {
+          if (row.success) {
+            delete next[row.sk];
+          }
+        }
+        return next;
+      });
+
+      const nextRowErrors: RowErrorMap = {};
+      for (const row of result.results) {
+        if (!row.success && row.error) {
+          nextRowErrors[row.sk] = row.error;
+        }
+      }
+      setRowErrors(nextRowErrors);
+
+      setSaveMessage(
+        `Saved ${result.successCount} updates.${
+          result.failureCount > 0
+            ? ` ${result.failureCount} failed rows need attention.`
+            : ""
+        }`,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown save error";
+      setSaveMessage(`Save failed: ${message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const onCreateEntry = async () => {
+    if (!section) return;
+
+    setCreateMessage(null);
+    if (!newDate) {
+      setCreateMessage("Date is required.");
+      return;
+    }
+    if (!newDescription.trim()) {
+      setCreateMessage("Description is required.");
+      return;
+    }
+    if (newEntryType === "daily" && !Number.isFinite(Number(newMiles))) {
+      setCreateMessage("Miles must be a valid number for daily entries.");
+      return;
+    }
+
+    const payload: TrainingLogCreateRequest = {
+      logId: section.id,
+      entryType: newEntryType,
+      date: newDate,
+      description: newDescription.trim(),
+      ...(newEntryType === "daily"
+        ? {
+            slot: newSlot,
+            miles: Number(newMiles),
+            ...(newHighlight ? { highlight: true } : {}),
+          }
+        : {}),
+    };
+
+    setIsCreating(true);
+    try {
+      const response = await fetch("/api/training-log", {
+        method: "POST",
+        headers: buildAdminAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload),
+      });
+
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          body?.error || `Create failed with status ${response.status}`,
+        );
+      }
+
+      const result = body as TrainingLogCreateResponse;
+      setSection((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          entries: [result.entry, ...current.entries],
+        };
+      });
+      setCreateMessage("Entry created.");
+      setNewDescription("");
+      setNewMiles("");
+      setNewHighlight(false);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unknown create error";
+      setCreateMessage(`Create failed: ${message}`);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const allVisibleSelected =
+    filteredEntries.length > 0 &&
+    filteredEntries.every((entry) => Boolean(selectedSk[entry.sk]));
+
+  return (
+    <Container
+      header={
+        <Header
+          variant="h2"
+          actions={
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button onClick={refreshSection} disabled={status === "loading"}>
+                Refresh
+              </Button>
+              <Button
+                variant="primary"
+                onClick={onSaveSelected}
+                disabled={isSaving || selectedDirtyEntries.length === 0}
+                loading={isSaving}
+              >
+                Save selected changes ({selectedDirtyEntries.length})
+              </Button>
+            </SpaceBetween>
+          }
+        >
+          Training Log Bulk Editor
+        </Header>
+      }
+    >
+      <SpaceBetween size="m">
+        <SegmentedControl
+          selectedId={activeLogId}
+          onChange={({ detail }) => {
+            resetSectionState();
+            setActiveLogId(detail.selectedId);
+          }}
+          options={logConfigs.map((config) => ({
+            id: config.id,
+            text: config.name,
+          }))}
+        />
+
+        <Container header={<Header variant="h3">New Entry</Header>}>
+          <SpaceBetween size="m">
+            <SpaceBetween direction="horizontal" size="l">
+              <FormField label="Entry type">
+                <SegmentedControl
+                  selectedId={newEntryType}
+                  onChange={({ detail }) =>
+                    setNewEntryType(detail.selectedId as "daily" | "week")
+                  }
+                  options={[
+                    { id: "daily", text: "Daily workout" },
+                    { id: "week", text: "Weekly summary" },
+                  ]}
+                />
+              </FormField>
+              <FormField label="Date">
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(event) => setNewDate(event.target.value)}
+                />
+              </FormField>
+              {newEntryType === "daily" && (
+                <FormField label="Slot">
+                  <SegmentedControl
+                    selectedId={newSlot}
+                    onChange={({ detail }) =>
+                      setNewSlot(detail.selectedId as "workout1" | "workout2")
+                    }
+                    options={[
+                      { id: "workout1", text: "Workout 1" },
+                      { id: "workout2", text: "Workout 2" },
+                    ]}
+                  />
+                </FormField>
+              )}
+              {newEntryType === "daily" && (
+                <FormField label="Miles">
+                  <Input
+                    type="number"
+                    step={0.1}
+                    value={newMiles}
+                    onChange={({ detail }) => setNewMiles(detail.value)}
+                    placeholder="e.g. 8.5"
+                  />
+                </FormField>
+              )}
+              {newEntryType === "daily" && (
+                <FormField label="Highlight">
+                  <Checkbox
+                    checked={newHighlight}
+                    onChange={({ detail }) => setNewHighlight(detail.checked)}
+                  >
+                    Mark as highlight
+                  </Checkbox>
+                </FormField>
+              )}
+            </SpaceBetween>
+
+            <FormField
+              label={
+                newEntryType === "daily"
+                  ? "Workout description"
+                  : "Weekly summary"
+              }
+              description={
+                newEntryType === "week"
+                  ? "Weekly summaries must use a Sunday date."
+                  : undefined
+              }
+            >
+              <Textarea
+                rows={3}
+                value={newDescription}
+                onChange={({ detail }) => setNewDescription(detail.value)}
+              />
+            </FormField>
+
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                variant="primary"
+                onClick={onCreateEntry}
+                loading={isCreating}
+              >
+                Add entry
+              </Button>
+              {createMessage && (
+                <StatusIndicator
+                  type={
+                    createMessage.startsWith("Create failed")
+                      ? "error"
+                      : "success"
+                  }
+                >
+                  {createMessage}
+                </StatusIndicator>
+              )}
+            </SpaceBetween>
+          </SpaceBetween>
+        </Container>
+
+        <SpaceBetween direction="horizontal" size="l">
+          <FormField label="Search">
+            <Input
+              value={query}
+              onChange={({ detail }) => setQuery(detail.value)}
+              placeholder="description, date, or key"
+            />
+          </FormField>
+
+          <FormField label="Start date">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+            />
+          </FormField>
+
+          <FormField label="End date">
+            <input
+              type="date"
+              value={endDate}
+              onChange={(event) => setEndDate(event.target.value)}
+            />
+          </FormField>
+        </SpaceBetween>
+
+        <Box color="text-body-secondary">
+          {filteredEntries.length} rows visible, {selectedCount} selected,{" "}
+          {dirtyCount} dirty
+        </Box>
+
+        {saveMessage && (
+          <StatusIndicator
+            type={saveMessage.includes("failed") ? "warning" : "success"}
+          >
+            {saveMessage}
+          </StatusIndicator>
+        )}
+
+        {status === "loading" && (
+          <Box textAlign="center" padding={{ vertical: "l" }}>
+            <Spinner size="large" />
+          </Box>
+        )}
+
+        {status === "error" && error && (
+          <StatusIndicator type="error">{error}</StatusIndicator>
+        )}
+
+        {status === "loaded" && section && (
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: 1100,
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={{ borderBottom: "1px solid #d5dbdb", padding: 8 }}>
+                    <Checkbox
+                      checked={allVisibleSelected}
+                      onChange={({ detail }) =>
+                        onToggleSelectAllVisible(detail.checked)
+                      }
+                      ariaLabel="Select all visible rows"
+                    />
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Date
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Type
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Slot
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Miles
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    Highlight
+                  </th>
+                  <th
+                    style={{
+                      borderBottom: "1px solid #d5dbdb",
+                      padding: 8,
+                      textAlign: "left",
+                    }}
+                  >
+                    State
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.map((entry) => {
+                  const draft = drafts[entry.sk];
+                  const isDirty = hasDraftChanges(entry, draft);
+                  const rowError = rowErrors[entry.sk];
+                  const description = draft?.description ?? entry.description;
+                  const miles = isDaily(entry)
+                    ? String(draft?.miles ?? entry.miles)
+                    : "n/a";
+                  const highlight = isDaily(entry)
+                    ? Boolean(draft?.highlight ?? entry.highlight)
+                    : false;
+
+                  return (
+                    <tr
+                      key={entry.sk}
+                      style={isDirty ? { background: "#f3fbff" } : undefined}
+                    >
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
+                        <Checkbox
+                          checked={Boolean(selectedSk[entry.sk])}
+                          onChange={({ detail }) =>
+                            onRowSelect(entry.sk, detail.checked)
+                          }
+                          ariaLabel={`Select ${entry.sk}`}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {entry.date}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
+                        {entry.entryType}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                        }}
+                      >
+                        {entry.entryType === "daily" ? entry.slot : "—"}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          minWidth: 480,
+                        }}
+                      >
+                        <Textarea
+                          value={description}
+                          rows={3}
+                          onChange={({ detail }) =>
+                            onDescriptionChange(entry, detail.value)
+                          }
+                          ariaLabel={`Description ${entry.sk}`}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          width: 120,
+                        }}
+                      >
+                        {isDaily(entry) ? (
+                          <Input
+                            value={miles}
+                            type="number"
+                            step={0.1}
+                            onChange={({ detail }) =>
+                              onMilesChange(entry, detail.value)
+                            }
+                            ariaLabel={`Miles ${entry.sk}`}
+                          />
+                        ) : (
+                          <Box color="text-body-secondary">n/a</Box>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          width: 120,
+                        }}
+                      >
+                        {isDaily(entry) ? (
+                          <Checkbox
+                            checked={highlight}
+                            onChange={({ detail }) =>
+                              onHighlightChange(entry, detail.checked)
+                            }
+                            ariaLabel={`Highlight ${entry.sk}`}
+                          />
+                        ) : (
+                          <Box color="text-body-secondary">n/a</Box>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #eaeded",
+                          padding: 8,
+                          minWidth: 220,
+                        }}
+                      >
+                        {rowError ? (
+                          <StatusIndicator type="error">
+                            {rowError}
+                          </StatusIndicator>
+                        ) : isDirty ? (
+                          <StatusIndicator type="info">Dirty</StatusIndicator>
+                        ) : (
+                          <StatusIndicator type="success">
+                            Clean
+                          </StatusIndicator>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SpaceBetween>
+    </Container>
+  );
+};
+
+export default TrainingLogBulkEditor;

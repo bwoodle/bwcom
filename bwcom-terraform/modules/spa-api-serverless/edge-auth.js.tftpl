@@ -1,0 +1,30 @@
+function handler(event) {
+  var request = event.request;
+  var headers = request.headers || {};
+  var hostHeader = headers.host && headers.host.value ? headers.host.value.toLowerCase() : "";
+  var uri = request.uri || "/";
+
+  if (hostHeader === "woodle.org" || hostHeader === "www.woodle.org") {
+    return {
+      statusCode: 301,
+      statusDescription: "Moved Permanently",
+      headers: {
+        location: {
+          value: "https://brentwoodle.com" + request.uri,
+        },
+      },
+    };
+  }
+
+  request.headers["x-origin-secret"] = {
+    value: "${origin_secret}",
+  };
+
+  var isApiPath = uri === "/api" || uri.indexOf("/api/") === 0;
+  var hasExtension = uri.lastIndexOf(".") > uri.lastIndexOf("/");
+  if (!isApiPath && !hasExtension) {
+    request.uri = "/index.html";
+  }
+
+  return request;
+}

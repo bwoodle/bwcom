@@ -1,12 +1,25 @@
 name: Deploy brentwoodle.com to AWS
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for manual serverless deployment'
+        required: true
+        type: choice
+        default: test
+        options:
+          - test
+          - prod
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   repo-checks:
     if: github.event_name == 'pull_request'
@@ -14,31 +27,50 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: pip
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: bwcom-next/package-lock.json
+          cache-dependency-path: |
+            bwcom-next/package-lock.json
+            bwcom-spa/package-lock.json
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
       - name: Install just
         run: |
           sudo apt-get update
           sudo apt-get install -y just
+
       - name: Bootstrap repo tooling
         run: just bootstrap
+
       - name: Run repo lint
         run: just lint
+
       - name: Run unit tests
         run: just test
+
       - name: Build Next.js app
         run: just _next-build
+
+      - name: Build SPA app
+        run: |
+          cd bwcom-spa
+          npm ci
+          VITE_IMAGES_BASE_URL=https://d1645k04l4065v.cloudfront.net \
+          VITE_GOOGLE_CLIENT_ID=fake-client-id \
+          VITE_APP_VERSION=${GITHUB_SHA} \
+          npm run build
 
   terraform-prod-data-plan:
     # Dependabot PRs do not receive repository secrets, so skip AWS-backed plans.
@@ -50,14 +82,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
       - name: Read image CDN outputs
         run: |
           IMAGE_CDN_ARN=$(aws cloudformation describe-stacks \
@@ -72,43 +107,48 @@ jobs:
           fi
 
           echo "TF_VAR_images_cloudfront_distribution_arns=[\"${IMAGE_CDN_ARN}\"]" >> "$GITHUB_ENV"
+
       - name: Terraform Init
         run: terraform init -input=false
+
       - name: Terraform Validate
         run: terraform validate -no-color
+
       - name: Terraform Plan
         run: terraform plan -input=false -lock=false -no-color
 
-  terraform-prod-plan:
+  terraform-prod-serverless-plan:
     # Dependabot PRs do not receive repository secrets, so skip AWS-backed plans.
     if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
     defaults:
       run:
-        working-directory: bwcom-terraform/env/prod
+        working-directory: bwcom-terraform/env/prod-serverless
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Init
         run: terraform init -input=false
+
       - name: Terraform Validate
         run: terraform validate -no-color
+
       - name: Terraform Plan
         run: terraform plan -input=false -lock=false -no-color
         env:
-          TF_VAR_nextauth_secret: ${{ secrets.NEXTAUTH_SECRET }}
-          TF_VAR_nextauth_url: https://brentwoodle.com
+          TF_VAR_origin_secret: ${{ secrets.ORIGIN_SECRET }}
           TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
-          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TF_VAR_image_tag: ${{ github.event.pull_request.head.sha }}
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -116,14 +156,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Deploy image CDN stack (prod)
         run: |
           if aws cloudformation describe-stacks --region us-east-1 --stack-name bwcom-images-cdn-prod >/dev/null 2>&1; then
@@ -145,6 +188,7 @@ jobs:
             --template-file cfn/bwcom-static/s3-cloudfront-stack/images-cdn.yml \
             --parameter-overrides BucketName=brentwoodle.com CreateDNS=false \
             --no-fail-on-empty-changeset
+
       - name: Read image CDN outputs
         run: |
           IMAGE_CDN_DOMAIN=$(aws cloudformation describe-stacks \
@@ -165,28 +209,18 @@ jobs:
 
           echo "IMAGE_CDN_BASE_URL=https://${IMAGE_CDN_DOMAIN}" >> "$GITHUB_ENV"
           echo "IMAGE_CDN_ARN=${IMAGE_CDN_ARN}" >> "$GITHUB_ENV"
-      - name: Login to ECR
-        run: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 685339315795.dkr.ecr.us-west-2.amazonaws.com
-      - name: Build and Push Docker
-        run: |
-          SHA=${GITHUB_SHA}
-          docker buildx build \
-            --cache-from type=gha \
-            --cache-to type=gha,mode=max \
-            --build-arg NEXT_PUBLIC_IMAGES_BASE_URL=${IMAGE_CDN_BASE_URL} \
-            -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:${SHA} \
-            -t 685339315795.dkr.ecr.us-west-2.amazonaws.com/bwcom-next:latest \
-            ./bwcom-next --push
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+
       - name: Terraform Init (prod-data)
         run: terraform init
         working-directory: bwcom-terraform/env/prod-data
+
       - name: Terraform Apply (prod-data)
         run: terraform apply -auto-approve -var='images_cloudfront_distribution_arns=["'"${IMAGE_CDN_ARN}"'"]'
         working-directory: bwcom-terraform/env/prod-data
+
       - name: Sync images to S3
         run: ./scripts/sync-images.sh brentwoodle.com
+
       - name: Smoke test image CDN
         run: |
           URL="${IMAGE_CDN_BASE_URL}/web-content/thumbs/1.jpg"
@@ -195,24 +229,69 @@ jobs:
             echo "Image CDN smoke test failed: $URL returned $HTTP_CODE" >&2
             exit 1
           fi
-      - name: Terraform Init
+
+      - name: Deploy serverless site + API (prod)
+        run: ./scripts/deploy-serverless-spa.sh prod
+        env:
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          IMAGES_BASE_URL: ${{ env.IMAGE_CDN_BASE_URL }}
+
+  deploy-manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Read image CDN outputs
+        run: |
+          IMAGE_CDN_DOMAIN=$(aws cloudformation describe-stacks \
+            --region us-east-1 \
+            --stack-name bwcom-images-cdn-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" \
+            --output text)
+          IMAGE_CDN_ARN=$(aws cloudformation describe-stacks \
+            --region us-east-1 \
+            --stack-name bwcom-images-cdn-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionArn'].OutputValue" \
+            --output text)
+
+          if [[ -z "${IMAGE_CDN_DOMAIN}" || -z "${IMAGE_CDN_ARN}" ]]; then
+            echo "Missing CloudFront outputs from bwcom-images-cdn-prod" >&2
+            exit 1
+          fi
+
+          echo "IMAGE_CDN_BASE_URL=https://${IMAGE_CDN_DOMAIN}" >> "$GITHUB_ENV"
+          echo "IMAGE_CDN_ARN=${IMAGE_CDN_ARN}" >> "$GITHUB_ENV"
+
+      - name: Terraform Init (prod-data)
+        if: ${{ inputs.environment == 'prod' }}
         run: terraform init
-        working-directory: bwcom-terraform/env/prod
-      - name: Terraform Plan
-        run: terraform plan
-        working-directory: bwcom-terraform/env/prod
+        working-directory: bwcom-terraform/env/prod-data
+
+      - name: Terraform Apply (prod-data)
+        if: ${{ inputs.environment == 'prod' }}
+        run: terraform apply -auto-approve -var='images_cloudfront_distribution_arns=["'"${IMAGE_CDN_ARN}"'"]'
+        working-directory: bwcom-terraform/env/prod-data
+
+      - name: Sync images to S3
+        if: ${{ inputs.environment == 'prod' }}
+        run: ./scripts/sync-images.sh brentwoodle.com
+
+      - name: Deploy serverless site + API (selected env)
+        run: ./scripts/deploy-serverless-spa.sh ${{ inputs.environment }}
         env:
-          TF_VAR_nextauth_secret: ${{ secrets.NEXTAUTH_SECRET }}
-          TF_VAR_nextauth_url: https://brentwoodle.com
-          TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
-          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TF_VAR_image_tag: ${{ github.sha }}
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: bwcom-terraform/env/prod
-        env:
-          TF_VAR_nextauth_secret: ${{ secrets.NEXTAUTH_SECRET }}
-          TF_VAR_nextauth_url: https://brentwoodle.com
-          TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
-          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TF_VAR_image_tag: ${{ github.sha }}
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          IMAGES_BASE_URL: ${{ env.IMAGE_CDN_BASE_URL }}
