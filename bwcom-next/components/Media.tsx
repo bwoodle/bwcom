@@ -4,7 +4,7 @@ import React from "react";
 import { Box } from "@cloudscape-design/components";
 import { formatMediaRating } from "@/lib/media";
 import type { MediaItem } from "@/types/media";
-import GroupedTablePage from "./GroupedTablePage";
+import ContinuousTablePage from "./ContinuousTablePage";
 
 const mediaTrackingNote = (
   <span
@@ -26,7 +26,7 @@ const mediaTrackingNote = (
 );
 
 const Media: React.FC = () => (
-  <GroupedTablePage<MediaItem>
+  <ContinuousTablePage<MediaItem>
     title="Media"
     headerDescription={mediaTrackingNote}
     apiUrl="/api/media"
@@ -44,19 +44,19 @@ const Media: React.FC = () => (
         id: "title",
         header: "Title",
         cell: (item) => item.title,
-        width: 280,
+        width: 250,
       },
       {
         id: "author",
         header: "Author",
         cell: (item) => item.author ?? <Box color="text-body-secondary">—</Box>,
-        width: 220,
+        width: 180,
       },
       {
         id: "format",
         header: "Format",
         cell: (item) => item.format,
-        width: 140,
+        width: 100,
       },
       {
         id: "rating",
@@ -69,7 +69,7 @@ const Media: React.FC = () => (
           ) : (
             <Box color="text-body-secondary">—</Box>
           ),
-        width: 130,
+        width: 100,
       },
       {
         id: "comments",
@@ -80,10 +80,11 @@ const Media: React.FC = () => (
           ) : (
             <Box color="text-body-secondary">—</Box>
           ),
-        width: "50%",
+        width: 300,
       },
     ]}
     emptyNoun="media entries"
+    monthColumnEnabled={true}
   />
 );
 
