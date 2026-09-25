@@ -66,8 +66,7 @@ export const listRaces = tool(
         );
         allItems.push(...(result.Items ?? []));
         lastEvaluatedKey = result.LastEvaluatedKey as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
       } while (lastEvaluatedKey);
 
       const items = allItems.map((item) => ({
