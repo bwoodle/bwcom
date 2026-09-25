@@ -1,42 +1,57 @@
 # brentwoodle.com
 
-Personal website built with Next.js 16, deployed on AWS ECS Fargate (ARM64) behind an ALB. Uses DynamoDB for data, CloudFront+S3 for images, and Amazon Bedrock (Nova) for an AI chat agent.
+Personal website built with **Next.js 16** (backend/admin) and **React SPA** (frontend). Frontend is serverless (CloudFront + S3 + Lambda@Edge), backend optional. Uses DynamoDB for data and CloudFront+S3 for images.
 
 ## Architecture overview
 
 ```md
-┌─────────────────────────────────────────────────────────┐
-│  Route 53 (brentwoodle.com, woodle.org)                 │
-│         ▼                                               │
-│  ALB (HTTPS, www/woodle.org → apex redirects)           │
-│         ▼                                               │
-│  ECS Fargate (ARM64, Next.js standalone)                │
-│         ▼                    ▼                           │
-│  DynamoDB tables        CloudFront image CDN            │
-│  (allowance, media,     -> S3 images bucket             │
-│   races, training-log)                                  │
-│         ▼                                               │
-│  Amazon Bedrock (Nova)                                  │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│  Route 53 (brentwoodle.com, woodle.org)                       │
+│         ▼                                                     │
+│  CloudFront (HTTPS, HTTP→HTTPS, SPA fallback)                 │
+│    ├─ Origin: S3 (bwcom-spa-prod-site) → public React SPA   │
+│    └─ Origin: Lambda (API) → authenticated endpoints         │
+│         ▼              ▼                                      │
+│      S3 bucket    Lambda@Edge (auth)                          │
+│   (SPA + assets)       ▼                                      │
+│                  DynamoDB tables                              │
+│              (allowance, media,                               │
+│               races, training-log)                            │
+│                                                               │
+│  Optional: ECS backend (test-only, for development)           │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-Infrastructure is managed with Terraform using a **two-tier** pattern:
+### Deployment tiers
 
-- **Data tier** (`env/*-data`): DynamoDB tables and the S3 images bucket. Long-lived, never destroyed.
-- **Infra tier** (`env/test`, `env/prod`): VPC, ALB, ECS cluster/service, Route 53 records. Can be created/destroyed independently.
+This is a **serverless SPA architecture** designed for cost efficiency:
 
-Terraform state lives in the `bwcom-terraform-state` S3 bucket, keyed by environment name.
+| Component | Prod | Test |
+| --- | --- | --- |
+| Frontend (React SPA) | CloudFront + S3 | CloudFront + S3 |
+| API (admin/authenticated routes) | Lambda + Lambda@Edge | Lambda + Lambda@Edge |
+| Local dev | Next.js dev server (alternative backend) | Next.js dev server |
+| ECS backend | **Not deployed** | Optional (for infra testing only) |
+
+**Infrastructure is managed with Terraform:**
+- `env/prod-data/` — DynamoDB tables and S3 images bucket (long-lived)
+- `env/prod-serverless/` — CloudFront, Lambda, Lambda@Edge, Route 53 for production SPA
+- `env/test-serverless/` — Same serverless stack for test environment
+- `env/test/` — Optional ECS backend (test infra validation only)
+- `env/test-data/` — DynamoDB tables and S3 bucket for local dev and test
+
+Terraform state lives in the `bwcom-terraform-state` S3 bucket.
 
 ## Environments
 
-| Environment | Domain |
-| --- | --- |
-| **prod** | `brentwoodle.com` |
-| **test** | `test-next.brentwoodle.com` |
+| Environment | Domain | Frontend | API |
+| --- | --- | --- | --- |
+| **prod** | `brentwoodle.com` | SPA (CloudFront/S3) | Lambda |
+| **test** | `test-next.brentwoodle.com` | SPA (CloudFront/S3) or Next.js | Lambda or Next.js backend |
 
-- **Prod** is fully managed by CI. Never modify prod by hand.
-- **Test data** (DynamoDB tables + S3 bucket) is always deployed because local development (`npm run dev`) reads/writes to the test tables and images.
-- **Test infra** (ECS, ALB, etc.) only exists when you need to test infrastructure changes. Stand it up with `deploy-test.sh` and tear it down with `destroy-test.sh` to avoid ongoing costs.
+- **Prod** is fully managed by CI. Never modify by hand.
+- **Test data** (DynamoDB + images S3) is always deployed (local dev reads/writes to test tables).
+- **Test serverless** is deployed by default. Test ECS backend only stands up when testing infra changes.
 
 ## Local development
 
@@ -182,9 +197,36 @@ Or directly:
 
 Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Both test and prod S3 buckets are restricted to CloudFront-only access — images must be served through the CloudFront distributions.
 
-## Testing infrastructure changes
+## Deploying the serverless SPA
 
-To stand up the full test ECS environment:
+The serverless SPA is deployed via GitHub Actions CI on every push to `main`. To deploy manually or to test:
+
+```bash
+# Deploy SPA to test environment
+./scripts/deploy-serverless-spa.sh test
+
+# Deploy SPA to prod (use with caution!)
+./scripts/deploy-serverless-spa.sh prod
+```
+
+Required environment variables:
+- `ORIGIN_SECRET` — secret for CloudFront origin requests
+- `GOOGLE_CLIENT_ID` — for frontend OAuth
+- `IMAGES_BASE_URL` — CloudFront CDN for images (e.g., `https://d1645k04l4065v.cloudfront.net`)
+- `ADMIN_EMAILS_CSV` — (optional) comma-separated admin emails for Lambda@Edge auth
+
+The script:
+1. Initializes and applies Terraform for `env/{test|prod}-serverless`
+2. Reads the S3 bucket name and CloudFront distribution ID from Terraform output
+3. Builds the SPA (`bwcom-spa/`) with environment variables inlined
+4. Syncs the SPA dist/ to the S3 bucket
+5. Invalidates CloudFront cache
+
+## Testing ECS backend (optional)
+
+**Note:** ECS backend is optional and only needed to validate infrastructure changes. For normal development, use the local Next.js dev server.
+
+To stand up the test ECS environment:
 
 ```bash
 ./scripts/deploy-test.sh
@@ -199,7 +241,7 @@ This script (run from the repo root):
 1. Syncs images to the test S3 bucket
 1. Applies the test infra tier (`env/test`) — creates VPC, ALB, ECS service
 
-The test environment will be accessible at `https://test-next.brentwoodle.com`.
+The test environment will be accessible at `https://test-next.brentwoodle.com` (backend only).
 
 To tear it down (data tier is preserved):
 
@@ -211,19 +253,26 @@ To tear it down (data tier is preserved):
 
 CI is defined in `.github/workflows/ci.yml`. On every push to `main`:
 
-1. Runs on a native ARM64 GitHub runner (`ubuntu-24.04-arm`)
-1. Deploys/updates the prod image CDN stack (`bwcom-images-cdn-prod`) in `us-east-1`
-1. Reads CDN outputs (distribution domain + ARN)
-1. Builds the Docker image and pushes to ECR (tagged with commit SHA + `latest`), using the CDN domain as `NEXT_PUBLIC_IMAGES_BASE_URL`
-1. Applies `prod-data` Terraform with `TF_VAR_images_cloudfront_distribution_arns` so S3 object reads are limited to the CloudFront distribution
-1. Syncs images to the prod S3 bucket
-1. Applies `prod` Terraform (ECS service picks up new image tag)
+1. Runs repository checks (linting, tests) on ARM64 GitHub runner
+2. Plans Terraform changes for both `prod-data` and `prod-serverless`
+3. On merge to main (not on PR), applies Terraform and deploys:
+   - Applies `prod-data` (DynamoDB tables + S3 images bucket)
+   - Applies `prod-serverless` (CloudFront + Lambda + Lambda@Edge)
+   - Syncs images to prod S3 bucket
+   - Builds and deploys the SPA to the prod S3 bucket
 
-Secrets are stored in GitHub Actions secrets: `AWS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+The SPA deployment is **fully serverless**:
+- Frontend code runs in browser (React client)
+- API routes run as AWS Lambda functions
+- Authentication/authorization via Lambda@Edge
+- Static assets served via CloudFront from S3
+- No VPC, ALB, or ECS needed
 
-## Docker
+Secrets are stored in GitHub Actions secrets: `AWS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `ORIGIN_SECRET`, `GOOGLE_CLIENT_ID`.
 
-The app is containerized via a multi-stage Dockerfile (`bwcom-next/Dockerfile`):
+## Docker and the Next.js backend
+
+The optional Next.js backend is containerized via multi-stage Dockerfile (`bwcom-next/Dockerfile`):
 
 - **Builder stage**: `node:22-slim` — installs deps, builds Next.js standalone output
 - **Runner stage**: `node:22-slim` — copies only the built app, runs as non-root `nextjs` user
@@ -232,14 +281,20 @@ The app is containerized via a multi-stage Dockerfile (`bwcom-next/Dockerfile`):
 
 `NEXT_PUBLIC_IMAGES_BASE_URL` is passed as a `--build-arg` since `NEXT_PUBLIC_*` vars are inlined at build time.
 
+**Note:** The Next.js Docker image is only built for test ECS deployments and is not used in production. The production site is served entirely by the React SPA deployed to CloudFront/S3.
+
 ## Terraform modules
 
+### Data modules
 - `modules/dynamodb-allowance`: allowance tracker table (`childName` / `timestamp`)
 - `modules/dynamodb-media`: media entries table
 - `modules/dynamodb-races`: race history table
 - `modules/dynamodb-training-log`: training log table
 - `modules/s3-images`: S3 bucket with versioning for photos, with optional CloudFront-only read policy
-- `modules/ecs-next`: VPC, ALB (HTTPS + HTTP->HTTPS redirect), ECS Fargate service, Route 53, IAM roles (Bedrock, DynamoDB), optional www and woodle.org redirects
+
+### Infrastructure modules
+- `modules/spa-api-serverless`: CloudFront distribution, Lambda functions, Lambda@Edge authentication, Route 53 DNS
+- `modules/ecs-next` (optional): VPC, ALB (HTTPS), ECS Fargate service, IAM roles (used only for test backend validation)
 
 ## Adding a new data feature
 
@@ -262,24 +317,42 @@ To add a new data-backed feature (e.g. a gallery page), follow this pattern:
 ## Project structure
 
 ```md
-bwcom-next/            # Next.js application
-  app/                 # App Router pages and API routes
-  components/          # React components
-  lib/                 # Server-side utilities, AI agent, tool definitions
-  public/              # Static assets
-  types/               # TypeScript type extensions
-bwcom-terraform/       # Terraform infrastructure
+bwcom-next/              # Next.js backend (optional, for admin routes)
+  app/                   # App Router pages and API routes
+  components/            # React components (shared with SPA)
+  lib/                   # Server-side utilities
+  public/                # Static assets
+  types/                 # TypeScript type extensions
+
+bwcom-spa/               # React SPA (main production frontend)
+  src/
+    components/          # React components
+    pages/               # Page components
+    lib/                 # Client-side utilities
+    types/               # TypeScript types
+  public/                # Static assets (favicon, etc) — copied to dist/ during build
+  index.html             # Single HTML entry point
+
+bwcom-terraform/         # Terraform infrastructure
   env/
-    prod-data/         # Prod data tier (DynamoDB + S3)
-    prod/              # Prod infra tier (ECS + ALB)
-    test-data/         # Test data tier (DynamoDB + S3)
-    test/              # Test infra tier (ECS + ALB)
-  modules/             # Reusable Terraform modules
-photos/                # Source images (synced to S3)
-cfn/                   # CloudFormation templates
-  bwcom-static/
-    s3-cloudfront-stack/
-      images-cdn.yml   # Image-only CloudFront stack (used by CI + deploy-test)
-scripts/               # deploy-test.sh, destroy-test.sh, sync-images.sh
-.github/workflows/     # CI/CD pipeline
+    prod-data/           # Prod data tier (DynamoDB + images S3)
+    prod-serverless/     # Prod serverless SPA (CloudFront + Lambda + Lambda@Edge)
+    test-data/           # Test data tier (DynamoDB + images S3)
+    test-serverless/     # Test serverless SPA
+    test/                # Test ECS backend (optional, for infra testing only)
+  modules/
+    dynamodb-*           # DynamoDB table modules
+    s3-images            # S3 images bucket module
+    spa-api-serverless   # CloudFront + Lambda + Lambda@Edge module
+    ecs-next             # ECS backend module (optional)
+
+photos/                  # Source images (synced to S3)
+
+scripts/
+  deploy-serverless-spa.sh  # Deploy SPA to CloudFront/S3
+  deploy-test.sh            # Deploy test ECS backend (optional)
+  destroy-test.sh           # Tear down test ECS backend
+  sync-images.sh            # Sync images to S3
+
+.github/workflows/       # CI/CD pipeline
 ```
