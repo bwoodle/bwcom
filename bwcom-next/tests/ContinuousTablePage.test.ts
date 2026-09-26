@@ -21,7 +21,7 @@ interface ItemWithMonth extends TestItem {
   _monthLabel?: string;
 }
 
-function flattenGroups<T extends Record<string, unknown>>(
+function flattenGroups<T>(
   groups: GroupedTableGroup<T>[],
 ): (T & { _monthLabel?: string })[] {
   const flatItems: (T & { _monthLabel?: string })[] = [];

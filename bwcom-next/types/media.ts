@@ -1,10 +1,5 @@
 export type MediaFormat =
-  | "book"
-  | "audiobook"
-  | "kindle"
-  | "movie"
-  | "tv"
-  | "podcast";
+  "book" | "audiobook" | "kindle" | "movie" | "tv" | "podcast";
 
 export type MediaRating = 1 | 2 | 3 | 4 | 5;
 

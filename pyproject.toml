@@ -8,15 +8,15 @@ version = "0.1.0"
 description = "Python tooling for the bwcom Strava scripts."
 requires-python = ">=3.12"
 dependencies = [
-  "boto3>=1.40,<2",
+  "boto3>=1.43,<2",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "mypy>=1.18,<2",
-  "pre-commit>=4.3,<5",
-  "pytest>=8.4,<9",
-  "ruff>=0.13,<0.14",
+  "mypy>=2.3,<3",
+  "pre-commit>=4.6,<5",
+  "pytest>=9.1,<10",
+  "ruff>=0.16,<0.17",
 ]
 
 [tool.setuptools.packages.find]
