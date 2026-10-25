@@ -28,6 +28,12 @@ This repository defines three custom agents (in `.github/agents/`) that form a s
 - Loose coupling, modularity, and testability
 - TDD: tests first, implementation second, refactor third
 
+## Frontend Guardrail (Avoid Architecture Drift)
+
+- Implement all user-facing site changes in `bwcom-spa/`.
+- Do not add, restore, or route work through a Next.js frontend for production paths.
+- Before making frontend edits, confirm routes/components exist in `bwcom-spa/src/` and that deploy scripts/workflows target `deploy-serverless-spa.sh`.
+
 ## Required Change Workflow
 
 Any agent that writes or modifies code in this repository must use test-driven development:
@@ -77,6 +83,49 @@ cd bwcom-spa
 npm run build
 npm test
 ```
+
+## Photos/Albums Workflow (Required Pattern)
+
+- Source images belong in `photos/albums/YYYY-MM/` (full resolution originals).
+- Never hardcode month/photo lists in page components.
+- Album metadata for the SPA is generated into `bwcom-spa/src/lib/photo-albums.generated.ts` by:
+
+```bash
+python3 scripts/generate-photo-albums-manifest.py
+```
+
+- Thumbnails + manifest generation + S3 sync are handled by:
+
+```bash
+./scripts/sync-images.sh <bucket-name>
+```
+
+- Ignore Windows metadata files (`*:Zone.Identifier`) and keep the workflow resilient when month folders are added/removed.
+
+## Photos Page Test Checklist
+
+When changing photos/albums behavior:
+
+1. Add/update tests in `bwcom-spa/src/lib/photo-albums.test.ts` first.
+2. Run targeted tests:
+
+```bash
+cd bwcom-spa
+npm test -- src/lib/photo-albums.test.ts
+```
+
+3. Run repo validation:
+
+```bash
+just lint
+just test
+```
+
+4. Verify photo counts line up between source and generated manifest (especially for months in question).
+5. After deploy, verify production:
+   - `/photos` loads
+   - expected month sections render
+   - expected image count appears for each month
 
 ## Deploying the SPA
 
