@@ -35,6 +35,9 @@ generate_thumbs() {
 echo "==> Cleaning Windows metadata junk files..."
 find "${PHOTOS_DIR}" -type f -name '*:Zone.Identifier' -delete
 
+echo "==> Regenerating SPA photo album manifest..."
+python3 scripts/generate-photo-albums-manifest.py
+
 echo "==> Generating thumbnails..."
 generate_thumbs "${PHOTOS_DIR}/web-content"
 

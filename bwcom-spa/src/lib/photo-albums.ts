@@ -7,11 +7,34 @@ export type PhotoAsset = {
   fullSrc: string;
 };
 
+export type PhotoManifestEntry = {
+  monthKey: string;
+  name: string;
+};
+
 export type PhotoMonthGroup = {
   monthKey: string;
   label: string;
   photos: PhotoAsset[];
 };
+
+export function buildPhotoAssetsFromManifest(
+  manifest: PhotoManifestEntry[],
+  imagesBaseUrl: string,
+): PhotoAsset[] {
+  return manifest.map(({ monthKey, name }) => {
+    const baseName = name.replace(/\.[^.]+$/, "");
+
+    return {
+      id: `${monthKey}-${baseName}`,
+      monthKey,
+      alt: `${formatMonthLabel(monthKey)} photo ${baseName}`,
+      name,
+      thumbSrc: `${imagesBaseUrl}/albums/${monthKey}/thumbs/${name}`,
+      fullSrc: `${imagesBaseUrl}/albums/${monthKey}/${name}`,
+    };
+  });
+}
 
 export function buildPhotoMonthGroups(photos: PhotoAsset[]): PhotoMonthGroup[] {
   const grouped = new Map<string, PhotoAsset[]>();
