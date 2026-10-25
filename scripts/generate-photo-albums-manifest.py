@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ALBUMS_DIR = ROOT / "photos" / "albums"
 OUTPUT_FILE = ROOT / "bwcom-spa" / "src" / "lib" / "photo-albums.generated.ts"
-MONTH_KEY_LENGTH = 7
+MONTH_KEY_PATTERN = re.compile(r"^[0-9]{4}-(0[1-9]|1[0-2])$")
 VALID_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 
 
@@ -17,7 +18,7 @@ def month_directories() -> list[Path]:
     month_dirs = [
         path
         for path in ALBUMS_DIR.iterdir()
-        if path.is_dir() and len(path.name) == MONTH_KEY_LENGTH and path.name[4] == "-"
+        if path.is_dir() and MONTH_KEY_PATTERN.match(path.name)
     ]
     return sorted(month_dirs, reverse=True)
 

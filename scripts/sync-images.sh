@@ -43,8 +43,12 @@ generate_thumbs "${PHOTOS_DIR}/web-content"
 
 if [ -d "${PHOTOS_DIR}/albums" ]; then
   while IFS= read -r -d '' month_dir; do
+    month_key="$(basename "${month_dir}")"
+    if [[ ! "${month_key}" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]]; then
+      continue
+    fi
     generate_thumbs "${month_dir}"
-  done < <(find "${PHOTOS_DIR}/albums" -mindepth 1 -maxdepth 1 -type d -print0)
+  done < <(find "${PHOTOS_DIR}/albums" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
 fi
 
 echo "==> Syncing to s3://${BUCKET}/..."
