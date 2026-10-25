@@ -6,9 +6,10 @@ import {
 } from "../components/nav-config";
 
 describe("CORE_NAV_ITEMS", () => {
-  it("defines the three public links used by mobile navigation", () => {
+  it("defines the public links used by mobile navigation", () => {
     expect(CORE_NAV_ITEMS).toEqual([
       { href: "/", text: "About Me" },
+      { href: "/photos", text: "Photos" },
       { href: "/training-log", text: "Training Log" },
       { href: "/race-history", text: "Race History" },
     ]);
@@ -19,6 +20,7 @@ describe("getDesktopNavDescriptors", () => {
   it("returns public links plus login for signed-out users", () => {
     expect(getDesktopNavDescriptors(null)).toEqual([
       { kind: "route", href: "/", text: "About Me" },
+      { kind: "route", href: "/photos", text: "Photos" },
       { kind: "route", href: "/training-log", text: "Training Log" },
       { kind: "route", href: "/race-history", text: "Race History" },
       { kind: "auth", text: "Login" },
@@ -35,6 +37,7 @@ describe("getDesktopNavDescriptors", () => {
       }),
     ).toEqual([
       { kind: "route", href: "/", text: "About Me" },
+      { kind: "route", href: "/photos", text: "Photos" },
       { kind: "route", href: "/training-log", text: "Training Log" },
       { kind: "route", href: "/race-history", text: "Race History" },
       { kind: "user-menu", text: "Brent" },
@@ -51,6 +54,7 @@ describe("getDesktopNavDescriptors", () => {
       }),
     ).toEqual([
       { kind: "route", href: "/", text: "About Me" },
+      { kind: "route", href: "/photos", text: "Photos" },
       { kind: "route", href: "/training-log", text: "Training Log" },
       { kind: "route", href: "/race-history", text: "Race History" },
       { kind: "route", href: "/media", text: "Media" },
@@ -68,6 +72,7 @@ describe("getDesktopNavDescriptors", () => {
       }),
     ).toEqual([
       { kind: "route", href: "/", text: "About Me" },
+      { kind: "route", href: "/photos", text: "Photos" },
       { kind: "route", href: "/training-log", text: "Training Log" },
       { kind: "route", href: "/race-history", text: "Race History" },
       { kind: "user-menu", text: "User" },

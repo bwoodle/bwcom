@@ -181,7 +181,7 @@ To verify the hook wiring in a new environment, run `python -m pre_commit run --
 
 ### Syncing images
 
-Source images live in `photos/web-content/`. Thumbnails are auto-generated (800px wide) and everything is synced to S3:
+Source images live in `photos/web-content/` and monthly album images live in `photos/albums/YYYY-MM/`. Thumbnails are auto-generated (800px wide) and everything is synced to S3:
 
 ```bash
 # From bwcom-next/
@@ -194,6 +194,8 @@ Or directly:
 ```bash
 ./scripts/sync-images.sh test.brentwoodle.com
 ```
+
+To add a new album, drop full-size JPGs into a month directory such as `photos/albums/2026-11/` and the sync script will generate matching `thumbs/` files for the website.
 
 Images are referenced via `NEXT_PUBLIC_IMAGES_BASE_URL` (inlined at build time). Both test and prod S3 buckets are restricted to CloudFront-only access — images must be served through the CloudFront distributions.
 
