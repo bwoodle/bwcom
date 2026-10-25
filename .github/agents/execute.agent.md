@@ -52,8 +52,8 @@ Follow this cycle for each unit of work:
 
 #### d. Validate
 - Run the tests to confirm they pass
-- Run the linter (`npm run lint` from `bwcom-next/`)
-- Run the build (`npm run build` from `bwcom-next/`)
+- Run the build (`npm run build` from `bwcom-spa/`)
+- Run the local test command (`npm test` from `bwcom-spa/`) if the app has a test suite
 
 ### 4. Architecture Principles
 
@@ -77,23 +77,21 @@ If the Technical Plan includes infrastructure changes:
   cd bwcom-terraform/env/test-data && terraform init && terraform apply
   ```
 - **Prod data tier**: Update `bwcom-terraform/env/prod-data/main.tf` (will be applied by CI)
-- **Environment variables**: Add to `bwcom-next/.env.local` for local dev
-- **Deploy script**: Update `scripts/deploy-test.sh` if new table names need wiring
-- **ECS task definition**: Update `modules/ecs-next/` variables and container env
+- **Environment variables**: Add to `bwcom-spa/.env.local` for local dev
+- **Deploy script**: Update `scripts/deploy-serverless-spa.sh` if new env vars need wiring
 
 ### 6. Local Dev Server
 
 To start the local dev server for testing:
 ```bash
-cd bwcom-next && npm run dev
+cd bwcom-spa && npm install && npm run dev
 ```
-The server runs on port 3000 and uses test DynamoDB tables and the test CloudFront CDN.
+The server runs on port 5173 and uses the Vite SPA with test CloudFront image URLs.
 
 Verification checklist:
-- All public pages return 200: `/`, `/about-me`, `/race-history`, `/training-log`
-- Auth-protected pages redirect: `/media`, `/admin` return 307
-- API routes return data: `GET /api/media`, `GET /api/races`, `GET /api/training-log?sectionId=<id>`
-- Image proxy works: `GET /_next/image?url=<encoded-cloudfront-url>&w=640&q=75`
+- All public pages return 200: `/`, `/about-me`, `/race-history`, `/training-log`, `/photos`
+- Auth-protected pages redirect or guard: `/media`, `/admin`
+- Image assets resolve via the configured CDN base URL
 
 ### 7. Completion — Ask User How to Proceed
 
@@ -106,10 +104,10 @@ When all tests pass, the build succeeds, and the implementation is complete, **a
 > 2. **Commit and push** — Commit changes to `main` and push (triggers prod deployment via CI)
 
 If the user chooses option 1:
-- Run `./scripts/deploy-test.sh` from the repo root
+- Run `./scripts/deploy-serverless-spa.sh test` from the repo root
 - Wait for deployment to complete
-- Provide the test URL: `https://test-next.brentwoodle.com`
-- Remind the user to tear down with `./scripts/destroy-test.sh` when done
+- Provide the test URL: `https://test.brentwoodle.com`
+- Remind the user to tear down or redeploy as needed
 
 If the user chooses option 2:
 - Stage all changed files

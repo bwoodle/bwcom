@@ -197,14 +197,11 @@ python3 scripts/strava_to_training_log.py \
   --write
 ```
 
-If the new cycle is not already exposed, update:
-
-- `bwcom-next/lib/training-log-config.ts`
+If the new cycle is not already exposed, update the training log config in the SPA app.
 
 Then verify locally via:
 
-- `http://localhost:3000/training-log`
-- `/api/training-log?sectionId=<target-log-id>`
+- `http://localhost:5173/training-log`
 
 ### 6. Promote only after human review is complete
 

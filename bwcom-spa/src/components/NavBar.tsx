@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/training-log", text: "Training Log" },
   { href: "/race-history", text: "Race History" },
   { href: "/media", text: "Media" },
+  { href: "/photos", text: "Photos" },
   { href: "/admin", text: "Admin" },
 ];
 

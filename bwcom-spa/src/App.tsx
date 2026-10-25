@@ -6,6 +6,7 @@ import AboutMe from "./components/AboutMe";
 import TrainingLog from "./components/TrainingLog";
 import RaceHistory from "./components/RaceHistory";
 import Media from "./components/Media";
+import PhotosPage from "./pages/PhotosPage";
 import AdminPage from "./pages/AdminPage";
 
 function Wrapped({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ const App: React.FC = () => {
           <Route path="/training-log" element={<Wrapped><TrainingLog /></Wrapped>} />
           <Route path="/race-history" element={<Wrapped><RaceHistory /></Wrapped>} />
           <Route path="/media" element={<Wrapped><Media /></Wrapped>} />
+          <Route path="/photos" element={<Wrapped><PhotosPage /></Wrapped>} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>

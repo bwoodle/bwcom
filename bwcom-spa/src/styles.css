@@ -22,7 +22,7 @@ main {
 
 .navbar-mobile {
   display: none;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1rem;

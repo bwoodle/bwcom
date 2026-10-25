@@ -187,9 +187,9 @@ const AboutMe: React.FC = () => {
               More recently, I’ve returned to a Principal Software Engineer role
               building Axon, the LLM-backed intelligence layer for Rhapsody’s
               LLM chat and agentic features. Our stack includes LangGraph,
-              FastAPI, Next.js, and Langfuse, all hosted on AWS. This is a team
-              that genuinely embraces the DevOps mindset—focusing on delivering
-              value quickly and safely. This is the first time in my career
+              FastAPI, and Langfuse, all hosted on AWS. This is a team that
+              genuinely embraces the DevOps mindset—focusing on delivering value
+              quickly and safely. This is the first time in my career
               where I&apos;ve been in a role where my team and I can ship
               something from idea to production in a single day.
             </p>

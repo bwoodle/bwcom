@@ -40,7 +40,6 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            bwcom-next/package-lock.json
             bwcom-spa/package-lock.json
 
       - name: Set up Terraform
@@ -59,9 +58,6 @@ jobs:
 
       - name: Run unit tests
         run: just test
-
-      - name: Build Next.js app
-        run: just _next-build
 
       - name: Build SPA app
         run: |

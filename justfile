@@ -6,7 +6,7 @@ default:
 
 bootstrap: _ensure-venv
   {{venv_python}} -m pip install -e '.[dev]'
-  cd bwcom-next && npm ci
+  cd bwcom-spa && npm ci
 
 _ensure-venv:
   if [ ! -x .venv/bin/python ]; then \
@@ -20,9 +20,9 @@ _ensure-venv:
     fi; \
   fi
 
-lint: _python-lint _next-lint _terraform-lint _shell-lint
+lint: _python-lint _spa-lint _terraform-lint _shell-lint
 
-test: _python-test _next-test
+test: _python-test _spa-test
 
 _python-lint:
   {{venv_python}} -m ruff format --check scripts
@@ -32,14 +32,14 @@ _python-lint:
 _python-test:
   {{venv_python}} -m pytest scripts/tests -q
 
-_next-lint:
-  cd bwcom-next && npm run format:check && npm run lint
+_spa-lint:
+  cd bwcom-spa && npm run build
 
-_next-test:
-  cd bwcom-next && npm run test
+_spa-test:
+  cd bwcom-spa && npm test
 
-_next-build:
-  cd bwcom-next && npm run build
+_spa-build:
+  cd bwcom-spa && npm run build
 
 _terraform-lint:
   terraform fmt -check -recursive bwcom-terraform
