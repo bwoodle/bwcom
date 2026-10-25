@@ -17,6 +17,7 @@ export type DesktopNavDescriptor =
 
 export const CORE_NAV_ITEMS: NavRoute[] = [
   { href: "/", text: "About Me" },
+  { href: "/photos", text: "Photos" },
   { href: "/training-log", text: "Training Log" },
   { href: "/race-history", text: "Race History" },
 ];
